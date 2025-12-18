@@ -6,6 +6,9 @@ import { Link, Outlet } from "react-router";
 
 const DashboardLayout = () => {
   const [isStudentMenuOpen, setIsStudentMenuOpen] = useState(false);
+  const handleCloseModal = () => {
+    setIsStudentMenuOpen(false);
+  }
 
   return (
     <div className="drawer lg:drawer-open">
@@ -78,7 +81,7 @@ const DashboardLayout = () => {
                 <ul className="is-drawer-open:hidden absolute left-full top-0 ml-2 bg-base-200 rounded-lg shadow-lg border border-base-300 z-50 min-w-[200px]">
                   <Link to="/dashboard/studentManagement/students">
                     <li>
-                      <button className="flex items-center gap-2 w-full">
+                      <button onClick={handleCloseModal} className="flex items-center gap-2 w-full">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           viewBox="0 0 24 24"
@@ -93,9 +96,9 @@ const DashboardLayout = () => {
                       </button>
                     </li>
                   </Link>
-                  <Link to="/dashboard/students/add">
+                  <Link to="/dashboard/studentManagement/addStudents">
                     <li>
-                      <button className="flex items-center gap-2 w-full">
+                      <button onClick={handleCloseModal} className="flex items-center gap-2 w-full">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           viewBox="0 0 24 24"
@@ -134,7 +137,7 @@ const DashboardLayout = () => {
                     </button>
                   </li>
                 </Link>
-                <Link to="/dashboard/students/add">
+                <Link to="/dashboard/studentManagement/addStudents">
                   <li>
                     <button className="pl-12 flex items-center gap-2">
                       <svg
