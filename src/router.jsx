@@ -4,6 +4,9 @@ import Overview from "./pages/Overview";
 import Students from "./pages/StudentManagement/Students";
 import AddStudent from "./pages/StudentManagement/AddStudent";
 import ErrorPage from "./pages/ErrorPage";
+import Admissions from "./pages/Admission&Enrollment/Admissions";
+import NewAdmissions from "./pages/Admission&Enrollment/NewAdmissions";
+import AdmissionFollowUps from "./pages/Admission&Enrollment/AdmissionFollowUps";
 
 const router = createBrowserRouter([
   {
@@ -26,6 +29,23 @@ const router = createBrowserRouter([
             path: "/dashboard/studentManagement/addStudents", 
             Component: AddStudent
           }
+        ]
+      }, 
+      {
+        path: "/dashboard/admissionManagement", 
+        children: [
+          {
+            path: "/dashboard/admissionManagement/admissions", 
+            Component: Admissions
+          },
+          {
+            path: "/dashboard/admissionManagement/newAdmission", 
+            Component: NewAdmissions
+          },
+          {
+            path: "/dashboard/admissionManagement/admissionFollowUps", 
+            Component: AdmissionFollowUps
+          },
         ]
       }
     ]
