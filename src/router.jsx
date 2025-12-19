@@ -1,13 +1,15 @@
 import { createBrowserRouter } from "react-router";
 import DashboardLayout from "./layouts/DashboardLayout";
 import Overview from "./pages/Overview";
-import StudentManagement from "./pages/StudentManagement/StudentManagement";
 import Students from "./pages/StudentManagement/Students";
+import AddStudent from "./pages/StudentManagement/AddStudent";
+import ErrorPage from "./pages/ErrorPage";
 
 const router = createBrowserRouter([
   {
     path: "/",
     Component: DashboardLayout,
+    errorElement: <ErrorPage></ErrorPage>, 
     children: [
       {
         path: "/dashboard/overview", 
@@ -15,11 +17,14 @@ const router = createBrowserRouter([
       }, 
       {
         path: "/dashboard/studentManagement",
-        Component: StudentManagement, 
         children: [
           {
             path: "/dashboard/studentManagement/students", 
             Component: Students
+          },
+          {
+            path: "/dashboard/studentManagement/addStudents", 
+            Component: AddStudent
           }
         ]
       }
