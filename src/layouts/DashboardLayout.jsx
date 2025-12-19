@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { GrOverview } from "react-icons/gr";
+import { HiUserGroup } from "react-icons/hi";
 import { IoIosPersonAdd } from "react-icons/io";
 import { MdManageAccounts } from "react-icons/md";
 import { RiSidebarUnfoldFill } from "react-icons/ri";
@@ -10,9 +11,15 @@ const DashboardLayout = () => {
   const handleCloseModal = () => {
     setIsStudentMenuOpen(false);
   };
+
   const [isAdmissionMenuOpen, setIsAdmissionMenuOpen] = useState(false);
   const handleCloseAdmissionModal = () => {
     setIsAdmissionMenuOpen(false);
+  };
+  
+  const [isAttendenceMenuOpen, setIsAttendenceMenuOpen] = useState(false);
+  const handleCloseAttendenceModal = () => {
+    setIsAttendenceMenuOpen(false);
   };
 
   return (
@@ -349,6 +356,171 @@ const DashboardLayout = () => {
                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
                       </svg>
                       <span>Admission Follow Ups</span>
+                    </button>
+                  </li>
+                </Link>
+              </ul>
+            )}
+
+            {/* Attendence Management with nested menu */}
+            <li className="relative">
+              <button
+                className="is-drawer-close:tooltip is-drawer-close:tooltip-right"
+                data-tip="Admission Management"
+                onClick={() => setIsAttendenceMenuOpen(!isAttendenceMenuOpen)}
+              >
+                <HiUserGroup />
+                <span className="is-drawer-close:hidden">
+                  Attendence Management
+                </span>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  strokeWidth="2"
+                  fill="none"
+                  stroke="currentColor"
+                  className={`ml-auto inline-block size-4 is-drawer-close:hidden transition-transform ${
+                    isAttendenceMenuOpen ? "rotate-90" : ""
+                  }`}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M9 5l7 7-7 7"
+                  />
+                </svg>
+              </button>
+
+              {/* Nested menu for collapsed drawer */}
+              {isAttendenceMenuOpen && (
+                <ul className="is-drawer-open:hidden absolute left-full top-0 ml-2 bg-base-200 rounded-lg shadow-lg border border-base-300 z-50 min-w-[200px]">
+                  <Link to="/dashboard/admissionManagement/admissions">
+                    <li>
+                      <button
+                        onClick={handleCloseAttendenceModal}
+                        className="flex items-center gap-2 w-full"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                          strokeWidth="2"
+                          fill="none"
+                          stroke="currentColor"
+                          className="inline-block size-4"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M15 19l-7-7 7-7"
+                          />
+                        </svg>
+                        <span>Attendence</span>
+                      </button>
+                    </li>
+                  </Link>
+                  <Link to="/dashboard/admissionManagement/newAdmission">
+                    <li>
+                      <button
+                        onClick={handleCloseAttendenceModal}
+                        className="flex items-center gap-2 w-full"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                          strokeWidth="2"
+                          fill="none"
+                          stroke="currentColor"
+                          className="inline-block size-4"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M12 4v16m8-8H4"
+                          />
+                        </svg>
+                        <span>Attendence Live</span>
+                      </button>
+                    </li>
+                  </Link>
+                  <Link to="/dashboard/admissionManagement/admissionFollowUps">
+                    <li>
+                      <button
+                        onClick={handleCloseAttendenceModal}
+                        className="flex items-center gap-2 w-full"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                          strokeWidth="2"
+                          fill="none"
+                          stroke="currentColor"
+                          className="inline-block size-4"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M12 4v16m8-8H4"
+                          />
+                        </svg>
+                        <span>Attendence Reports</span>
+                      </button>
+                    </li>
+                  </Link>
+                </ul>
+              )}
+            </li>
+
+            {/* Nested Attendence Management Links for open drawer */}
+            {isAttendenceMenuOpen && (
+              <ul className="is-drawer-close:hidden">
+                <Link to="/dashboard/admissionManagement/admissions">
+                  <li>
+                    <button className="pl-12 flex items-center gap-2">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        strokeWidth="2"
+                        fill="none"
+                        stroke="currentColor"
+                        className="inline-block size-4"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                      </svg>
+                      <span>Attendence</span>
+                    </button>
+                  </li>
+                </Link>
+                <Link to="/dashboard/admissionManagement/newAdmission">
+                  <li>
+                    <button className="pl-12 flex items-center gap-2">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        strokeWidth="2"
+                        fill="none"
+                        stroke="currentColor"
+                        className="inline-block size-4"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                      </svg>
+                      <span>Attendence Live</span>
+                    </button>
+                  </li>
+                </Link>
+                <Link to="/dashboard/admissionManagement/admissionFollowUps">
+                  <li>
+                    <button className="pl-12 flex items-center gap-2">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        strokeWidth="2"
+                        fill="none"
+                        stroke="currentColor"
+                        className="inline-block size-4"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                      </svg>
+                      <span>Attendence Reports</span>
                     </button>
                   </li>
                 </Link>
