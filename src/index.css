@@ -1,5 +1,35 @@
+/* stylelint-disable unknownAtRules */
 @import "tailwindcss";
-@plugin "daisyui" {
-  themes: light --default, dark --prefersdark;
-  themes: light --default;
+@plugin "daisyui";
+@plugin "daisyui/theme" {
+  name: "rootxlight";
+  default: true;
+
+  /* Brand Colors */
+  --color-primary: #F5923D;
+  --color-primary-content: #ffffff;
+
+  --color-secondary: #2CB1A6;
+  --color-secondary-content: #ffffff;
+
+  /* Neutral / Text */
+  --color-neutral: #1F2933;
+  --color-neutral-content: #F9FAFB;
+
+  /* Base UI */
+  --color-base-100: #F9FAFB; /* main background */
+  --color-base-200: #F3F4F6; /* cards */
+  --color-base-300: #E5E7EB; /* borders */
+
+  /* Status */
+  --color-info: #38BDF8;
+  --color-success: #22C55E;
+  --color-warning: #FBBF24;
+  --color-error: #EF4444;
+
+  /* UI Feel */
+  --radius-box: 1rem;
+  --radius-btn: 0.75rem;
+  --radius-badge: 0.5rem;
 }
+
