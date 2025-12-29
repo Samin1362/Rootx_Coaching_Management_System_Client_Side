@@ -1,31 +1,34 @@
 /* stylelint-disable unknownAtRules */
 @import "tailwindcss";
 @plugin "daisyui";
+
+/* Light Theme */
 @plugin "daisyui/theme" {
   name: "rootxlight";
   default: true;
 
   /* Brand Colors */
-  --color-primary: #F5923D;
+  --color-primary: #f5923d;
   --color-primary-content: #ffffff;
 
-  --color-secondary: #2CB1A6;
+  --color-secondary: #2cb1a6;
   --color-secondary-content: #ffffff;
 
   /* Neutral / Text */
-  --color-neutral: #1F2933;
-  --color-neutral-content: #F9FAFB;
+  --color-neutral: #1f2933;
+  --color-neutral-content: #f9fafb;
 
   /* Base UI */
-  --color-base-100: #F9FAFB; /* main background */
-  --color-base-200: #F3F4F6; /* cards */
-  --color-base-300: #E5E7EB; /* borders */
+  --color-base-100: #f9fafb; /* main background */
+  --color-base-200: #f3f4f6; /* cards */
+  --color-base-300: #e5e7eb; /* borders */
+  --color-base-content: #1f2933; /* text on base */
 
   /* Status */
-  --color-info: #38BDF8;
-  --color-success: #22C55E;
-  --color-warning: #FBBF24;
-  --color-error: #EF4444;
+  --color-info: #38bdf8;
+  --color-success: #22c55e;
+  --color-warning: #fbbf24;
+  --color-error: #ef4444;
 
   /* UI Feel */
   --radius-box: 1rem;
@@ -33,3 +36,210 @@
   --radius-badge: 0.5rem;
 }
 
+/* Dark Theme */
+@plugin "daisyui/theme" {
+  name: "rootxdark";
+
+  /* Brand Colors */
+  --color-primary: #f5923d;
+  --color-primary-content: #1f2933;
+
+  --color-secondary: #2cb1a6;
+  --color-secondary-content: #0f172a;
+
+  /* Neutral / Text */
+  --color-neutral: #111827;
+  --color-neutral-content: #f9fafb;
+
+  /* Base UI */
+  --color-base-100: #0f172a; /* main background */
+  --color-base-200: #1e293b; /* cards */
+  --color-base-300: #334155; /* borders */
+  --color-base-content: #f9fafb; /* text on base */
+
+  /* Status */
+  --color-info: #38bdf8;
+  --color-success: #22c55e;
+  --color-warning: #fbbf24;
+  --color-error: #f87171;
+
+  /* UI Feel */
+  --radius-box: 1rem;
+  --radius-btn: 0.75rem;
+  --radius-badge: 0.5rem;
+}
+
+/* React DatePicker Custom Styling */
+.react-datepicker-wrapper {
+  width: 100%;
+}
+
+.react-datepicker {
+  font-family: inherit;
+  border: 1px solid hsl(var(--bc) / 0.2);
+  border-radius: 0.75rem;
+  background-color: hsl(var(--b1));
+  box-shadow: 0 10px 25px -5px rgb(0 0 0 / 0.1);
+}
+
+.react-datepicker__header {
+  background-color: hsl(var(--b2));
+  border-bottom: 1px solid hsl(var(--bc) / 0.1);
+  border-top-left-radius: 0.75rem;
+  border-top-right-radius: 0.75rem;
+  padding-top: 0.75rem;
+}
+
+.react-datepicker__current-month,
+.react-datepicker__day-name {
+  color: hsl(var(--bc));
+  font-weight: 600;
+}
+
+.react-datepicker__day {
+  color: hsl(var(--bc));
+  border-radius: 0.5rem;
+  transition: all 0.2s;
+}
+
+.react-datepicker__day:hover {
+  background-color: hsl(var(--p) / 0.1);
+  color: hsl(var(--p));
+}
+
+.react-datepicker__day--selected,
+.react-datepicker__day--keyboard-selected {
+  background-color: hsl(var(--p));
+  color: white;
+  font-weight: 600;
+}
+
+.react-datepicker__day--selected:hover {
+  background-color: hsl(var(--p));
+}
+
+.react-datepicker__day--today {
+  background-color: hsl(var(--s) / 0.2);
+  color: hsl(var(--bc));
+  font-weight: 600;
+}
+
+.react-datepicker__day--disabled {
+  color: hsl(var(--bc) / 0.3);
+  cursor: not-allowed;
+}
+
+.react-datepicker__day--disabled:hover {
+  background-color: transparent;
+}
+
+.react-datepicker__navigation {
+  top: 0.875rem;
+}
+
+.react-datepicker__navigation-icon::before {
+  border-color: hsl(var(--bc));
+  transition: border-color 0.2s;
+}
+
+.react-datepicker__navigation:hover .react-datepicker__navigation-icon::before {
+  border-color: hsl(var(--p));
+}
+
+.react-datepicker__triangle {
+  display: none;
+}
+
+/* Fade In Animation for Table Rows */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.4s ease-out forwards;
+  opacity: 0;
+}
+
+/* Dashboard Layout Animations */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    max-height: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    max-height: 500px;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 1;
+    max-height: 500px;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    max-height: 0;
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes scaleOut {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
+/* Smooth transitions for menu items */
+.menu-item-transition {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Custom Scrollbar for Sidebar */
+.sidebar-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb {
+  background: hsl(var(--bc) / 0.2);
+  border-radius: 10px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--bc) / 0.3);
+}
+
+/* Smooth Scroll */
+html {
+  scroll-behavior: smooth;
+}
