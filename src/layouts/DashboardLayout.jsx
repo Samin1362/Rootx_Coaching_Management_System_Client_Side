@@ -6,6 +6,7 @@ import { IoIosPersonAdd } from "react-icons/io";
 import { MdManageAccounts, MdPayments } from "react-icons/md";
 import { RiSidebarUnfoldFill } from "react-icons/ri";
 import { Link, Outlet } from "react-router";
+import Logo from "../components/Logo";
 
 const DashboardLayout = () => {
   const [isStudentMenuOpen, setIsStudentMenuOpen] = useState(false);
@@ -42,17 +43,17 @@ const DashboardLayout = () => {
     <div className="drawer lg:drawer-open">
       <input id="my-drawer-4" type="checkbox" className="drawer-toggle" />
       <div className="drawer-content">
-        {/* Navbar */}
         <nav className="navbar w-full bg-base-300">
           <label
             htmlFor="my-drawer-4"
             aria-label="open sidebar"
-            className="btn btn-square btn-ghost"
+            className="btn btn-square btn-ghost mr-4"
           >
             {/* Sidebar toggle icon */}
             <RiSidebarUnfoldFill className="text-2xl" />
           </label>
-          <div className="px-4">Rootx Coaching Management System</div>
+          <Logo></Logo>
+          {/* <div className="px-4">Rootx Coaching Management System</div> */}
         </nav>
         {/* Page content here */}
         <div className="p-4">
@@ -335,7 +336,11 @@ const DashboardLayout = () => {
                         stroke="currentColor"
                         className="inline-block size-4"
                       >
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M15 19l-7-7 7-7"
+                        />
                       </svg>
                       <span>Admissions</span>
                     </button>
@@ -352,7 +357,11 @@ const DashboardLayout = () => {
                         stroke="currentColor"
                         className="inline-block size-4"
                       >
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M12 4v16m8-8H4"
+                        />
                       </svg>
                       <span>New Admission</span>
                     </button>
@@ -369,7 +378,11 @@ const DashboardLayout = () => {
                         stroke="currentColor"
                         className="inline-block size-4"
                       >
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M12 4v16m8-8H4"
+                        />
                       </svg>
                       <span>Admission Follow Ups</span>
                     </button>
@@ -500,7 +513,11 @@ const DashboardLayout = () => {
                         stroke="currentColor"
                         className="inline-block size-4"
                       >
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M15 19l-7-7 7-7"
+                        />
                       </svg>
                       <span>Attendence</span>
                     </button>
@@ -517,7 +534,11 @@ const DashboardLayout = () => {
                         stroke="currentColor"
                         className="inline-block size-4"
                       >
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M12 4v16m8-8H4"
+                        />
                       </svg>
                       <span>Attendence Live</span>
                     </button>
@@ -534,7 +555,11 @@ const DashboardLayout = () => {
                         stroke="currentColor"
                         className="inline-block size-4"
                       >
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M12 4v16m8-8H4"
+                        />
                       </svg>
                       <span>Attendence Reports</span>
                     </button>
@@ -689,7 +714,11 @@ const DashboardLayout = () => {
                         stroke="currentColor"
                         className="inline-block size-4"
                       >
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M15 19l-7-7 7-7"
+                        />
                       </svg>
                       <span>Finance</span>
                     </button>
@@ -706,7 +735,11 @@ const DashboardLayout = () => {
                         stroke="currentColor"
                         className="inline-block size-4"
                       >
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M12 4v16m8-8H4"
+                        />
                       </svg>
                       <span>Fees Collected</span>
                     </button>
@@ -723,7 +756,11 @@ const DashboardLayout = () => {
                         stroke="currentColor"
                         className="inline-block size-4"
                       >
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M12 4v16m8-8H4"
+                        />
                       </svg>
                       <span>Fees Dues</span>
                     </button>
@@ -740,7 +777,11 @@ const DashboardLayout = () => {
                         stroke="currentColor"
                         className="inline-block size-4"
                       >
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M12 4v16m8-8H4"
+                        />
                       </svg>
                       <span>Fees Report</span>
                     </button>
@@ -757,9 +798,7 @@ const DashboardLayout = () => {
                 onClick={() => setIsBatchMenuOpen(!isBatchMenuOpen)}
               >
                 <FaBookOpen />
-                <span className="is-drawer-close:hidden">
-                  Batch Management
-                </span>
+                <span className="is-drawer-close:hidden">Batch Management</span>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"
@@ -847,7 +886,11 @@ const DashboardLayout = () => {
                         stroke="currentColor"
                         className="inline-block size-4"
                       >
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M15 19l-7-7 7-7"
+                        />
                       </svg>
                       <span>Batches</span>
                     </button>
@@ -864,7 +907,11 @@ const DashboardLayout = () => {
                         stroke="currentColor"
                         className="inline-block size-4"
                       >
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M12 4v16m8-8H4"
+                        />
                       </svg>
                       <span>Create Batch</span>
                     </button>
@@ -995,7 +1042,11 @@ const DashboardLayout = () => {
                         stroke="currentColor"
                         className="inline-block size-4"
                       >
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M15 19l-7-7 7-7"
+                        />
                       </svg>
                       <span>Exams</span>
                     </button>
@@ -1012,7 +1063,11 @@ const DashboardLayout = () => {
                         stroke="currentColor"
                         className="inline-block size-4"
                       >
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M12 4v16m8-8H4"
+                        />
                       </svg>
                       <span>Exams Results</span>
                     </button>
@@ -1029,7 +1084,11 @@ const DashboardLayout = () => {
                         stroke="currentColor"
                         className="inline-block size-4"
                       >
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M12 4v16m8-8H4"
+                        />
                       </svg>
                       <span>Exams Analytics</span>
                     </button>
@@ -1037,7 +1096,6 @@ const DashboardLayout = () => {
                 </Link>
               </ul>
             )}
-
           </ul>
         </div>
       </div>
