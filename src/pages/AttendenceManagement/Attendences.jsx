@@ -189,10 +189,13 @@ const Attendences = () => {
     };
   }, [attendanceHistory]);
 
-  // Get batch name by ID
-  const getBatchName = (batchId) => {
+  // Get batch name and course by ID
+  const getBatchInfo = (batchId) => {
     const batch = batches.find((b) => b._id === batchId);
-    return batch?.name || "Unknown Batch";
+    if (batch) {
+      return `${batch.name} - ${batch.course}`;
+    }
+    return "Unknown Batch";
   };
 
   return (
@@ -390,7 +393,7 @@ const Attendences = () => {
                         </div>
                         <div>
                           <h3 className="font-semibold text-base-content">
-                            {getBatchName(record.batchId)}
+                            {getBatchInfo(record.batchId)}
                           </h3>
                           <p className="text-xs text-base-content/60">
                             {new Date(record.date).toLocaleDateString("en-US", {
