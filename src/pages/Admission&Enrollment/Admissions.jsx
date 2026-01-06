@@ -22,6 +22,8 @@ import {
   MdPersonAdd,
   MdCalendarToday,
   MdSchool,
+  MdExpandMore,
+  MdExpandLess,
 } from "react-icons/md";
 import {
   FaUserPlus,
@@ -39,6 +41,20 @@ const Admissions = () => {
   const [globalFilter, setGlobalFilter] = useState("");
   const [sorting, setSorting] = useState([]);
   const [statusFilter, setStatusFilter] = useState("all");
+  const [mobileExpandedRows, setMobileExpandedRows] = useState(new Set());
+
+  // Toggle mobile row expansion
+  const toggleMobileRowExpansion = (rowId) => {
+    setMobileExpandedRows((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(rowId)) {
+        newSet.delete(rowId);
+      } else {
+        newSet.add(rowId);
+      }
+      return newSet;
+    });
+  };
 
   const { data: admissions = [], isLoading } = useQuery({
     queryKey: ["admissions"],
@@ -47,6 +63,24 @@ const Admissions = () => {
       return res.data;
     },
   });
+
+  // Fetch batches for displaying batch names
+  const { data: batches = [] } = useQuery({
+    queryKey: ["batches"],
+    queryFn: async () => {
+      const res = await axiosSecure.get("/batches");
+      return res.data;
+    },
+  });
+
+  // Helper function to get batch info
+  const getBatchInfo = (batchId) => {
+    const batch = batches.find((b) => b._id === batchId);
+    if (batch) {
+      return `${batch.name} - ${batch.course}`;
+    }
+    return batchId || "N/A";
+  };
 
   // Filter admissions based on status
   const filteredAdmissions = useMemo(() => {
@@ -65,7 +99,7 @@ const Admissions = () => {
         accessorKey: "name",
         header: "Prospective Student",
         cell: ({ row }) => (
-          <div className="flex items-center gap-3 min-w-[200px]">
+          <div className="flex items-center gap-3 min-w-50">
             <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center shrink-0">
               <FaUserPlus className="text-primary text-sm" />
             </div>
@@ -102,7 +136,7 @@ const Admissions = () => {
           <div className="flex items-center gap-2">
             <MdSchool className="text-base-content/40" />
             <span className="badge badge-outline badge-primary font-medium">
-              {getValue() || "N/A"}
+              {getBatchInfo(getValue())}
             </span>
           </div>
         ),
@@ -204,7 +238,7 @@ const Admissions = () => {
         ),
       },
     ],
-    []
+    [getBatchInfo]
   );
 
   const table = useReactTable({
@@ -335,7 +369,7 @@ const Admissions = () => {
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="select select-bordered bg-base-200 focus:bg-base-100 min-w-[160px]"
+                className="select select-bordered bg-base-200 focus:bg-base-100 min-w-40"
               >
                 <option value="all">All Status</option>
                 <option value="inquiry">Inquiry</option>
@@ -389,7 +423,8 @@ const Admissions = () => {
 
         {/* Table Section */}
         <div className="bg-base-100 rounded-2xl shadow-sm border border-base-300 overflow-hidden">
-          <div className="overflow-x-auto">
+          {/* Desktop Table View */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="table">
               <thead className="bg-base-200">
                 {table.getHeaderGroups().map((headerGroup) => (
@@ -451,6 +486,180 @@ const Admissions = () => {
                 )}
               </tbody>
             </table>
+          </div>
+
+          {/* Mobile Accordion View */}
+          <div className="md:hidden">
+            {table.getRowModel().rows.length > 0 ? (
+              table.getRowModel().rows.map((row, index) => {
+                const admission = row.original;
+                const isExpanded = mobileExpandedRows.has(admission._id);
+                const status = admission.status?.toLowerCase();
+
+                return (
+                  <div
+                    key={admission._id}
+                    className="border-b border-base-300 last:border-b-0 animate-fadeIn"
+                    style={{ animationDelay: `${index * 0.05}s` }}
+                  >
+                    {/* Collapsed Row */}
+                    <div
+                      className="p-4 hover:bg-base-200 transition-colors cursor-pointer"
+                      onClick={() => toggleMobileRowExpansion(admission._id)}
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        {/* Left: Student Info */}
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                          <div className={`w-10 h-10 bg-linear-to-br ${
+                            status === "enrolled"
+                              ? "from-success to-primary"
+                              : status === "follow-up"
+                              ? "from-warning to-orange-500"
+                              : status === "inquiry"
+                              ? "from-info to-primary"
+                              : "from-error to-red-600"
+                          } rounded-xl flex items-center justify-center shadow-sm shrink-0`}>
+                            <FaUserPlus className="text-white text-lg" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-semibold text-base-content truncate">
+                              {admission.name}
+                            </h3>
+                            <div className="flex items-center gap-2 mt-1">
+                              <span
+                                className={`badge badge-sm ${
+                                  status === "inquiry"
+                                    ? "badge-info"
+                                    : status === "follow-up"
+                                    ? "badge-warning"
+                                    : status === "enrolled"
+                                    ? "badge-success"
+                                    : "badge-error"
+                                }`}
+                              >
+                                {status === "inquiry" ? (
+                                  <FaClock className="text-xs mr-1" />
+                                ) : status === "follow-up" ? (
+                                  <BiSolidPhoneCall className="text-xs mr-1" />
+                                ) : status === "enrolled" ? (
+                                  <FaUserCheck className="text-xs mr-1" />
+                                ) : (
+                                  <FaBan className="text-xs mr-1" />
+                                )}
+                                <span className="capitalize">{status || "Unknown"}</span>
+                              </span>
+                              {admission.followUps && admission.followUps.length > 0 && (
+                                <span className="text-xs text-base-content/60 flex items-center gap-1">
+                                  <FaCommentDots className="text-xs" />
+                                  {admission.followUps.length}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Right: Expand Icon */}
+                        <div className="shrink-0">
+                          {isExpanded ? (
+                            <MdExpandLess className="text-2xl text-base-content/60" />
+                          ) : (
+                            <MdExpandMore className="text-2xl text-base-content/60" />
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Expanded Row */}
+                    {isExpanded && (
+                      <div className="px-4 pb-4 bg-base-200/50 space-y-3">
+                        {/* Phone */}
+                        <div className="flex items-center gap-2 text-sm">
+                          <MdPhone className="text-primary shrink-0" />
+                          <span className="text-base-content/70">
+                            {admission.phone}
+                          </span>
+                        </div>
+
+                        {/* Email */}
+                        {admission.email && (
+                          <div className="flex items-center gap-2 text-sm">
+                            <MdEmail className="text-primary shrink-0" />
+                            <span className="text-base-content/70 truncate">
+                              {admission.email}
+                            </span>
+                          </div>
+                        )}
+
+                        {/* Interested Batch */}
+                        {admission.interestedBatchId && (
+                          <div className="flex items-center gap-2 text-sm">
+                            <MdSchool className="text-primary shrink-0" />
+                            <span className="text-base-content/70">
+                              {getBatchInfo(admission.interestedBatchId)}
+                            </span>
+                          </div>
+                        )}
+
+                        {/* Created Date */}
+                        {admission.createdAt && (
+                          <div className="flex items-center gap-2 text-sm">
+                            <MdCalendarToday className="text-primary shrink-0" />
+                            <span className="text-base-content/70">
+                              {new Date(admission.createdAt).toLocaleDateString(
+                                "en-US",
+                                {
+                                  month: "short",
+                                  day: "numeric",
+                                  year: "numeric",
+                                }
+                              )}
+                            </span>
+                          </div>
+                        )}
+
+                        {/* Action Buttons */}
+                        <div className="pt-3 flex items-center gap-2">
+                          <button
+                            className="btn btn-sm btn-info text-white flex-1"
+                            title="View Details"
+                          >
+                            <MdVisibility className="text-lg" />
+                            View
+                          </button>
+                          <button
+                            className="btn btn-sm btn-warning text-white flex-1"
+                            title="Add Follow-up"
+                          >
+                            <BiSolidPhoneCall className="text-lg" />
+                            Follow-up
+                          </button>
+                          <button
+                            className="btn btn-sm btn-error text-white"
+                            title="Delete"
+                          >
+                            <MdDelete className="text-lg" />
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })
+            ) : (
+              <div className="text-center py-12">
+                <div className="flex flex-col items-center gap-3">
+                  <FaUserPlus className="text-5xl text-base-content/20" />
+                  <div>
+                    <p className="text-lg font-semibold text-base-content/60">
+                      No admissions found
+                    </p>
+                    <p className="text-sm text-base-content/40">
+                      Try adjusting your filters or search query
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Pagination */}

@@ -11,6 +11,9 @@ import {
   FaFileInvoiceDollar,
   FaChartPie,
   FaClipboardCheck,
+  FaSignOutAlt,
+  FaUserCircle,
+  FaCog,
 } from "react-icons/fa";
 import { GrDocumentPerformance, GrOverview } from "react-icons/gr";
 import { HiUserGroup, HiDocumentReport } from "react-icons/hi";
@@ -29,15 +32,32 @@ import {
 } from "react-icons/md";
 import { RiSidebarUnfoldFill } from "react-icons/ri";
 import { BsFileEarmarkText, BsGraphUp } from "react-icons/bs";
-import { Link, Outlet, useLocation } from "react-router";
+import { Link, Outlet, useLocation, useNavigate } from "react-router";
 import Logo from "../components/Logo";
+import useAuth from "../hooks/useAuth";
 
 const DashboardLayout = () => {
   // Get current location for active route highlighting
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, logoutUser } = useAuth();
+
+  // Default profile image
+  const defaultProfileImage =
+    "https://static.vecteezy.com/system/resources/thumbnails/020/765/399/small/default-profile-account-unknown-icon-black-silhouette-free-vector.jpg";
 
   // Helper function to check if a route or its children are active
   const isRouteActive = (path) => location.pathname.startsWith(path);
+
+  // Handle logout
+  const handleLogout = async () => {
+    try {
+      await logoutUser();
+      navigate("/login");
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
+  };
 
   // Consolidated menu state with auto-close functionality
   const [isStudentMenuOpen, setIsStudentMenuOpen] = useState(false);
@@ -132,19 +152,24 @@ const DashboardLayout = () => {
       <input id="my-drawer-4" type="checkbox" className="drawer-toggle" />
       <div className="drawer-content">
         {/* Enhanced Navbar - Sticky with Glassmorphism */}
-        <nav className="navbar w-full bg-base-100/95 backdrop-blur-md sticky top-0 z-40 shadow-sm border-b border-base-300">
-          <label
-            htmlFor="my-drawer-4"
-            aria-label="open sidebar"
-            className="btn btn-square btn-ghost mr-4 hover:bg-primary/10 hover:text-primary transition-all duration-200 active:scale-95"
-          >
-            {/* Sidebar toggle icon */}
-            <RiSidebarUnfoldFill className="text-2xl" />
-          </label>
-          <Logo></Logo>
+        <nav className="navbar w-full bg-base-100/95 backdrop-blur-md sticky top-0 z-40 shadow-sm border-b border-base-300 px-2 sm:px-4 min-h-16">
+          <div className="flex-none">
+            <label
+              htmlFor="my-drawer-4"
+              aria-label="open sidebar"
+              className="btn btn-square btn-ghost hover:bg-primary/10 hover:text-primary transition-all duration-200 active:scale-95"
+            >
+              <RiSidebarUnfoldFill className="text-xl sm:text-2xl" />
+            </label>
+          </div>
 
-          {/* Theme Toggle Button with Rotation Animation */}
-          <div className="ml-auto">
+          {/* Logo - Hidden on small screens */}
+          <div className="flex-none hidden sm:block">
+            <Logo />
+          </div>
+
+          {/* Theme Toggle Button - Center on mobile, middle on desktop */}
+          <div className="flex-1 flex justify-center sm:justify-center">
             <button
               onClick={toggleTheme}
               className="btn btn-circle btn-ghost hover:bg-primary/10 hover:text-primary hover:rotate-180 transition-all duration-500 active:scale-95"
@@ -153,11 +178,98 @@ const DashboardLayout = () => {
               } mode`}
             >
               {theme === "rootxlight" ? (
-                <MdDarkMode className="text-2xl" />
+                <MdDarkMode className="text-xl sm:text-2xl" />
               ) : (
-                <MdLightMode className="text-2xl" />
+                <MdLightMode className="text-xl sm:text-2xl" />
               )}
             </button>
+          </div>
+
+          {/* User Profile Section */}
+          <div className="flex-none">
+            <div className="dropdown dropdown-end">
+              <div
+                tabIndex={0}
+                role="button"
+                className="btn btn-ghost btn-circle avatar hover:bg-primary/10 transition-all duration-200"
+              >
+                <div className="w-8 sm:w-10 rounded-full ring-2 ring-primary/20 hover:ring-primary/50 transition-all duration-300">
+                  <img
+                    alt="User profile"
+                    src={user?.photoURL || defaultProfileImage}
+                    onError={(e) => {
+                      e.target.src = defaultProfileImage;
+                    }}
+                  />
+                </div>
+              </div>
+              <ul
+                tabIndex={0}
+                className="menu menu-sm dropdown-content bg-base-100 rounded-box z-50 mt-3 w-64 sm:w-72 p-3 shadow-xl border border-base-300"
+              >
+                {/* User Info Header */}
+                <li className="menu-title px-3 py-2">
+                  <div className="flex items-center gap-3 py-2">
+                    <div className="avatar">
+                      <div className="w-12 sm:w-14 rounded-full ring-2 ring-primary/30">
+                        <img
+                          src={user?.photoURL || defaultProfileImage}
+                          alt="Profile"
+                          onError={(e) => {
+                            e.target.src = defaultProfileImage;
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <div className="flex flex-col min-w-0">
+                      <span className="font-semibold text-base-content text-sm sm:text-base truncate">
+                        {user?.displayName || "User"}
+                      </span>
+                      <span className="text-xs text-base-content/60 truncate">
+                        {user?.email || "user@example.com"}
+                      </span>
+                    </div>
+                  </div>
+                </li>
+
+                <div className="divider my-1"></div>
+
+                {/* Profile Link */}
+                <li>
+                  <Link
+                    to="/dashboard/profile"
+                    className="flex items-center gap-3 px-3 py-2 hover:bg-primary/10 hover:text-primary transition-all duration-200 rounded-lg"
+                  >
+                    <FaUserCircle className="text-lg" />
+                    <span className="text-sm">My Profile</span>
+                  </Link>
+                </li>
+
+                {/* Settings Link */}
+                <li>
+                  <Link
+                    to="/dashboard/settings"
+                    className="flex items-center gap-3 px-3 py-2 hover:bg-primary/10 hover:text-primary transition-all duration-200 rounded-lg"
+                  >
+                    <FaCog className="text-lg" />
+                    <span className="text-sm">Settings</span>
+                  </Link>
+                </li>
+
+                <div className="divider my-1"></div>
+
+                {/* Logout Button */}
+                <li>
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center gap-3 px-3 py-2 hover:bg-error/10 hover:text-error transition-all duration-200 rounded-lg font-medium"
+                  >
+                    <FaSignOutAlt className="text-lg" />
+                    <span className="text-sm">Logout</span>
+                  </button>
+                </li>
+              </ul>
+            </div>
           </div>
         </nav>
 
@@ -173,20 +285,20 @@ const DashboardLayout = () => {
               <div className="text-sm text-base-content/70">
                 © {new Date().getFullYear()}{" "}
                 <span className="font-semibold text-primary">
-                  Roots Software
+                  Rootx Software
                 </span>
                 . All rights reserved.
               </div>
               <div className="flex gap-6 text-sm">
                 <a
-                  href="https://rootssoftware.com"
+                  href="https://www.rootxsoftwares.com/"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-base-content/70 hover:text-primary transition-colors duration-200"
                 >
                   Website
                 </a>
-                <a
+                {/* <a
                   href="https://rootssoftware.com/support"
                   target="_blank"
                   rel="noopener noreferrer"
@@ -201,7 +313,7 @@ const DashboardLayout = () => {
                   className="text-base-content/70 hover:text-primary transition-colors duration-200"
                 >
                   Privacy
-                </a>
+                </a> */}
               </div>
             </div>
           </div>
@@ -672,6 +784,17 @@ const DashboardLayout = () => {
                       </button>
                     </li>
                   </Link>
+                  <Link to="/dashboard/financeManagement/newFeeEntry">
+                    <li>
+                      <button
+                        onClick={handleCloseFinanceModal}
+                        className="flex items-center gap-3 w-full transition-all duration-200 px-4 py-3 hover:bg-primary/10 hover:text-primary hover:translate-x-1"
+                      >
+                        <MdPersonAdd className="inline-block size-4 mr-2" />
+                        <span>New Fee Entry</span>
+                      </button>
+                    </li>
+                  </Link>
                   <Link to="/dashboard/financeManagement/financesCollected">
                     <li>
                       <button
@@ -717,6 +840,14 @@ const DashboardLayout = () => {
                     <button className="pl-10 flex items-center gap-3 rounded-lg transition-all duration-200 hover:bg-primary/10 hover:text-primary hover:translate-x-1">
                       <FaMoneyBillWave className="inline-block size-4" />
                       <span className="text-sm">Finance</span>
+                    </button>
+                  </li>
+                </Link>
+                <Link to="/dashboard/financeManagement/newFeeEntry">
+                  <li>
+                    <button className="pl-10 flex items-center gap-3 rounded-lg transition-all duration-200 hover:bg-primary/10 hover:text-primary hover:translate-x-1">
+                      <MdPersonAdd className="inline-block size-4" />
+                      <span className="text-sm">New Fee Entry</span>
                     </button>
                   </li>
                 </Link>

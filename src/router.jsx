@@ -1,4 +1,4 @@
-import { createBrowserRouter } from "react-router";
+import { createBrowserRouter, Navigate } from "react-router";
 import DashboardLayout from "./layouts/DashboardLayout";
 import Overview from "./pages/Overview";
 import Students from "./pages/StudentManagement/Students";
@@ -14,121 +14,155 @@ import Finances from "./pages/Fee&FinanceManagement/Finances";
 import FeesCollected from "./pages/Fee&FinanceManagement/FeesCollected";
 import FeesDues from "./pages/Fee&FinanceManagement/FeesDues";
 import FeesReport from "./pages/Fee&FinanceManagement/FeesReport";
+import NewFeeEntry from "./pages/Fee&FinanceManagement/NewFeeEntry";
 import Batches from "./pages/Batch&ClassManagement/Batches";
 import CreateBatches from "./pages/Batch&ClassManagement/CreateBatches";
 import Exams from "./pages/Performance&AssessmentTracking/Exams";
 import ExamsResults from "./pages/Performance&AssessmentTracking/ExamsResults";
 import ExamsAnalytics from "./pages/Performance&AssessmentTracking/ExamsAnalytics";
+import AuthLayout from "./layouts/AuthLayout";
+import Login from "./pages/Auth/Login";
+import Register from "./pages/Auth/Register";
 
 const router = createBrowserRouter([
+  // Root path redirects to login
   {
     path: "/",
-    Component: DashboardLayout,
-    errorElement: <ErrorPage></ErrorPage>, 
+    element: <Navigate to="/login" replace />,
+  },
+  // Auth routes (Login & Register)
+  {
+    path: "/",
+    Component: AuthLayout,
+    errorElement: <ErrorPage></ErrorPage>,
     children: [
       {
-        path: "/dashboard/overview", 
-        Component: Overview
-      }, 
-      {
-        path: "/dashboard/studentManagement",
-        children: [
-          {
-            path: "/dashboard/studentManagement/students", 
-            Component: Students
-          },
-          {
-            path: "/dashboard/studentManagement/addStudents", 
-            Component: AddStudent
-          }
-        ]
-      }, 
-      {
-        path: "/dashboard/admissionManagement", 
-        children: [
-          {
-            path: "/dashboard/admissionManagement/admissions", 
-            Component: Admissions
-          },
-          {
-            path: "/dashboard/admissionManagement/newAdmission", 
-            Component: NewAdmissions
-          },
-          {
-            path: "/dashboard/admissionManagement/admissionFollowUps", 
-            Component: AdmissionFollowUps
-          },
-        ]
+        path: "login",
+        Component: Login,
       },
       {
-        path: "/dashboard/attendenceManagement", 
-        children: [
-          {
-            path: "/dashboard/attendenceManagement/attendence", 
-            Component: Attendences
-          },
-          {
-            path: "/dashboard/attendenceManagement/attendenceLive", 
-            Component: AttendenceLive
-          },
-          {
-            path: "/dashboard/attendenceManagement/attendenceReports", 
-            Component: AttendenceReports
-          },
-        ]
+        path: "register",
+        Component: Register,
+      },
+    ],
+  },
+  // Dashboard routes (Protected)
+  {
+    path: "/dashboard",
+    Component: DashboardLayout,
+    errorElement: <ErrorPage></ErrorPage>,
+    children: [
+      {
+        index: true,
+        element: <Navigate to="/dashboard/overview" replace />,
       },
       {
-        path: "/dashboard/financeManagement", 
-        children: [
-          {
-            path: "/dashboard/financeManagement/finances", 
-            Component: Finances
-          },
-          {
-            path: "/dashboard/financeManagement/financesCollected", 
-            Component: FeesCollected
-          },
-          {
-            path: "/dashboard/financeManagement/financesDues", 
-            Component: FeesDues
-          },
-          {
-            path: "/dashboard/financeManagement/financesReports", 
-            Component: FeesReport
-          },
-        ]
+        path: "overview",
+        Component: Overview,
       },
       {
-        path: "/dashboard/batchManagement", 
+        path: "studentManagement",
         children: [
           {
-            path: "/dashboard/batchManagement/batches", 
-            Component: Batches
+            path: "students",
+            Component: Students,
           },
           {
-            path: "/dashboard/batchManagement/createBatches", 
-            Component: CreateBatches
+            path: "addStudents",
+            Component: AddStudent,
           },
-        ]
+        ],
       },
       {
-        path: "/dashboard/performanceManagement", 
+        path: "admissionManagement",
         children: [
           {
-            path: "/dashboard/performanceManagement/exams", 
-            Component: Exams
+            path: "admissions",
+            Component: Admissions,
           },
           {
-            path: "/dashboard/performanceManagement/examsResults", 
-            Component: ExamsResults
+            path: "newAdmission",
+            Component: NewAdmissions,
           },
           {
-            path: "/dashboard/performanceManagement/examsAnalytics", 
-            Component: ExamsAnalytics
+            path: "admissionFollowUps",
+            Component: AdmissionFollowUps,
           },
-        ]
+        ],
       },
-    ]
+      {
+        path: "attendenceManagement",
+        children: [
+          {
+            path: "attendence",
+            Component: Attendences,
+          },
+          {
+            path: "attendenceLive",
+            Component: AttendenceLive,
+          },
+          {
+            path: "attendenceReports",
+            Component: AttendenceReports,
+          },
+        ],
+      },
+      {
+        path: "financeManagement",
+        children: [
+          {
+            path: "finances",
+            Component: Finances,
+          },
+          {
+            path: "newFeeEntry",
+            Component: NewFeeEntry,
+          },
+          {
+            path: "financesCollected",
+            Component: FeesCollected,
+          },
+          {
+            path: "financesDues",
+            Component: FeesDues,
+          },
+          {
+            path: "financesReports",
+            Component: FeesReport,
+          },
+        ],
+      },
+      {
+        path: "batchManagement",
+        children: [
+          {
+            path: "batches",
+            Component: Batches,
+          },
+          {
+            path: "createBatches",
+            Component: CreateBatches,
+          },
+        ],
+      },
+      {
+        path: "performanceManagement",
+        children: [
+          {
+            path: "exams",
+            Component: Exams,
+          },
+          {
+            path: "examsResults",
+            Component: ExamsResults,
+          },
+          {
+            path: "examsAnalytics",
+            Component: ExamsAnalytics,
+          },
+        ],
+      },
+    ],
   },
 ]);
 

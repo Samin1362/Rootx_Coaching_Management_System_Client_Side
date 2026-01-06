@@ -2,7 +2,7 @@ import axios from 'axios';
 import React from 'react';
 
 const axiosSecure = axios.create({
-  baseURL: "http://localhost:3001"
+  baseURL: "https://rootx-coaching-management-server-si.vercel.app"
 })
 
 const useAxiosSecure = () => {

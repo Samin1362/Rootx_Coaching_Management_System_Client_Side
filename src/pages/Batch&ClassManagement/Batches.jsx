@@ -20,6 +20,8 @@ import {
   MdCalendarToday,
   MdPeople,
   MdAttachMoney,
+  MdExpandMore,
+  MdExpandLess,
 } from "react-icons/md";
 import { FaCheckCircle, FaClock } from "react-icons/fa";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
@@ -28,6 +30,20 @@ const Batches = () => {
   const axiosSecure = useAxiosSecure();
   const [globalFilter, setGlobalFilter] = useState("");
   const [sorting, setSorting] = useState([]);
+  const [expandedRows, setExpandedRows] = useState(new Set());
+
+  // Toggle row expansion for mobile
+  const toggleRowExpansion = (rowId) => {
+    setExpandedRows((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(rowId)) {
+        newSet.delete(rowId);
+      } else {
+        newSet.add(rowId);
+      }
+      return newSet;
+    });
+  };
 
   const { data: batches = [], isLoading } = useQuery({
     queryKey: ["batches"],
@@ -257,7 +273,8 @@ const Batches = () => {
 
         {/* Table Card */}
         <div className="bg-base-100 rounded-2xl shadow-xl border border-base-300/50 overflow-hidden">
-          <div className="overflow-x-auto">
+          {/* Desktop Table View */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="table w-full">
               <thead className="bg-base-200/80">
                 {table.getHeaderGroups().map((headerGroup) => (
@@ -318,6 +335,136 @@ const Batches = () => {
                 )}
               </tbody>
             </table>
+          </div>
+
+          {/* Mobile Accordion View */}
+          <div className="md:hidden">
+            {table.getRowModel().rows.length === 0 ? (
+              <div className="text-center py-12 text-base-content/60">
+                No batches found
+              </div>
+            ) : (
+              table.getRowModel().rows.map((row, index) => {
+                const batch = row.original;
+                const isExpanded = expandedRows.has(row.id);
+
+                return (
+                  <div
+                    key={row.id}
+                    className="border-b border-base-300 last:border-b-0 animate-fadeIn"
+                    style={{ animationDelay: `${index * 50}ms` }}
+                  >
+                    {/* Collapsed Row */}
+                    <div
+                      className="p-4 hover:bg-base-200 transition-colors cursor-pointer"
+                      onClick={() => toggleRowExpansion(row.id)}
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        {/* Left: Batch Info */}
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                          <div className="w-10 h-10 bg-linear-to-br from-primary to-secondary rounded-xl flex items-center justify-center shadow-sm shrink-0">
+                            <MdSchool className="text-white text-lg" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-semibold text-base-content truncate">
+                              {batch.name}
+                            </h3>
+                            <div className="flex items-center gap-2 mt-1">
+                              <span
+                                className={`badge badge-sm ${
+                                  batch.status?.toLowerCase() === "active"
+                                    ? "badge-success"
+                                    : "badge-warning"
+                                }`}
+                              >
+                                {batch.status || "Active"}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Right: Expand Icon */}
+                        <div className="shrink-0">
+                          {isExpanded ? (
+                            <MdExpandLess className="text-2xl text-base-content/60" />
+                          ) : (
+                            <MdExpandMore className="text-2xl text-base-content/60" />
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Expanded Row */}
+                    {isExpanded && (
+                      <div className="px-4 pb-4 bg-base-200/50 space-y-3">
+                        {/* Course */}
+                        {batch.course && (
+                          <div className="flex items-center gap-2 text-sm">
+                            <MdSchool className="text-primary shrink-0" />
+                            <span className="text-base-content/70">
+                              {batch.course}
+                            </span>
+                          </div>
+                        )}
+
+                        {/* Schedule */}
+                        {batch.schedule && (
+                          <div className="flex items-center gap-2 text-sm">
+                            <MdCalendarToday className="text-primary shrink-0" />
+                            <span className="text-base-content/70">
+                              {batch.schedule}
+                            </span>
+                          </div>
+                        )}
+
+                        {/* Total Students */}
+                        {batch.totalStudents !== undefined && (
+                          <div className="flex items-center gap-2 text-sm">
+                            <MdPeople className="text-primary shrink-0" />
+                            <span className="text-base-content/70">
+                              {batch.totalStudents} Students
+                            </span>
+                          </div>
+                        )}
+
+                        {/* Total Fee */}
+                        {batch.totalFee && (
+                          <div className="flex items-center gap-2 text-sm">
+                            <MdAttachMoney className="text-primary shrink-0" />
+                            <span className="text-base-content/70">
+                              ${batch.totalFee}
+                            </span>
+                          </div>
+                        )}
+
+                        {/* Start Date */}
+                        {batch.startDate && (
+                          <div className="flex items-center gap-2 text-sm">
+                            <FaClock className="text-primary shrink-0" />
+                            <span className="text-base-content/70">
+                              Started:{" "}
+                              {new Date(batch.startDate).toLocaleDateString()}
+                            </span>
+                          </div>
+                        )}
+
+                        {/* Action Buttons */}
+                        <div className="flex gap-2 pt-2">
+                          <button className="btn btn-sm btn-primary gap-2 flex-1">
+                            <MdEdit />
+                            Edit
+                          </button>
+                          <button className="btn btn-sm btn-outline gap-2 flex-1">
+                            <MdVisibility />
+                            View
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })
+            )}
           </div>
 
           {/* Pagination */}

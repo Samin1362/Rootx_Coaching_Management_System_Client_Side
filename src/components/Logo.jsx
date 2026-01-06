@@ -139,7 +139,7 @@ const Logo = () => {
             group-hover:tracking-widest
           "
         >
-          Coaching Management
+          Coaching Management System
         </span>
 
         {/* Animated Underline */}

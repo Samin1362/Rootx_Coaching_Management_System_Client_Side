@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
+import { useQuery } from "@tanstack/react-query";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import {
@@ -17,6 +18,7 @@ import {
   FaCheckCircle,
   FaMale,
   FaFemale,
+  FaUsers,
 } from "react-icons/fa";
 import { BsGenderMale, BsGenderFemale } from "react-icons/bs";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
@@ -35,6 +37,15 @@ const AddStudent = () => {
     formState: { errors },
     reset,
   } = useForm();
+
+  /* Fetch batches */
+  const { data: batches = [], isLoading: isLoadingBatches } = useQuery({
+    queryKey: ["batches"],
+    queryFn: async () => {
+      const res = await axiosSecure.get("/batches");
+      return res.data;
+    },
+  });
 
   useEffect(() => {
     const script = document.createElement("script");
@@ -223,15 +234,27 @@ const AddStudent = () => {
                     {...register("previousInstitute")}
                   />
 
-                  <Input
-                    label="Batch ID"
-                    placeholder="e.g., BATCH-2025-01"
+                  <SelectInput
+                    label="Batch"
                     required
-                    icon={<MdSchool />}
+                    icon={<FaUsers />}
                     error={errors.batchId}
                     {...register("batchId", {
-                      required: "Batch ID is required",
+                      required: "Please select a batch",
                     })}
+                    options={[
+                      {
+                        value: "",
+                        label: isLoadingBatches
+                          ? "Loading batches..."
+                          : "Select a batch",
+                      },
+                      ...batches.map((batch) => ({
+                        value: batch._id,
+                        label: `${batch.name} — ${batch.course} (${batch.schedule})`,
+                      })),
+                    ]}
+                    disabled={isLoadingBatches}
                   />
 
                   <DateInput
@@ -379,7 +402,15 @@ const Input = ({ label, error, required, icon, ...rest }) => (
 );
 
 /* Select Input Component */
-const SelectInput = ({ label, error, required, icon, options, ...rest }) => (
+const SelectInput = ({
+  label,
+  error,
+  required,
+  icon,
+  options,
+  disabled,
+  ...rest
+}) => (
   <div className="group">
     <label className="block text-sm font-semibold text-base-content mb-2">
       {label}
@@ -393,16 +424,17 @@ const SelectInput = ({ label, error, required, icon, options, ...rest }) => (
       )}
       <select
         {...rest}
+        disabled={disabled}
         className={`w-full border rounded-xl ${
           icon ? "pl-10 pr-10" : "px-4 pr-10"
         } py-3 bg-base-100 text-base-content transition-all duration-200 focus:outline-none focus:ring-2 ${
           error
             ? "border-error focus:border-error focus:ring-error/20"
             : "border-base-300 focus:border-primary focus:ring-primary/20 hover:border-base-content/30"
-        } appearance-none cursor-pointer`}
+        } appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed`}
       >
-        {options?.map((option) => (
-          <option key={option.value} value={option.value}>
+        {options?.map((option, index) => (
+          <option key={index} value={option.value}>
             {option.label}
           </option>
         ))}
