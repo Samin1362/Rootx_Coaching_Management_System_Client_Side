@@ -12,6 +12,7 @@ import {
 import { FaMoneyBillWave, FaUsers, FaCheckCircle } from "react-icons/fa";
 import { useState, useMemo, useEffect, useRef } from "react";
 import { useNotification } from "../../contexts/NotificationContext";
+import Loader from "../../components/Loader";
 
 const NewFeeEntry = () => {
   const axiosSecure = useAxiosSecure();
@@ -264,11 +265,8 @@ const NewFeeEntry = () => {
                       !selectedStudent && (
                         <div className="absolute z-50 w-full mt-1 bg-base-100 border border-base-300 rounded-xl shadow-xl max-h-60 overflow-y-auto">
                           {isLoadingStudents ? (
-                            <div className="p-4 text-center text-base-content/60">
-                              <div className="loading loading-spinner loading-sm"></div>
-                              <p className="text-xs mt-2">
-                                Loading students...
-                              </p>
+                            <div className="p-4">
+                              <Loader size="sm" fullScreen={false} message="Loading students..." />
                             </div>
                           ) : filteredStudents.length > 0 ? (
                             <ul>

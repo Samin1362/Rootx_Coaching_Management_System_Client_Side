@@ -41,6 +41,7 @@ import {
 } from "react-icons/md";
 import { BiSolidDashboard } from "react-icons/bi";
 import useAxiosSecure from "../hooks/useAxiosSecure";
+import Loader from "../components/Loader";
 
 // Custom tooltip component
 const CustomTooltip = ({ active, payload, label }) => {
@@ -376,14 +377,7 @@ const Overview = () => {
     resultsLoading;
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="flex flex-col items-center gap-4">
-          <span className="loading loading-spinner loading-lg text-primary"></span>
-          <p className="text-base-content/60 text-lg">Loading dashboard...</p>
-        </div>
-      </div>
-    );
+    return <Loader message="Loading dashboard data..." />;
   }
 
   const COLORS = ["#8b5cf6", "#ec4899", "#f59e0b", "#10b981", "#3b82f6"];

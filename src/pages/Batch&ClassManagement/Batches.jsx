@@ -25,6 +25,7 @@ import {
 } from "react-icons/md";
 import { FaCheckCircle, FaClock } from "react-icons/fa";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
+import Loader from "../../components/Loader";
 
 const Batches = () => {
   const axiosSecure = useAxiosSecure();
@@ -205,14 +206,7 @@ const Batches = () => {
   });
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-base-content/60">Loading batches...</p>
-        </div>
-      </div>
-    );
+    return <Loader message="Loading batches..." />;
   }
 
   return (

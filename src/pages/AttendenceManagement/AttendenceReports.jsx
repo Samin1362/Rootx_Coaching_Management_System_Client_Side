@@ -18,6 +18,7 @@ import {
 } from "react-icons/fa";
 import { BiSolidUserCheck, BiSolidUserX } from "react-icons/bi";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
+import Loader from "../../components/Loader";
 
 const AttendenceReports = () => {
   const axiosSecure = useAxiosSecure();
@@ -109,14 +110,7 @@ const AttendenceReports = () => {
   }, [attendanceRecords]);
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="flex flex-col items-center gap-4">
-          <span className="loading loading-spinner loading-lg text-primary"></span>
-          <p className="text-base-content/60">Loading attendance reports...</p>
-        </div>
-      </div>
-    );
+    return <Loader message="Loading attendance reports..." />;
   }
 
   return (

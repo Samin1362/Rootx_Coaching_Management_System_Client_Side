@@ -43,6 +43,7 @@ import {
 import { BsGenderMale, BsGenderFemale } from "react-icons/bs";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
 import { useNotification } from "../../contexts/NotificationContext";
+import Loader from "../../components/Loader";
 
 const Students = () => {
   const axiosSecure = useAxiosSecure();
@@ -475,14 +476,7 @@ const Students = () => {
   });
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="flex flex-col items-center gap-4">
-          <span className="loading loading-spinner loading-lg text-primary"></span>
-          <p className="text-base-content/60">Loading students...</p>
-        </div>
-      </div>
-    );
+    return <Loader message="Loading students..." />;
   }
 
   return (

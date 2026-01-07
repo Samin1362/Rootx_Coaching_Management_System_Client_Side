@@ -22,6 +22,7 @@ import {
 import { BiSolidMedal } from "react-icons/bi";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
 import { useNotification } from "../../contexts/NotificationContext";
+import Loader from "../../components/Loader";
 
 const ExamsResults = () => {
   const axiosSecure = useAxiosSecure();
@@ -282,14 +283,7 @@ const ExamsResults = () => {
   };
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="flex flex-col items-center gap-4">
-          <span className="loading loading-spinner loading-lg text-primary"></span>
-          <p className="text-base-content/60">Loading results...</p>
-        </div>
-      </div>
-    );
+    return <Loader message="Loading results..." />;
   }
 
   return (
@@ -458,11 +452,8 @@ const ExamsResults = () => {
           {selectedBatchId && selectedExamId && (
             <>
               {studentsLoading ? (
-                <div className="text-center py-8">
-                  <span className="loading loading-spinner loading-lg text-primary"></span>
-                  <p className="text-base-content/60 mt-2">
-                    Loading students...
-                  </p>
+                <div className="py-8">
+                  <Loader size="sm" fullScreen={false} message="Loading students..." />
                 </div>
               ) : batchStudents.length === 0 ? (
                 <div className="text-center py-8">

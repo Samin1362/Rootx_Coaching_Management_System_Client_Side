@@ -21,6 +21,7 @@ import {
 import { BiSolidBookBookmark } from "react-icons/bi";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
 import { useNotification } from "../../contexts/NotificationContext";
+import Loader from "../../components/Loader";
 
 const Exams = () => {
   const axiosSecure = useAxiosSecure();
@@ -194,14 +195,7 @@ const Exams = () => {
   };
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="flex flex-col items-center gap-4">
-          <span className="loading loading-spinner loading-lg text-primary"></span>
-          <p className="text-base-content/60">Loading exams...</p>
-        </div>
-      </div>
-    );
+    return <Loader message="Loading exams..." />;
   }
 
   return (

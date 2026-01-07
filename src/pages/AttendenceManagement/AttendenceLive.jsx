@@ -21,6 +21,7 @@ import {
 import { BiSolidCalendarCheck } from "react-icons/bi";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
 import { useNotification } from "../../contexts/NotificationContext";
+import Loader from "../../components/Loader";
 
 const AttendenceLive = () => {
   const axiosSecure = useAxiosSecure();
@@ -150,14 +151,7 @@ const AttendenceLive = () => {
   };
 
   if (batchesLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="flex flex-col items-center gap-4">
-          <span className="loading loading-spinner loading-lg text-primary"></span>
-          <p className="text-base-content/60">Loading batches...</p>
-        </div>
-      </div>
-    );
+    return <Loader message="Loading batches..." />;
   }
 
   return (
@@ -290,11 +284,8 @@ const AttendenceLive = () => {
       {selectedBatchId && (
         <div className="bg-base-100 rounded-2xl shadow-sm border border-base-300 overflow-hidden">
           {studentsLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="flex flex-col items-center gap-4">
-                <span className="loading loading-spinner loading-lg text-primary"></span>
-                <p className="text-base-content/60">Loading students...</p>
-              </div>
+            <div className="py-12">
+              <Loader size="sm" fullScreen={false} message="Loading students..." />
             </div>
           ) : students.length === 0 ? (
             <div className="text-center py-12">

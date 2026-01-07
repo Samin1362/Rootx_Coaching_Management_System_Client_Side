@@ -16,6 +16,7 @@ import {
 import { BiSolidUserCheck, BiSolidUserX } from "react-icons/bi";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
 import { useNotification } from "../../contexts/NotificationContext";
+import Loader from "../../components/Loader";
 
 const Attendences = () => {
   const axiosSecure = useAxiosSecure();
@@ -359,9 +360,8 @@ const Attendences = () => {
 
         {/* Attendance Records */}
         {isLoadingHistory ? (
-          <div className="text-center py-8">
-            <span className="loading loading-spinner loading-lg text-primary"></span>
-            <p className="text-base-content/60 mt-2">Loading records...</p>
+          <div className="py-8">
+            <Loader size="sm" fullScreen={false} message="Loading records..." />
           </div>
         ) : attendanceHistory.length === 0 ? (
           <div className="text-center py-8 text-base-content/60">
@@ -504,9 +504,8 @@ const Attendences = () => {
 
             {/* Student List */}
             {isLoadingStudents ? (
-              <div className="text-center py-8">
-                <span className="loading loading-spinner loading-lg text-primary"></span>
-                <p className="text-base-content/60 mt-2">Loading students...</p>
+              <div className="py-8">
+                <Loader size="sm" fullScreen={false} message="Loading students..." />
               </div>
             ) : students.length === 0 ? (
               <div className="text-center py-8 text-base-content/60">

@@ -24,6 +24,7 @@ import {
 import { BiSolidBank } from "react-icons/bi";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
 import * as XLSX from "xlsx";
+import Loader from "../../components/Loader";
 
 const FeesReport = () => {
   const axiosSecure = useAxiosSecure();
@@ -300,14 +301,7 @@ const FeesReport = () => {
   };
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="flex flex-col items-center gap-4">
-          <span className="loading loading-spinner loading-lg text-primary"></span>
-          <p className="text-base-content/60">Loading fee report...</p>
-        </div>
-      </div>
-    );
+    return <Loader message="Loading fee report..." />;
   }
 
   return (

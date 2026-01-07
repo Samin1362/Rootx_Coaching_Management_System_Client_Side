@@ -32,6 +32,7 @@ import {
 } from "react-icons/fa";
 import { BiSolidBank } from "react-icons/bi";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
+import Loader from "../../components/Loader";
 
 const Finances = () => {
   const axiosSecure = useAxiosSecure();
@@ -301,14 +302,7 @@ const Finances = () => {
   });
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="flex flex-col items-center gap-4">
-          <span className="loading loading-spinner loading-lg text-primary"></span>
-          <p className="text-base-content/60">Loading fee records...</p>
-        </div>
-      </div>
-    );
+    return <Loader message="Loading fee records..." />;
   }
 
   return (
