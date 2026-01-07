@@ -25,10 +25,12 @@ import {
 } from "react-icons/fa";
 import { BiSolidPhoneCall } from "react-icons/bi";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
+import { useNotification } from "../../contexts/NotificationContext";
 
 const AdmissionFollowUps = () => {
   const axiosSecure = useAxiosSecure();
   const queryClient = useQueryClient();
+  const notification = useNotification();
 
   const [activeId, setActiveId] = useState(null);
   const [followUpDate, setFollowUpDate] = useState(null);
@@ -66,10 +68,10 @@ const AdmissionFollowUps = () => {
       setActiveId(null);
       setFollowUpDate(null);
       reset();
-      alert("Follow-up added successfully!");
+      notification.success("Follow-up added successfully!");
     },
     onError: () => {
-      alert("Failed to add follow-up. Please try again.");
+      notification.error("Failed to add follow-up. Please try again.", "Error");
     },
   });
 

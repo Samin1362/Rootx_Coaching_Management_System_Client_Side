@@ -42,10 +42,12 @@ import {
 } from "react-icons/fa";
 import { BsGenderMale, BsGenderFemale } from "react-icons/bs";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
+import { useNotification } from "../../contexts/NotificationContext";
 
 const Students = () => {
   const axiosSecure = useAxiosSecure();
   const queryClient = useQueryClient();
+  const notification = useNotification();
   const [globalFilter, setGlobalFilter] = useState("");
   const [sorting, setSorting] = useState([]);
   const [statusFilter, setStatusFilter] = useState("all");
@@ -122,9 +124,10 @@ const Students = () => {
       setStudentToDelete(null);
     },
     onError: (error) => {
-      alert(
+      notification.error(
         error.response?.data?.message ||
-          "Failed to delete student. Please try again."
+          "Failed to delete student. Please try again.",
+        "Delete Failed"
       );
     },
   });
@@ -137,13 +140,14 @@ const Students = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries(["students"]);
-      alert("Student updated successfully!");
+      notification.success("Student updated successfully!");
       handleCloseEditModal();
     },
     onError: (error) => {
-      alert(
+      notification.error(
         error.response?.data?.message ||
-          "Failed to update student. Please try again."
+          "Failed to update student. Please try again.",
+        "Update Failed"
       );
     },
   });
@@ -448,6 +452,8 @@ const Students = () => {
     [handleDeleteClick, handleEditClick, getBatchInfo]
   );
 
+  // TanStack Table returns functions that cannot be safely memoized
+  // This is expected behavior and does not affect functionality
   const table = useReactTable({
     data: filteredStudents,
     columns,
@@ -533,7 +539,7 @@ const Students = () => {
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="select select-bordered bg-base-200 focus:bg-base-100 min-w-[140px]"
+                className="select select-bordered bg-base-200 focus:bg-base-100 min-w-35"
               >
                 <option value="all">All Status</option>
                 <option value="Active">Active</option>
@@ -548,7 +554,7 @@ const Students = () => {
               <select
                 value={genderFilter}
                 onChange={(e) => setGenderFilter(e.target.value)}
-                className="select select-bordered bg-base-200 focus:bg-base-100 min-w-[140px]"
+                className="select select-bordered bg-base-200 focus:bg-base-100 min-w-35"
               >
                 <option value="all">All Gender</option>
                 <option value="Male">Male</option>

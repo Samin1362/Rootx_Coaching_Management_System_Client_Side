@@ -11,9 +11,11 @@ import {
 } from "react-icons/md";
 import { FaMoneyBillWave, FaUsers, FaCheckCircle } from "react-icons/fa";
 import { useState, useMemo, useEffect, useRef } from "react";
+import { useNotification } from "../../contexts/NotificationContext";
 
 const NewFeeEntry = () => {
   const axiosSecure = useAxiosSecure();
+  const notification = useNotification();
 
   const [studentSearch, setStudentSearch] = useState("");
   const [selectedStudent, setSelectedStudent] = useState(null);
@@ -122,7 +124,7 @@ const NewFeeEntry = () => {
   const onSubmit = async (data) => {
     // Validate that batch is selected (which provides totalFee)
     if (!selectedBatch || !totalFee) {
-      alert("Please select a batch with a valid fee");
+      notification.warning("Please select a batch with a valid fee", "Missing Information");
       return;
     }
 
@@ -137,7 +139,7 @@ const NewFeeEntry = () => {
     try {
       const res = await axiosSecure.post("/fees", feeEntry);
       if (res.data.insertedId) {
-        alert("Fee entry created successfully");
+        notification.success("Fee entry created successfully!");
         reset();
         // Clear student search state
         setStudentSearch("");
@@ -146,7 +148,7 @@ const NewFeeEntry = () => {
       }
     } catch (error) {
       console.error(error);
-      alert("Failed to create fee entry");
+      notification.error("Failed to create fee entry. Please try again.", "Error");
     }
   };
 

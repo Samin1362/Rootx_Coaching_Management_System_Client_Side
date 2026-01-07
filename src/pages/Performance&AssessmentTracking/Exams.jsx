@@ -20,10 +20,12 @@ import {
 } from "react-icons/fa";
 import { BiSolidBookBookmark } from "react-icons/bi";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
+import { useNotification } from "../../contexts/NotificationContext";
 
 const Exams = () => {
   const axiosSecure = useAxiosSecure();
   const queryClient = useQueryClient();
+  const notification = useNotification();
   const [globalFilter, setGlobalFilter] = useState("");
   const [filterBatchId, setFilterBatchId] = useState("");
   const [mobileExpandedRows, setMobileExpandedRows] = useState(new Set());
@@ -79,11 +81,11 @@ const Exams = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries(["exams"]);
-      alert("Exam created successfully!");
+      notification.success("Exam created successfully!");
       handleCloseModal();
     },
     onError: (error) => {
-      alert(error.response?.data?.message || "Failed to create exam");
+      notification.error(error.response?.data?.message || "Failed to create exam", "Error");
     },
   });
 
@@ -95,12 +97,12 @@ const Exams = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries(["exams"]);
-      alert("Exam deleted successfully!");
+      notification.success("Exam deleted successfully!");
     },
     onError: (error) => {
       const errorMessage =
         error.response?.data?.message || "Failed to delete exam";
-      alert(errorMessage);
+      notification.error(errorMessage, "Delete Failed");
     },
   });
 
@@ -172,19 +174,19 @@ const Exams = () => {
 
     // Validation
     if (!formData.name.trim()) {
-      alert("Please enter exam name");
+      notification.warning("Please enter exam name", "Missing Information");
       return;
     }
     if (!formData.batchId) {
-      alert("Please select a batch");
+      notification.warning("Please select a batch", "Missing Information");
       return;
     }
     if (!formData.totalMarks || formData.totalMarks <= 0) {
-      alert("Please enter valid total marks");
+      notification.warning("Please enter valid total marks", "Invalid Input");
       return;
     }
     if (!formData.date) {
-      alert("Please select exam date");
+      notification.warning("Please select exam date", "Missing Information");
       return;
     }
 

@@ -15,10 +15,12 @@ import {
 } from "react-icons/fa";
 import { BiSolidUserCheck, BiSolidUserX } from "react-icons/bi";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
+import { useNotification } from "../../contexts/NotificationContext";
 
 const Attendences = () => {
   const axiosSecure = useAxiosSecure();
   const queryClient = useQueryClient();
+  const notification = useNotification();
   const hasInitializedRecords = useRef(false);
 
   const [showTakeAttendance, setShowTakeAttendance] = useState(false);
@@ -75,13 +77,14 @@ const Attendences = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries(["attendances"]);
-      alert("Attendance recorded successfully!");
+      notification.success("Attendance recorded successfully!");
       handleCloseModal();
     },
     onError: (error) => {
-      alert(
+      notification.error(
         error.response?.data?.message ||
-          "Failed to record attendance. Please try again."
+          "Failed to record attendance. Please try again.",
+        "Error"
       );
     },
   });
@@ -146,12 +149,12 @@ const Attendences = () => {
   // Submit attendance
   const handleSubmitAttendance = () => {
     if (!selectedBatch || !selectedDate) {
-      alert("Please select a batch and date");
+      notification.warning("Please select a batch and date", "Missing Information");
       return;
     }
 
     if (students.length === 0) {
-      alert("No students found in this batch");
+      notification.warning("No students found in this batch", "No Students");
       return;
     }
 

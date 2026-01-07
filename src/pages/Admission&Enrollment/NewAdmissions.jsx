@@ -10,10 +10,12 @@ import {
   MdPersonAdd,
 } from "react-icons/md";
 import { FaUserPlus, FaUsers, FaCheckCircle } from "react-icons/fa";
+import { useNotification } from "../../contexts/NotificationContext";
 
 const NewAdmissions = () => {
   const axiosSecure = useAxiosSecure();
   const navigate = useNavigate();
+  const notification = useNotification();
 
   const {
     register,
@@ -40,13 +42,13 @@ const NewAdmissions = () => {
     try {
       const res = await axiosSecure.post("/admissions", admission);
       if (res.data.insertedId) {
-        alert("Admission created successfully");
+        notification.success("Admission created successfully!");
         navigate("/dashboard/admissionManagement/admissions");
         reset();
       }
     } catch (error) {
       console.error(error);
-      alert("Failed to create admission");
+      notification.error("Failed to create admission. Please try again.", "Error");
     }
   };
 

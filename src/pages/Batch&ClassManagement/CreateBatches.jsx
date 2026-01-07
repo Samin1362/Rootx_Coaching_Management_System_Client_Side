@@ -10,9 +10,11 @@ import {
 } from "react-icons/md";
 import { FaCheckCircle } from "react-icons/fa";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
+import { useNotification } from "../../contexts/NotificationContext";
 
 const CreateBatches = () => {
   const axiosSecure = useAxiosSecure();
+  const notification = useNotification();
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
 
@@ -36,14 +38,14 @@ const CreateBatches = () => {
       const res = await axiosSecure.post("/batches", batch);
 
       if (res.data.insertedId) {
-        alert("Batch created successfully");
+        notification.success("Batch created successfully!");
         reset();
         setStartDate(null);
         setEndDate(null);
       }
     } catch (error) {
       console.error(error);
-      alert("Failed to create batch");
+      notification.error("Failed to create batch. Please try again.", "Error");
     }
   };
 

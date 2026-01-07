@@ -380,7 +380,7 @@ const DashboardLayout = () => {
 
               {/* Nested menu for collapsed drawer (Popup) */}
               {isStudentMenuOpen && (
-                <ul className="is-drawer-open:hidden absolute left-full top-0 ml-2 bg-base-100 rounded-lg shadow-xl border border-base-300 z-100 min-w-[220px] overflow-hidden animate-[scaleIn_0.2s_ease-out]">
+                <ul className="is-drawer-open:hidden absolute left-full top-0 ml-2 bg-base-100 rounded-lg shadow-xl border border-base-300 z-100 min-w-55 overflow-hidden animate-[scaleIn_0.2s_ease-out]">
                   <Link to="/dashboard/studentManagement/students">
                     <li>
                       <button
@@ -488,7 +488,7 @@ const DashboardLayout = () => {
 
               {/* Nested menu for collapsed drawer (Popup) */}
               {isAdmissionMenuOpen && (
-                <ul className="is-drawer-open:hidden absolute left-full top-0 ml-2 bg-base-100 rounded-lg shadow-xl border border-base-300 z-100 min-w-[220px] overflow-hidden animate-[scaleIn_0.2s_ease-out]">
+                <ul className="is-drawer-open:hidden absolute left-full top-0 ml-2 bg-base-100 rounded-lg shadow-xl border border-base-300 z-100 min-w-55 overflow-hidden animate-[scaleIn_0.2s_ease-out]">
                   <Link to="/dashboard/admissionManagement/admissions">
                     <li>
                       <button
@@ -627,7 +627,7 @@ const DashboardLayout = () => {
 
               {/* Nested menu for collapsed drawer (Popup) */}
               {isAttendenceMenuOpen && (
-                <ul className="is-drawer-open:hidden absolute left-full top-0 ml-2 bg-base-100 rounded-lg shadow-xl border border-base-300 z-100 min-w-[220px] overflow-hidden animate-[scaleIn_0.2s_ease-out]">
+                <ul className="is-drawer-open:hidden absolute left-full top-0 ml-2 bg-base-100 rounded-lg shadow-xl border border-base-300 z-100 min-w-55 overflow-hidden animate-[scaleIn_0.2s_ease-out]">
                   <Link to="/dashboard/attendenceManagement/attendence">
                     <li>
                       <button
@@ -772,7 +772,7 @@ const DashboardLayout = () => {
 
               {/* Nested menu for collapsed drawer (Popup) */}
               {isFinanceMenuOpen && (
-                <ul className="is-drawer-open:hidden absolute left-full top-0 ml-2 bg-base-100 rounded-lg shadow-xl border border-base-300 z-100 min-w-[220px] overflow-hidden animate-[scaleIn_0.2s_ease-out]">
+                <ul className="is-drawer-open:hidden absolute left-full top-0 ml-2 bg-base-100 rounded-lg shadow-xl border border-base-300 z-100 min-w-55 overflow-hidden animate-[scaleIn_0.2s_ease-out]">
                   <Link to="/dashboard/financeManagement/finances">
                     <li>
                       <button
@@ -911,7 +911,7 @@ const DashboardLayout = () => {
 
               {/* Nested menu for collapsed drawer (Popup) */}
               {isBatchMenuOpen && (
-                <ul className="is-drawer-open:hidden absolute left-full top-0 ml-2 bg-base-100 rounded-lg shadow-xl border border-base-300 z-100 min-w-[220px] overflow-hidden animate-[scaleIn_0.2s_ease-out]">
+                <ul className="is-drawer-open:hidden absolute left-full top-0 ml-2 bg-base-100 rounded-lg shadow-xl border border-base-300 z-100 min-w-55 overflow-hidden animate-[scaleIn_0.2s_ease-out]">
                   <Link to="/dashboard/batchManagement/batches">
                     <li>
                       <button
@@ -995,7 +995,7 @@ const DashboardLayout = () => {
 
               {/* Nested menu for collapsed drawer (Popup) */}
               {isPerformanceMenuOpen && (
-                <ul className="is-drawer-open:hidden absolute left-full top-0 ml-2 bg-base-100 rounded-lg shadow-xl border border-base-300 z-100 min-w-[220px] overflow-hidden animate-[scaleIn_0.2s_ease-out]">
+                <ul className="is-drawer-open:hidden absolute left-full top-0 ml-2 bg-base-100 rounded-lg shadow-xl border border-base-300 z-100 min-w-55 overflow-hidden animate-[scaleIn_0.2s_ease-out]">
                   <Link to="/dashboard/performanceManagement/exams">
                     <li>
                       <button

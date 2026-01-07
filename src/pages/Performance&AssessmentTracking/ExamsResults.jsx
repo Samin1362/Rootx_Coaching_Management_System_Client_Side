@@ -21,10 +21,12 @@ import {
 } from "react-icons/fa";
 import { BiSolidMedal } from "react-icons/bi";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
+import { useNotification } from "../../contexts/NotificationContext";
 
 const ExamsResults = () => {
   const axiosSecure = useAxiosSecure();
   const queryClient = useQueryClient();
+  const notification = useNotification();
 
   // Form batch and exam selection
   const [selectedBatchId, setSelectedBatchId] = useState("");
@@ -168,10 +170,11 @@ const ExamsResults = () => {
       const failCount = results.filter((r) => r.status === "rejected").length;
 
       if (failCount === 0) {
-        alert(`Successfully added ${successCount} results!`);
+        notification.success(`Successfully added ${successCount} results!`, "Success");
       } else {
-        alert(
-          `Added ${successCount} results successfully. ${failCount} failed (possibly duplicates).`
+        notification.warning(
+          `Added ${successCount} results successfully. ${failCount} failed (possibly duplicates).`,
+          "Partial Success"
         );
       }
 
@@ -181,7 +184,7 @@ const ExamsResults = () => {
       setSelectedExamId("");
     },
     onError: () => {
-      alert("Failed to submit results. Please try again.");
+      notification.error("Failed to submit results. Please try again.", "Error");
     },
   });
 
@@ -225,25 +228,24 @@ const ExamsResults = () => {
   // Handle bulk submit
   const handleBulkSubmit = () => {
     if (!selectedBatchId || !selectedExamId) {
-      alert("Please select both Batch and Exam first!");
+      notification.warning("Please select both Batch and Exam first!", "Missing Selection");
       return;
     }
 
     if (!selectedExam) {
-      alert("Selected exam not found!");
+      notification.error("Selected exam not found!", "Error");
       return;
     }
 
     // Collect all results that have marks entered
     const resultsToSubmit = [];
+    let hasInvalidMarks = false;
 
     Object.entries(studentResults).forEach(([studentId, result]) => {
       if (result.marks && Number(result.marks) >= 0) {
         // Validation
         if (Number(result.marks) > selectedExam.totalMarks) {
-          alert(
-            `Marks for some students exceed total marks (${selectedExam.totalMarks})`
-          );
+          hasInvalidMarks = true;
           return;
         }
 
@@ -256,8 +258,16 @@ const ExamsResults = () => {
       }
     });
 
+    if (hasInvalidMarks) {
+      notification.warning(
+        `Marks for some students exceed total marks (${selectedExam.totalMarks})`,
+        "Invalid Marks"
+      );
+      return;
+    }
+
     if (resultsToSubmit.length === 0) {
-      alert("Please enter marks for at least one student!");
+      notification.warning("Please enter marks for at least one student!", "No Data");
       return;
     }
 

@@ -20,9 +20,11 @@ import {
 } from "react-icons/fa";
 import { BiSolidCalendarCheck } from "react-icons/bi";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
+import { useNotification } from "../../contexts/NotificationContext";
 
 const AttendenceLive = () => {
   const axiosSecure = useAxiosSecure();
+  const notification = useNotification();
   const [selectedBatchId, setSelectedBatchId] = useState("");
   const [selectedDate, setSelectedDate] = useState(
     new Date().toISOString().split("T")[0]
@@ -73,7 +75,7 @@ const AttendenceLive = () => {
       return res.data;
     },
     onSuccess: (data) => {
-      alert(data.message || "Attendance recorded successfully!");
+      notification.success(data.message || "Attendance recorded successfully!");
       // Reset form
       setAttendance({});
       setSelectedBatchId("");
@@ -82,7 +84,7 @@ const AttendenceLive = () => {
     onError: (error) => {
       const errorMessage =
         error.response?.data?.message || "Failed to record attendance";
-      alert(errorMessage);
+      notification.error(errorMessage, "Error");
     },
   });
 
@@ -106,17 +108,17 @@ const AttendenceLive = () => {
   const handleSubmit = () => {
     // Validation
     if (!selectedBatchId) {
-      alert("Please select a batch");
+      notification.warning("Please select a batch", "Missing Information");
       return;
     }
 
     if (!selectedDate) {
-      alert("Please select a date");
+      notification.warning("Please select a date", "Missing Information");
       return;
     }
 
     if (students.length === 0) {
-      alert("No students found in the selected batch");
+      notification.warning("No students found in the selected batch", "No Students");
       return;
     }
 

@@ -31,10 +31,12 @@ import {
 } from "react-icons/fa";
 import { BiSolidBank } from "react-icons/bi";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
+import { useNotification } from "../../contexts/NotificationContext";
 
 const FeesDues = () => {
   const axiosSecure = useAxiosSecure();
   const queryClient = useQueryClient();
+  const notification = useNotification();
   const [globalFilter, setGlobalFilter] = useState("");
   const [sorting, setSorting] = useState([]);
   const [expandedRows, setExpandedRows] = useState({});
@@ -98,17 +100,21 @@ const FeesDues = () => {
       queryClient.invalidateQueries(["fees-dues"]);
       queryClient.invalidateQueries(["fees"]);
       queryClient.invalidateQueries(["fees-collected"]);
-      alert(
+      notification.success(
         `Payment added successfully! ${
           data.updatedStatus === "clear"
             ? "Fee fully cleared!"
             : `Remaining due: $${data.dueAmount}`
-        }`
+        }`,
+        "Payment Success"
       );
       handleCloseModal();
     },
     onError: (error) => {
-      alert(error.response?.data?.message || "Failed to add payment");
+      notification.error(
+        error.response?.data?.message || "Failed to add payment",
+        "Error"
+      );
     },
   });
 
@@ -188,12 +194,18 @@ const FeesDues = () => {
 
     const amount = Number(paymentAmount);
     if (!amount || amount <= 0) {
-      alert("Please enter a valid payment amount");
+      notification.warning(
+        "Please enter a valid payment amount",
+        "Invalid Amount"
+      );
       return;
     }
 
     if (amount > paymentModal.feeData.dueAmount) {
-      alert("Payment amount cannot exceed due amount");
+      notification.warning(
+        "Payment amount cannot exceed due amount",
+        "Invalid Amount"
+      );
       return;
     }
 

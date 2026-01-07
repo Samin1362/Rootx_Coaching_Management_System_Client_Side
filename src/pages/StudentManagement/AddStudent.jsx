@@ -22,9 +22,11 @@ import {
 } from "react-icons/fa";
 import { BsGenderMale, BsGenderFemale } from "react-icons/bs";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
+import { useNotification } from "../../contexts/NotificationContext";
 
 const AddStudent = () => {
   const axiosSecure = useAxiosSecure();
+  const notification = useNotification();
   const [imageUrl, setImageUrl] = useState("");
   const [dob, setDob] = useState(null);
   const [admissionDate, setAdmissionDate] = useState(null);
@@ -81,7 +83,7 @@ const AddStudent = () => {
     try {
       const res = await axiosSecure.post("/students", student);
       if (res.data.insertedId) {
-        alert("Student added successfully");
+        notification.success("Student added successfully!");
         reset();
         setImageUrl("");
         setDob(null);
@@ -89,7 +91,7 @@ const AddStudent = () => {
       }
     } catch (error) {
       console.error(error);
-      alert("Failed to add student");
+      notification.error("Failed to add student. Please try again.", "Error");
     }
   };
 
