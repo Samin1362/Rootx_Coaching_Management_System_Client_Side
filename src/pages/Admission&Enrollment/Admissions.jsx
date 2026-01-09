@@ -1,5 +1,5 @@
-import { useState, useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useState, useMemo, useCallback } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   useReactTable,
   getCoreRowModel,
@@ -10,7 +10,6 @@ import {
 } from "@tanstack/react-table";
 import {
   MdEdit,
-  MdVisibility,
   MdSearch,
   MdNavigateNext,
   MdNavigateBefore,
@@ -24,6 +23,8 @@ import {
   MdSchool,
   MdExpandMore,
   MdExpandLess,
+  MdClose,
+  MdWarning,
 } from "react-icons/md";
 import {
   FaUserPlus,
@@ -35,14 +36,21 @@ import {
 } from "react-icons/fa";
 import { BiSolidPhoneCall } from "react-icons/bi";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
+import { useNotification } from "../../contexts/NotificationContext";
 import Loader from "../../components/Loader";
 
 const Admissions = () => {
   const axiosSecure = useAxiosSecure();
+  const queryClient = useQueryClient();
+  const notification = useNotification();
   const [globalFilter, setGlobalFilter] = useState("");
   const [sorting, setSorting] = useState([]);
   const [statusFilter, setStatusFilter] = useState("all");
   const [mobileExpandedRows, setMobileExpandedRows] = useState(new Set());
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [admissionToDelete, setAdmissionToDelete] = useState(null);
+  const [followUpModalOpen, setFollowUpModalOpen] = useState(false);
+  const [selectedAdmission, setSelectedAdmission] = useState(null);
 
   // Toggle mobile row expansion
   const toggleMobileRowExpansion = (rowId) => {
@@ -56,6 +64,106 @@ const Admissions = () => {
       return newSet;
     });
   };
+
+  // Delete admission mutation
+  const deleteAdmissionMutation = useMutation({
+    mutationFn: async (admissionId) => {
+      const res = await axiosSecure.delete(`/admissions/${admissionId}`);
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(["admissions"]);
+      setDeleteModalOpen(false);
+      setAdmissionToDelete(null);
+      notification.success(
+        "Admission record deleted successfully!",
+        "Delete Success"
+      );
+    },
+    onError: (error) => {
+      notification.error(
+        error.response?.data?.message ||
+          "Failed to delete admission. Please try again.",
+        "Delete Failed"
+      );
+    },
+  });
+
+  // Handle delete click
+  const handleDeleteClick = (admission) => {
+    setAdmissionToDelete(admission);
+    setDeleteModalOpen(true);
+  };
+
+  // Handle confirm delete
+  const handleConfirmDelete = () => {
+    if (admissionToDelete) {
+      deleteAdmissionMutation.mutate(admissionToDelete._id);
+    }
+  };
+
+  // Handle cancel delete
+  const handleCancelDelete = () => {
+    setDeleteModalOpen(false);
+    setAdmissionToDelete(null);
+  };
+
+  // Handle follow-up modal
+  const handleFollowUpClick = (admission) => {
+    setSelectedAdmission(admission);
+    setFollowUpModalOpen(true);
+  };
+
+  const handleCloseFollowUpModal = () => {
+    setFollowUpModalOpen(false);
+    setSelectedAdmission(null);
+  };
+
+  // Update admission status mutation
+  const updateStatusMutation = useMutation({
+    mutationFn: async ({ admissionId, status }) => {
+      const res = await axiosSecure.patch(`/admissions/${admissionId}`, {
+        status,
+      });
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(["admissions"]);
+      notification.success(
+        "Admission status updated successfully!",
+        "Status Updated"
+      );
+    },
+    onError: (error) => {
+      notification.error(
+        error.response?.data?.message ||
+          "Failed to update status. Please try again.",
+        "Update Failed"
+      );
+    },
+  });
+
+  // Handle status change to enrolled
+  const handleMarkAsEnrolled = useCallback(
+    (admission) => {
+      updateStatusMutation.mutate({
+        admissionId: admission._id,
+        status: "enrolled",
+      });
+    },
+    [updateStatusMutation]
+  );
+
+  // Handle status change to rejected
+  const handleMarkAsRejected = useCallback(
+    (admission) => {
+      updateStatusMutation.mutate({
+        admissionId: admission._id,
+        status: "rejected",
+      });
+    },
+    [updateStatusMutation]
+  );
 
   const { data: admissions = [], isLoading } = useQuery({
     queryKey: ["admissions"],
@@ -75,13 +183,16 @@ const Admissions = () => {
   });
 
   // Helper function to get batch info
-  const getBatchInfo = (batchId) => {
-    const batch = batches.find((b) => b._id === batchId);
-    if (batch) {
-      return `${batch.name} - ${batch.course}`;
-    }
-    return batchId || "N/A";
-  };
+  const getBatchInfo = useCallback(
+    (batchId) => {
+      const batch = batches.find((b) => b._id === batchId);
+      if (batch) {
+        return `${batch.name} - ${batch.course}`;
+      }
+      return batchId || "N/A";
+    },
+    [batches]
+  );
 
   // Filter admissions based on status
   const filteredAdmissions = useMemo(() => {
@@ -134,9 +245,9 @@ const Admissions = () => {
         accessorKey: "interestedBatchId",
         header: "Interested Batch",
         cell: ({ getValue }) => (
-          <div className="flex items-center gap-2">
-            <MdSchool className="text-base-content/40" />
-            <span className="badge badge-outline badge-primary font-medium">
+          <div className="flex items-center gap-2 min-w-50">
+            <MdSchool className="text-base-content/40 shrink-0" />
+            <span className="badge badge-outline badge-primary font-medium px-3 py-3">
               {getBatchInfo(getValue())}
             </span>
           </div>
@@ -149,7 +260,7 @@ const Admissions = () => {
           const status = getValue()?.toLowerCase();
           return (
             <div
-              className={`badge gap-2 font-medium ${
+              className={`badge gap-2 font-medium px-3 py-3 ${
                 status === "inquiry"
                   ? "badge-info"
                   : status === "follow-up"
@@ -215,21 +326,33 @@ const Admissions = () => {
       {
         id: "actions",
         header: "Actions",
-        cell: () => (
+        cell: ({ row }) => (
           <div className="flex items-center gap-1">
             <button
-              className="btn btn-ghost btn-sm btn-square text-info hover:bg-info/10"
-              title="View Details"
-            >
-              <MdVisibility className="text-lg" />
-            </button>
-            <button
+              onClick={() => handleFollowUpClick(row.original)}
               className="btn btn-ghost btn-sm btn-square text-warning hover:bg-warning/10"
-              title="Add Follow-up"
+              title="View Follow-ups"
             >
               <BiSolidPhoneCall className="text-lg" />
             </button>
             <button
+              onClick={() => handleMarkAsEnrolled(row.original)}
+              className="btn btn-ghost btn-sm btn-square text-success hover:bg-success/10"
+              title="Mark as Enrolled"
+              disabled={row.original.status?.toLowerCase() === "enrolled"}
+            >
+              <FaUserCheck className="text-lg" />
+            </button>
+            <button
+              onClick={() => handleMarkAsRejected(row.original)}
+              className="btn btn-ghost btn-sm btn-square text-error hover:bg-error/10"
+              title="Mark as Rejected"
+              disabled={row.original.status?.toLowerCase() === "rejected"}
+            >
+              <FaBan className="text-lg" />
+            </button>
+            <button
+              onClick={() => handleDeleteClick(row.original)}
               className="btn btn-ghost btn-sm btn-square text-error hover:bg-error/10"
               title="Delete"
             >
@@ -239,7 +362,7 @@ const Admissions = () => {
         ),
       },
     ],
-    [getBatchInfo]
+    [getBatchInfo, handleMarkAsEnrolled, handleMarkAsRejected]
   );
 
   const table = useReactTable({
@@ -504,15 +627,17 @@ const Admissions = () => {
                       <div className="flex items-center justify-between gap-3">
                         {/* Left: Student Info */}
                         <div className="flex items-center gap-3 flex-1 min-w-0">
-                          <div className={`w-10 h-10 bg-linear-to-br ${
-                            status === "enrolled"
-                              ? "from-success to-primary"
-                              : status === "follow-up"
-                              ? "from-warning to-orange-500"
-                              : status === "inquiry"
-                              ? "from-info to-primary"
-                              : "from-error to-red-600"
-                          } rounded-xl flex items-center justify-center shadow-sm shrink-0`}>
+                          <div
+                            className={`w-10 h-10 bg-linear-to-br ${
+                              status === "enrolled"
+                                ? "from-success to-primary"
+                                : status === "follow-up"
+                                ? "from-warning to-orange-500"
+                                : status === "inquiry"
+                                ? "from-info to-primary"
+                                : "from-error to-red-600"
+                            } rounded-xl flex items-center justify-center shadow-sm shrink-0`}
+                          >
                             <FaUserPlus className="text-white text-lg" />
                           </div>
                           <div className="flex-1 min-w-0">
@@ -540,14 +665,17 @@ const Admissions = () => {
                                 ) : (
                                   <FaBan className="text-xs mr-1" />
                                 )}
-                                <span className="capitalize">{status || "Unknown"}</span>
-                              </span>
-                              {admission.followUps && admission.followUps.length > 0 && (
-                                <span className="text-xs text-base-content/60 flex items-center gap-1">
-                                  <FaCommentDots className="text-xs" />
-                                  {admission.followUps.length}
+                                <span className="capitalize">
+                                  {status || "Unknown"}
                                 </span>
-                              )}
+                              </span>
+                              {admission.followUps &&
+                                admission.followUps.length > 0 && (
+                                  <span className="text-xs text-base-content/60 flex items-center gap-1">
+                                    <FaCommentDots className="text-xs" />
+                                    {admission.followUps.length}
+                                  </span>
+                                )}
                             </div>
                           </div>
                         </div>
@@ -612,27 +740,49 @@ const Admissions = () => {
                         )}
 
                         {/* Action Buttons */}
-                        <div className="pt-3 flex items-center gap-2">
-                          <button
-                            className="btn btn-sm btn-info text-white flex-1"
-                            title="View Details"
-                          >
-                            <MdVisibility className="text-lg" />
-                            View
-                          </button>
-                          <button
-                            className="btn btn-sm btn-warning text-white flex-1"
-                            title="Add Follow-up"
-                          >
-                            <BiSolidPhoneCall className="text-lg" />
-                            Follow-up
-                          </button>
-                          <button
-                            className="btn btn-sm btn-error text-white"
-                            title="Delete"
-                          >
-                            <MdDelete className="text-lg" />
-                          </button>
+                        <div className="pt-3 space-y-2">
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => handleFollowUpClick(admission)}
+                              className="btn btn-sm btn-warning text-white flex-1"
+                              title="View Follow-ups"
+                            >
+                              <BiSolidPhoneCall className="text-lg" />
+                              Follow-up
+                            </button>
+                            <button
+                              onClick={() => handleDeleteClick(admission)}
+                              className="btn btn-sm btn-error text-white flex-1"
+                              title="Delete"
+                            >
+                              <MdDelete className="text-lg" />
+                              Delete
+                            </button>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => handleMarkAsEnrolled(admission)}
+                              className="btn btn-sm btn-success text-white flex-1"
+                              title="Mark as Enrolled"
+                              disabled={
+                                admission.status?.toLowerCase() === "enrolled"
+                              }
+                            >
+                              <FaUserCheck className="text-lg" />
+                              Enrolled
+                            </button>
+                            <button
+                              onClick={() => handleMarkAsRejected(admission)}
+                              className="btn btn-sm btn-error text-white flex-1"
+                              title="Mark as Rejected"
+                              disabled={
+                                admission.status?.toLowerCase() === "rejected"
+                              }
+                            >
+                              <FaBan className="text-lg" />
+                              Rejected
+                            </button>
+                          </div>
                         </div>
                       </div>
                     )}
@@ -759,6 +909,292 @@ const Admissions = () => {
           )}
         </div>
       </div>
+
+      {/* Follow-up Modal */}
+      {followUpModalOpen && selectedAdmission && (
+        <div className="modal modal-open fixed inset-0 z-9999 flex items-center justify-center">
+          <div className="modal-box relative z-10000 max-w-3xl">
+            <button
+              onClick={handleCloseFollowUpModal}
+              className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+            >
+              <MdClose className="text-lg" />
+            </button>
+
+            {/* Modal Header */}
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-12 h-12 bg-warning/10 rounded-xl flex items-center justify-center">
+                <BiSolidPhoneCall className="text-warning text-2xl" />
+              </div>
+              <div>
+                <h3 className="font-bold text-xl text-base-content">
+                  Follow-up History
+                </h3>
+                <p className="text-sm text-base-content/60">
+                  All follow-ups for {selectedAdmission.name}
+                </p>
+              </div>
+            </div>
+
+            {/* Student Info Card */}
+            <div className="bg-base-200 rounded-xl p-4 border border-base-300 mb-6">
+              <div className="flex items-start gap-4">
+                <div className="w-14 h-14 bg-linear-to-br from-primary to-secondary rounded-full flex items-center justify-center shrink-0">
+                  <FaUserPlus className="text-white text-xl" />
+                </div>
+                <div className="flex-1">
+                  <h4 className="font-semibold text-lg text-base-content">
+                    {selectedAdmission.name}
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
+                    <div className="flex items-center gap-2 text-sm">
+                      <MdPhone className="text-primary" />
+                      <span className="text-base-content/80">
+                        {selectedAdmission.phone}
+                      </span>
+                    </div>
+                    {selectedAdmission.email && (
+                      <div className="flex items-center gap-2 text-sm">
+                        <MdEmail className="text-primary" />
+                        <span className="text-base-content/80 truncate">
+                          {selectedAdmission.email}
+                        </span>
+                      </div>
+                    )}
+                    {selectedAdmission.interestedBatchId && (
+                      <div className="flex items-center gap-2 text-sm">
+                        <MdSchool className="text-primary" />
+                        <span className="badge badge-primary badge-sm">
+                          {getBatchInfo(selectedAdmission.interestedBatchId)}
+                        </span>
+                      </div>
+                    )}
+                    <div className="flex items-center gap-2 text-sm">
+                      <span
+                        className={`badge badge-sm ${
+                          selectedAdmission.status?.toLowerCase() === "inquiry"
+                            ? "badge-info"
+                            : selectedAdmission.status?.toLowerCase() ===
+                              "follow-up"
+                            ? "badge-warning"
+                            : selectedAdmission.status?.toLowerCase() ===
+                              "enrolled"
+                            ? "badge-success"
+                            : "badge-error"
+                        }`}
+                      >
+                        {selectedAdmission.status?.toLowerCase() ===
+                        "inquiry" ? (
+                          <FaClock className="text-xs mr-1" />
+                        ) : selectedAdmission.status?.toLowerCase() ===
+                          "follow-up" ? (
+                          <BiSolidPhoneCall className="text-xs mr-1" />
+                        ) : selectedAdmission.status?.toLowerCase() ===
+                          "enrolled" ? (
+                          <FaUserCheck className="text-xs mr-1" />
+                        ) : (
+                          <FaBan className="text-xs mr-1" />
+                        )}
+                        <span className="capitalize">
+                          {selectedAdmission.status || "Unknown"}
+                        </span>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Follow-ups List */}
+            <div className="space-y-4 max-h-96 overflow-y-auto">
+              {selectedAdmission.followUps &&
+              selectedAdmission.followUps.length > 0 ? (
+                selectedAdmission.followUps.map((followUp, index) => (
+                  <div
+                    key={index}
+                    className="bg-base-100 border border-base-300 rounded-xl p-4 hover:shadow-md transition-all duration-200"
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 bg-warning/10 rounded-lg flex items-center justify-center shrink-0">
+                        <FaCommentDots className="text-warning text-lg" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="font-semibold text-base-content">
+                            Follow-up #{index + 1}
+                          </span>
+                          {followUp.date && (
+                            <div className="flex items-center gap-1 text-xs text-base-content/60">
+                              <MdCalendarToday className="text-sm" />
+                              {new Date(followUp.date).toLocaleDateString(
+                                "en-US",
+                                {
+                                  month: "short",
+                                  day: "numeric",
+                                  year: "numeric",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                }
+                              )}
+                            </div>
+                          )}
+                        </div>
+                        {followUp.note && (
+                          <p className="text-sm text-base-content/80 leading-relaxed">
+                            {followUp.note}
+                          </p>
+                        )}
+                        {followUp.nextFollowUpDate && (
+                          <div className="mt-2 flex items-center gap-2">
+                            <span className="text-xs text-base-content/60">
+                              Next follow-up:
+                            </span>
+                            <span className="badge badge-sm badge-warning gap-1">
+                              <MdCalendarToday className="text-xs" />
+                              {new Date(
+                                followUp.nextFollowUpDate
+                              ).toLocaleDateString("en-US", {
+                                month: "short",
+                                day: "numeric",
+                                year: "numeric",
+                              })}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-12">
+                  <div className="flex flex-col items-center gap-3">
+                    <div className="w-20 h-20 bg-base-200 rounded-full flex items-center justify-center">
+                      <FaCommentDots className="text-4xl text-base-content/20" />
+                    </div>
+                    <div>
+                      <p className="text-lg font-semibold text-base-content/60">
+                        No follow-ups yet
+                      </p>
+                      <p className="text-sm text-base-content/40">
+                        No follow-up history available for this admission
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="modal-action">
+              <button
+                onClick={handleCloseFollowUpModal}
+                className="btn btn-primary"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+          <div
+            className="modal-backdrop fixed inset-0 bg-black/50 backdrop-blur-sm z-9998"
+            onClick={handleCloseFollowUpModal}
+          ></div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteModalOpen && (
+        <div className="modal modal-open fixed inset-0 z-9999 flex items-center justify-center">
+          <div className="modal-box relative z-10000">
+            <button
+              onClick={handleCancelDelete}
+              className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+            >
+              <MdClose className="text-lg" />
+            </button>
+
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 bg-error/10 rounded-xl flex items-center justify-center">
+                <MdWarning className="text-error text-2xl" />
+              </div>
+              <h3 className="font-bold text-lg text-base-content">
+                Delete Admission
+              </h3>
+            </div>
+
+            <div className="py-4">
+              <p className="text-base-content/80 mb-4">
+                Are you sure you want to delete this admission record? This
+                action cannot be undone.
+              </p>
+
+              {admissionToDelete && (
+                <div className="bg-base-200 rounded-xl p-4 border border-base-300">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center shrink-0">
+                      <FaUserPlus className="text-primary text-lg" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-base-content">
+                        {admissionToDelete.name}
+                      </p>
+                      <p className="text-xs text-base-content/60">
+                        {admissionToDelete.phone}
+                      </p>
+                      {admissionToDelete.email && (
+                        <p className="text-xs text-base-content/60">
+                          {admissionToDelete.email}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="alert alert-warning mt-4">
+                <MdWarning className="text-lg" />
+                <div>
+                  <h4 className="font-semibold text-sm">Warning</h4>
+                  <p className="text-xs">
+                    Deleting this admission will permanently remove all inquiry
+                    and follow-up records from the system.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="modal-action">
+              <button
+                onClick={handleCancelDelete}
+                className="btn btn-ghost"
+                disabled={deleteAdmissionMutation.isPending}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmDelete}
+                disabled={deleteAdmissionMutation.isPending}
+                className="btn btn-error text-white"
+              >
+                {deleteAdmissionMutation.isPending ? (
+                  <>
+                    <span className="loading loading-spinner loading-sm"></span>
+                    Deleting...
+                  </>
+                ) : (
+                  <>
+                    <MdDelete />
+                    Delete Admission
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+          <div
+            className="modal-backdrop fixed inset-0 bg-black/50 backdrop-blur-sm z-9998"
+            onClick={handleCancelDelete}
+          ></div>
+        </div>
+      )}
     </div>
   );
 };

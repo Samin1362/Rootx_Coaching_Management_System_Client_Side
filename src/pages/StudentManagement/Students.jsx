@@ -116,11 +116,43 @@ const Students = () => {
   // Delete student mutation
   const deleteStudentMutation = useMutation({
     mutationFn: async (studentId) => {
+      // First, fetch all fee records for this student
+      const feesRes = await axiosSecure.get(`/fees?studentId=${studentId}`);
+      const studentFees = feesRes.data;
+
+      // Fetch all exam results for this student
+      const resultsRes = await axiosSecure.get(
+        `/results?studentId=${studentId}`
+      );
+      const studentResults = resultsRes.data;
+
+      // Delete all fee records associated with this student
+      if (studentFees && studentFees.length > 0) {
+        await Promise.all(
+          studentFees.map((fee) => axiosSecure.delete(`/fees/${fee._id}`))
+        );
+      }
+
+      // Delete all exam results associated with this student
+      if (studentResults && studentResults.length > 0) {
+        await Promise.all(
+          studentResults.map((result) =>
+            axiosSecure.delete(`/results/${result._id}`)
+          )
+        );
+      }
+
+      // Finally, delete the student
       const res = await axiosSecure.delete(`/students/${studentId}`);
       return res.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries(["students"]);
+      queryClient.invalidateQueries(["fees"]); // Invalidate fees cache
+      queryClient.invalidateQueries(["results"]); // Invalidate results cache
+      notification.success(
+        "Student and all associated records (fees, results) deleted successfully!"
+      );
       setDeleteModalOpen(false);
       setStudentToDelete(null);
     },

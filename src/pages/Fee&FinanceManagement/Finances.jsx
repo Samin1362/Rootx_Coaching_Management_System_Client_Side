@@ -96,6 +96,17 @@ const Finances = () => {
     [students]
   );
 
+  const getStudentImage = useCallback(
+    (studentId) => {
+      const student = students.find((s) => s._id === studentId);
+      return (
+        student?.image ||
+        "https://static.vecteezy.com/system/resources/thumbnails/020/765/399/small/default-profile-account-unknown-icon-black-silhouette-free-vector.jpg"
+      );
+    },
+    [students]
+  );
+
   const getBatchName = useCallback(
     (batchId) => {
       const batch = batches.find((b) => b._id === batchId);
@@ -148,8 +159,14 @@ const Finances = () => {
         header: "Student",
         cell: ({ row }) => (
           <div className="flex items-center gap-3 min-w-[200px]">
-            <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center shrink-0">
-              <MdPerson className="text-primary text-lg" />
+            <div className="avatar shrink-0">
+              <div className="w-10 h-10 rounded-lg ring ring-primary ring-offset-base-100 ring-offset-2">
+                <img
+                  src={getStudentImage(row.original.studentId)}
+                  alt={getStudentName(row.original.studentId)}
+                  className="object-cover"
+                />
+              </div>
             </div>
             <div>
               <div className="font-semibold text-base-content">
@@ -278,9 +295,11 @@ const Finances = () => {
         ),
       },
     ],
-    [getStudentName, getStudentPhone, getBatchName]
+    [getStudentName, getStudentPhone, getStudentImage, getBatchName]
   );
 
+  // TanStack Table returns functions that cannot be safely memoized
+  // This is expected behavior and does not affect functionality
   const table = useReactTable({
     data: filteredFees,
     columns,
@@ -528,8 +547,17 @@ const Finances = () => {
                     <div className="flex items-center justify-between gap-3">
                       {/* Left: Student Info */}
                       <div className="flex items-center gap-3 flex-1 min-w-0">
-                        <div className="w-10 h-10 bg-linear-to-br from-primary to-secondary rounded-xl flex items-center justify-center shadow-sm shrink-0">
-                          <MdPerson className="text-white text-lg" />
+                        <div className="avatar shrink-0">
+                          <div className="w-10 h-10 rounded-xl ring ring-primary ring-offset-base-100 ring-offset-2">
+                            <img
+                              src={
+                                studentInfo?.image ||
+                                "https://static.vecteezy.com/system/resources/thumbnails/020/765/399/small/default-profile-account-unknown-icon-black-silhouette-free-vector.jpg"
+                              }
+                              alt={studentInfo?.name || "Student"}
+                              className="object-cover"
+                            />
+                          </div>
                         </div>
                         <div className="flex-1 min-w-0">
                           <h3 className="font-semibold text-base-content truncate">
