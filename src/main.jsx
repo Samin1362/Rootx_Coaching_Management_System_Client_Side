@@ -6,6 +6,7 @@ import router from './router.jsx';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import AuthProvider from './contexts/auth/AuthProvider.jsx';
 import { NotificationProvider } from './contexts/NotificationContext.jsx';
+import './i18n'; // Initialize i18n
 
 const queryClient = new QueryClient()
 
