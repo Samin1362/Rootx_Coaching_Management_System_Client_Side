@@ -38,11 +38,13 @@ import { BiSolidPhoneCall } from "react-icons/bi";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
 import { useNotification } from "../../contexts/NotificationContext";
 import Loader from "../../components/Loader";
+import { useTranslation } from "react-i18next";
 
 const Admissions = () => {
   const axiosSecure = useAxiosSecure();
   const queryClient = useQueryClient();
   const notification = useNotification();
+  const { t } = useTranslation(["admissions", "common"]);
   const [globalFilter, setGlobalFilter] = useState("");
   const [sorting, setSorting] = useState([]);
   const [statusFilter, setStatusFilter] = useState("all");
@@ -75,16 +77,12 @@ const Admissions = () => {
       queryClient.invalidateQueries(["admissions"]);
       setDeleteModalOpen(false);
       setAdmissionToDelete(null);
-      notification.success(
-        "Admission record deleted successfully!",
-        "Delete Success"
-      );
+      notification.success(t("admissions:deleteSuccess"), t("common:success"));
     },
     onError: (error) => {
       notification.error(
-        error.response?.data?.message ||
-          "Failed to delete admission. Please try again.",
-        "Delete Failed"
+        error.response?.data?.message || t("admissions:deleteFailed"),
+        t("common:error")
       );
     },
   });
@@ -129,16 +127,12 @@ const Admissions = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries(["admissions"]);
-      notification.success(
-        "Admission status updated successfully!",
-        "Status Updated"
-      );
+      notification.success(t("admissions:statusUpdated"), t("common:success"));
     },
     onError: (error) => {
       notification.error(
-        error.response?.data?.message ||
-          "Failed to update status. Please try again.",
-        "Update Failed"
+        error.response?.data?.message || t("admissions:statusUpdateFailed"),
+        t("common:error")
       );
     },
   });
@@ -400,7 +394,7 @@ const Admissions = () => {
   }, [admissions]);
 
   if (isLoading) {
-    return <Loader message="Loading admissions..." />;
+    return <Loader message={t("admissions:loadingAdmissions")} />;
   }
 
   return (
@@ -414,10 +408,10 @@ const Admissions = () => {
             </div>
             <div>
               <h1 className="text-3xl font-bold text-base-content">
-                Admissions
+                {t("admissions:title")}
               </h1>
               <p className="text-sm text-base-content/60">
-                Manage prospective student inquiries and enrollments
+                {t("admissions:subtitle")}
               </p>
             </div>
           </div>
@@ -430,7 +424,7 @@ const Admissions = () => {
               </div>
               <div className="text-xs text-base-content/60 flex items-center gap-1">
                 <MdPeople className="text-sm" />
-                Total
+                {t("common:total")}
               </div>
             </div>
             <div className="bg-info/10 rounded-xl p-3 border border-info/20 shadow-sm">
@@ -439,7 +433,7 @@ const Admissions = () => {
               </div>
               <div className="text-xs text-info/80 flex items-center gap-1">
                 <FaClock className="text-sm" />
-                Inquiry
+                {t("admissions:inquiry")}
               </div>
             </div>
             <div className="bg-warning/10 rounded-xl p-3 border border-warning/20 shadow-sm">
@@ -448,7 +442,7 @@ const Admissions = () => {
               </div>
               <div className="text-xs text-warning/80 flex items-center gap-1">
                 <BiSolidPhoneCall className="text-sm" />
-                Follow-up
+                {t("admissions:followUp")}
               </div>
             </div>
             <div className="bg-success/10 rounded-xl p-3 border border-success/20 shadow-sm">
@@ -457,7 +451,7 @@ const Admissions = () => {
               </div>
               <div className="text-xs text-success/80 flex items-center gap-1">
                 <FaUserCheck className="text-sm" />
-                Enrolled
+                {t("admissions:enrolled")}
               </div>
             </div>
           </div>
@@ -472,7 +466,7 @@ const Admissions = () => {
                 <MdSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-xl text-base-content/40" />
                 <input
                   type="text"
-                  placeholder="Search by name, email, or phone..."
+                  placeholder={t("admissions:searchPlaceholder")}
                   value={globalFilter ?? ""}
                   onChange={(e) => setGlobalFilter(e.target.value)}
                   className="input input-bordered w-full pl-12 pr-4 bg-base-200 focus:bg-base-100 transition-all duration-200"
@@ -488,11 +482,11 @@ const Admissions = () => {
                 onChange={(e) => setStatusFilter(e.target.value)}
                 className="select select-bordered bg-base-200 focus:bg-base-100 min-w-40"
               >
-                <option value="all">All Status</option>
-                <option value="inquiry">Inquiry</option>
-                <option value="follow-up">Follow-up</option>
-                <option value="enrolled">Enrolled</option>
-                <option value="rejected">Rejected</option>
+                <option value="all">{t("admissions:allStatuses")}</option>
+                <option value="inquiry">{t("admissions:inquiry")}</option>
+                <option value="follow-up">{t("admissions:followUp")}</option>
+                <option value="enrolled">{t("admissions:enrolled")}</option>
+                <option value="rejected">{t("admissions:rejected")}</option>
               </select>
             </div>
           </div>

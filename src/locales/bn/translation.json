@@ -1,0 +1,51 @@
+{
+  "common": {
+    "welcome": "স্বাগতম",
+    "loading": "লোড হচ্ছে...",
+    "save": "সংরক্ষণ করুন",
+    "cancel": "বাতিল করুন",
+    "delete": "মুছুন",
+    "edit": "সম্পাদনা করুন",
+    "add": "যোগ করুন",
+    "search": "অনুসন্ধান করুন",
+    "filter": "ফিল্টার করুন",
+    "export": "রপ্তানি করুন",
+    "import": "আমদানি করুন",
+    "submit": "জমা দিন",
+    "close": "বন্ধ করুন",
+    "confirm": "নিশ্চিত করুন",
+    "yes": "হ্যাঁ",
+    "no": "না",
+    "actions": "কার্যক্রম",
+    "status": "অবস্থা",
+    "date": "তারিখ",
+    "name": "নাম",
+    "email": "ইমেইল",
+    "phone": "ফোন",
+    "address": "ঠিকানা"
+  },
+  "navbar": {
+    "overview": "সারসংক্ষেপ",
+    "students": "শিক্ষার্থী",
+    "admissions": "ভর্তি",
+    "batches": "ব্যাচ",
+    "attendance": "উপস্থিতি",
+    "fees": "ফি",
+    "exams": "পরীক্ষা",
+    "logout": "লগআউট",
+    "profile": "প্রোফাইল",
+    "settings": "সেটিংস"
+  },
+  "auth": {
+    "login": "লগইন",
+    "register": "নিবন্ধন",
+    "email": "ইমেইল",
+    "password": "পাসওয়ার্ড",
+    "forgotPassword": "পাসওয়ার্ড ভুলে গেছেন?",
+    "rememberMe": "আমাকে মনে রাখুন",
+    "loginButton": "সাইন ইন",
+    "registerButton": "সাইন আপ",
+    "alreadyHaveAccount": "ইতিমধ্যে একটি অ্যাকাউন্ট আছে?",
+    "dontHaveAccount": "অ্যাকাউন্ট নেই?"
+  }
+}

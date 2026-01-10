@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import {
   AreaChart,
   Area,
@@ -66,6 +67,7 @@ const CustomTooltip = ({ active, payload, label }) => {
 
 const Overview = () => {
   const axiosSecure = useAxiosSecure();
+  const { t } = useTranslation(['overview', 'common']);
 
   // Fetch all data
   const { data: students = [], isLoading: studentsLoading } = useQuery({
@@ -377,7 +379,7 @@ const Overview = () => {
     resultsLoading;
 
   if (isLoading) {
-    return <Loader message="Loading dashboard data..." />;
+    return <Loader message={t('common:loadingData')} />;
   }
 
   const COLORS = ["#8b5cf6", "#ec4899", "#f59e0b", "#10b981", "#3b82f6"];
@@ -392,10 +394,10 @@ const Overview = () => {
           </div>
           <div>
             <h1 className="text-4xl font-bold text-white mb-2">
-              Welcome to Rootx Coaching System
+              {t('overview:welcomeTitle')}
             </h1>
             <p className="text-white/90 text-lg">
-              Comprehensive overview of your coaching operations
+              {t('overview:welcomeSubtitle')}
             </p>
           </div>
         </div>
@@ -410,14 +412,14 @@ const Overview = () => {
               <FaUserGraduate className="text-4xl" />
             </div>
             <div className="stat-title text-white/80 text-sm">
-              Total Students
+              {t('overview:totalStudents')}
             </div>
             <div className="stat-value text-white text-3xl">
               {analytics.totalStudents}
             </div>
             <div className="stat-desc text-white/70 flex items-center gap-1">
               <MdTrendingUp className="text-lg" />
-              {analytics.activeStudents} Active
+              {analytics.activeStudents} {t('overview:activeStudents')}
             </div>
           </div>
         </div>
@@ -429,13 +431,13 @@ const Overview = () => {
               <FaChalkboardTeacher className="text-4xl" />
             </div>
             <div className="stat-title text-white/80 text-sm">
-              Active Batches
+              {t('overview:activeBatches')}
             </div>
             <div className="stat-value text-white text-3xl">
               {analytics.activeBatches}
             </div>
             <div className="stat-desc text-white/70">
-              {analytics.totalBatches} Total Batches
+              {analytics.totalBatches} {t('overview:totalBatches')}
             </div>
           </div>
         </div>
@@ -447,13 +449,13 @@ const Overview = () => {
               <FaDollarSign className="text-4xl" />
             </div>
             <div className="stat-title text-white/80 text-sm">
-              Total Collected
+              {t('overview:totalCollected')}
             </div>
             <div className="stat-value text-white text-2xl">
               ${analytics.totalPaid.toLocaleString()}
             </div>
             <div className="stat-desc text-white/70 flex items-center gap-1">
-              {analytics.collectionRate}% Collection Rate
+              {analytics.collectionRate}% {t('overview:collectionRate')}
             </div>
           </div>
         </div>
@@ -465,13 +467,13 @@ const Overview = () => {
               <FaCalendarCheck className="text-4xl" />
             </div>
             <div className="stat-title text-white/80 text-sm">
-              Attendance Rate
+              {t('overview:attendanceRate')}
             </div>
             <div className="stat-value text-white text-3xl">
               {analytics.attendanceRate}%
             </div>
             <div className="stat-desc text-white/70">
-              {analytics.totalAttendanceSessions} Sessions
+              {analytics.totalAttendanceSessions} {t('overview:sessions')}
             </div>
           </div>
         </div>
@@ -485,7 +487,7 @@ const Overview = () => {
             <div className="stat-figure text-primary">
               <MdPeople className="text-2xl" />
             </div>
-            <div className="stat-title text-xs">Admissions</div>
+            <div className="stat-title text-xs">{t('overview:admissions')}</div>
             <div className="stat-value text-primary text-xl">
               {analytics.totalAdmissions}
             </div>
@@ -498,7 +500,7 @@ const Overview = () => {
             <div className="stat-figure text-success">
               <FaGraduationCap className="text-2xl" />
             </div>
-            <div className="stat-title text-xs">Enrolled</div>
+            <div className="stat-title text-xs">{t('overview:enrolled')}</div>
             <div className="stat-value text-success text-xl">
               {analytics.enrolledAdmissions}
             </div>
@@ -511,7 +513,7 @@ const Overview = () => {
             <div className="stat-figure text-secondary">
               <FaClipboardList className="text-2xl" />
             </div>
-            <div className="stat-title text-xs">Total Exams</div>
+            <div className="stat-title text-xs">{t('overview:totalExams')}</div>
             <div className="stat-value text-secondary text-xl">
               {analytics.totalExams}
             </div>
@@ -524,7 +526,7 @@ const Overview = () => {
             <div className="stat-figure text-warning">
               <MdEventAvailable className="text-2xl" />
             </div>
-            <div className="stat-title text-xs">Upcoming</div>
+            <div className="stat-title text-xs">{t('overview:upcoming')}</div>
             <div className="stat-value text-warning text-xl">
               {analytics.upcomingExams}
             </div>
@@ -537,7 +539,7 @@ const Overview = () => {
             <div className="stat-figure text-info">
               <FaTrophy className="text-2xl" />
             </div>
-            <div className="stat-title text-xs">Avg Marks</div>
+            <div className="stat-title text-xs">{t('overview:avgMarks')}</div>
             <div className="stat-value text-info text-xl">
               {analytics.averageMarks}
             </div>
@@ -550,7 +552,7 @@ const Overview = () => {
             <div className="stat-figure text-error">
               <FaMoneyBillWave className="text-2xl" />
             </div>
-            <div className="stat-title text-xs">Total Due</div>
+            <div className="stat-title text-xs">{t('overview:totalDue')}</div>
             <div className="stat-value text-error text-xl">
               ${analytics.totalDue.toLocaleString()}
             </div>
@@ -568,9 +570,9 @@ const Overview = () => {
             </div>
             <div>
               <h2 className="text-xl font-bold text-base-content">
-                Student Growth Trend
+                {t('overview:studentGrowthTrend')}
               </h2>
-              <p className="text-xs text-base-content/60">Last 6 months</p>
+              <p className="text-xs text-base-content/60">{t('overview:last6Months')}</p>
             </div>
           </div>
           <ResponsiveContainer width="100%" height={280}>
@@ -609,9 +611,9 @@ const Overview = () => {
             </div>
             <div>
               <h2 className="text-xl font-bold text-base-content">
-                Revenue Trend
+                {t('overview:revenueTrend')}
               </h2>
-              <p className="text-xs text-base-content/60">Last 6 months</p>
+              <p className="text-xs text-base-content/60">{t('overview:last6Months')}</p>
             </div>
           </div>
           <ResponsiveContainer width="100%" height={280}>
@@ -654,7 +656,7 @@ const Overview = () => {
               </div>
               <div>
                 <h2 className="text-lg font-bold text-base-content">
-                  Batches by Course
+                  {t('overview:batchesByCourse')}
                 </h2>
               </div>
             </div>
@@ -688,7 +690,7 @@ const Overview = () => {
               </div>
               <div>
                 <h2 className="text-lg font-bold text-base-content">
-                  Gender Distribution
+                  {t('overview:genderDistribution')}
                 </h2>
               </div>
             </div>
@@ -729,7 +731,7 @@ const Overview = () => {
               </div>
               <div>
                 <h2 className="text-lg font-bold text-base-content">
-                  Student Status
+                  {t('overview:studentStatus')}
                 </h2>
               </div>
             </div>
@@ -768,10 +770,10 @@ const Overview = () => {
               </div>
               <div>
                 <h2 className="text-xl font-bold text-base-content">
-                  Admission Funnel
+                  {t('overview:admissionFunnel')}
                 </h2>
                 <p className="text-xs text-base-content/60">
-                  Conversion stages
+                  {t('overview:conversionStages')}
                 </p>
               </div>
             </div>
@@ -810,9 +812,9 @@ const Overview = () => {
               </div>
               <div>
                 <h2 className="text-xl font-bold text-base-content">
-                  Weekly Attendance
+                  {t('overview:weeklyAttendance')}
                 </h2>
-                <p className="text-xs text-base-content/60">Last 4 weeks</p>
+                <p className="text-xs text-base-content/60">{t('overview:last4Weeks')}</p>
               </div>
             </div>
             <ResponsiveContainer width="100%" height={280}>
@@ -849,10 +851,10 @@ const Overview = () => {
           </div>
           <div>
             <h2 className="text-2xl font-bold text-base-content">
-              Financial Overview
+              {t('overview:financialOverview')}
             </h2>
             <p className="text-sm text-base-content/60">
-              Comprehensive revenue statistics
+              {t('overview:comprehensiveRevenueStats')}
             </p>
           </div>
         </div>
@@ -862,7 +864,7 @@ const Overview = () => {
           <div className="bg-base-100 rounded-xl p-4 border-2 border-blue-200 dark:border-blue-700 shadow-lg hover:shadow-xl transition-shadow">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-semibold text-base-content">
-                Total Fees
+                {t('overview:totalFees')}
               </span>
               <MdSchool className="text-blue-600 dark:text-blue-400 text-2xl" />
             </div>
@@ -870,7 +872,7 @@ const Overview = () => {
               ${analytics.totalFees.toLocaleString()}
             </div>
             <div className="text-xs text-base-content/70 mt-1">
-              From {fees.length} students
+              {t('overview:fromStudents', { count: fees.length })}
             </div>
           </div>
 
@@ -878,7 +880,7 @@ const Overview = () => {
           <div className="bg-base-100 rounded-xl p-4 border-2 border-green-200 dark:border-green-700 shadow-lg hover:shadow-xl transition-shadow">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-semibold text-base-content">
-                Collected
+                {t('overview:collected')}
               </span>
               <MdTrendingUp className="text-green-600 dark:text-green-400 text-2xl" />
             </div>
@@ -886,7 +888,7 @@ const Overview = () => {
               ${analytics.totalPaid.toLocaleString()}
             </div>
             <div className="text-xs text-base-content/70 mt-1">
-              {analytics.clearFees} cleared payments
+              {t('overview:clearedPayments', { count: analytics.clearFees })}
             </div>
           </div>
 
@@ -894,7 +896,7 @@ const Overview = () => {
           <div className="bg-base-100 rounded-xl p-4 border-2 border-red-200 dark:border-red-700 shadow-lg hover:shadow-xl transition-shadow">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-semibold text-base-content">
-                Pending
+                {t('overview:pending')}
               </span>
               <MdTrendingDown className="text-red-600 dark:text-red-400 text-2xl" />
             </div>
@@ -902,7 +904,7 @@ const Overview = () => {
               ${analytics.totalDue.toLocaleString()}
             </div>
             <div className="text-xs text-base-content/70 mt-1">
-              {analytics.dueFees} pending payments
+              {t('overview:pendingPayments', { count: analytics.dueFees })}
             </div>
           </div>
 
@@ -910,7 +912,7 @@ const Overview = () => {
           <div className="bg-base-100 rounded-xl p-4 border-2 border-purple-200 dark:border-purple-700 shadow-lg hover:shadow-xl transition-shadow">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-semibold text-base-content">
-                Collection Rate
+                {t('overview:collectionRate')}
               </span>
               <FaTrophy className="text-purple-600 dark:text-purple-400 text-2xl" />
             </div>
@@ -918,7 +920,7 @@ const Overview = () => {
               {analytics.collectionRate}%
             </div>
             <div className="text-xs text-base-content/70 mt-1">
-              {analytics.collectionRate >= 75 ? "Excellent" : "Needs attention"}
+              {analytics.collectionRate >= 75 ? t('overview:excellent') : t('overview:needsAttention')}
             </div>
           </div>
         </div>
@@ -926,25 +928,25 @@ const Overview = () => {
 
       {/* Quick Stats Summary */}
       <div className="bg-linear-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-2xl p-6 shadow-2xl text-white">
-        <h2 className="text-2xl font-bold mb-4">📊 Quick Summary</h2>
+        <h2 className="text-2xl font-bold mb-4">{t('overview:quickSummary')}</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
             <div className="text-3xl font-bold">{analytics.totalStudents}</div>
-            <div className="text-sm text-white/80">Total Students</div>
+            <div className="text-sm text-white/80">{t('overview:totalStudents')}</div>
           </div>
           <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
             <div className="text-3xl font-bold">{analytics.activeBatches}</div>
-            <div className="text-sm text-white/80">Active Batches</div>
+            <div className="text-sm text-white/80">{t('overview:activeBatches')}</div>
           </div>
           <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
             <div className="text-3xl font-bold">{analytics.upcomingExams}</div>
-            <div className="text-sm text-white/80">Upcoming Exams</div>
+            <div className="text-sm text-white/80">{t('overview:upcomingExams')}</div>
           </div>
           <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
             <div className="text-3xl font-bold">
               {analytics.attendanceRate}%
             </div>
-            <div className="text-sm text-white/80">Attendance Rate</div>
+            <div className="text-sm text-white/80">{t('overview:attendanceRate')}</div>
           </div>
         </div>
       </div>

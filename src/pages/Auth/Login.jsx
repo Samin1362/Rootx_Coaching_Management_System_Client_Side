@@ -10,10 +10,12 @@ import {
   FaExclamationCircle,
 } from "react-icons/fa";
 import useAuth from "../../hooks/useAuth";
+import { useTranslation } from "react-i18next";
 
 const Login = () => {
   const navigate = useNavigate();
   const { signInUser } = useAuth();
+  const { t } = useTranslation(['auth', 'common']);
 
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -45,12 +47,12 @@ const Login = () => {
 
     // Validation
     if (!formData.email.trim()) {
-      setError("Please enter your email address");
+      setError(t('auth:pleaseEnterEmail'));
       return;
     }
 
     if (!formData.password) {
-      setError("Please enter your password");
+      setError(t('auth:pleaseEnterPassword'));
       return;
     }
 
@@ -72,21 +74,21 @@ const Login = () => {
 
       // Handle specific Firebase errors
       if (err.code === "auth/user-not-found") {
-        setError("No account found with this email. Please register first.");
+        setError(t('auth:userNotFound'));
       } else if (err.code === "auth/wrong-password") {
-        setError("Incorrect password. Please try again.");
+        setError(t('auth:wrongPassword'));
       } else if (err.code === "auth/invalid-email") {
-        setError("Invalid email address format");
+        setError(t('auth:invalidEmail'));
       } else if (err.code === "auth/user-disabled") {
-        setError("This account has been disabled. Please contact support.");
+        setError(t('auth:userDisabled'));
       } else if (err.code === "auth/too-many-requests") {
-        setError("Too many failed attempts. Please try again later.");
+        setError(t('auth:tooManyRequests'));
       } else if (err.code === "auth/network-request-failed") {
-        setError("Network error. Please check your internet connection.");
+        setError(t('auth:networkError'));
       } else if (err.code === "auth/invalid-credential") {
-        setError("Invalid email or password. Please try again.");
+        setError(t('auth:invalidCredential'));
       } else {
-        setError("Failed to sign in. Please try again.");
+        setError(t('auth:loginFailed'));
       }
       setLoading(false);
     }
@@ -100,10 +102,10 @@ const Login = () => {
           <FaSignInAlt className="text-2xl sm:text-3xl text-primary" />
         </div>
         <h2 className="text-2xl sm:text-3xl font-bold text-base-content mb-2 wrap-break-word">
-          Welcome Back
+          {t('auth:welcomeBack')}
         </h2>
         <p className="text-sm sm:text-base text-base-content/60 px-2 wrap-break-word">
-          Sign in to continue to your dashboard
+          {t('auth:signInToContinue')}
         </p>
       </div>
 
@@ -112,7 +114,7 @@ const Login = () => {
         <div className="alert alert-success mb-4">
           <FaCheckCircle className="text-lg shrink-0" />
           <span className="text-sm sm:text-base">
-            Login successful! Redirecting...
+            {t('auth:loginSuccessful')}
           </span>
         </div>
       )}
@@ -132,7 +134,7 @@ const Login = () => {
           <label className="label px-0">
             <span className="label-text font-medium flex items-center gap-2 text-sm sm:text-base">
               <FaEnvelope className="text-primary shrink-0" />
-              <span>Email Address</span>
+              <span>{t('auth:emailAddress')}</span>
             </span>
           </label>
           <div className="relative">
@@ -141,7 +143,7 @@ const Login = () => {
               name="email"
               value={formData.email}
               onChange={handleChange}
-              placeholder="Enter your email"
+              placeholder={t('auth:enterYourEmail')}
               className="input input-bordered w-full pl-10 sm:pl-11 pr-3 text-sm sm:text-base focus:input-primary transition-all duration-300"
               required
               disabled={loading || success}
@@ -156,7 +158,7 @@ const Login = () => {
           <label className="label px-0">
             <span className="label-text font-medium flex items-center gap-2 text-sm sm:text-base">
               <FaLock className="text-primary shrink-0" />
-              <span>Password</span>
+              <span>{t('auth:password')}</span>
             </span>
           </label>
           <div className="relative">
@@ -165,7 +167,7 @@ const Login = () => {
               name="password"
               value={formData.password}
               onChange={handleChange}
-              placeholder="Enter your password"
+              placeholder={t('auth:enterYourPassword')}
               className="input input-bordered w-full pl-10 sm:pl-11 pr-10 sm:pr-11 text-sm sm:text-base focus:input-primary transition-all duration-300"
               required
               disabled={loading || success}
@@ -199,14 +201,14 @@ const Login = () => {
               disabled={loading || success}
             />
             <span className="label-text text-base-content/70 text-xs sm:text-sm">
-              Remember me
+              {t('auth:rememberMe')}
             </span>
           </label>
           <a
             href="#"
             className="text-primary hover:underline font-medium text-xs sm:text-sm transition-all duration-300"
           >
-            Forgot Password?
+            {t('auth:forgotPassword')}
           </a>
         </div>
 
@@ -219,17 +221,17 @@ const Login = () => {
           {loading ? (
             <>
               <span className="loading loading-spinner loading-sm"></span>
-              Signing In...
+              {t('auth:signingIn')}
             </>
           ) : success ? (
             <>
               <FaCheckCircle />
-              Success!
+              {t('auth:success')}
             </>
           ) : (
             <>
               <FaSignInAlt />
-              Sign In
+              {t('auth:signIn')}
             </>
           )}
         </button>
@@ -237,12 +239,12 @@ const Login = () => {
         {/* Register Link */}
         <div className="text-center pt-3 sm:pt-4">
           <p className="text-base-content/70 text-sm sm:text-base">
-            Don't have an account?{" "}
+            {t('auth:dontHaveAccount')}{" "}
             <Link
               to="/register"
               className="text-primary font-semibold hover:underline transition-all duration-300"
             >
-              Create Account
+              {t('auth:createAccount')}
             </Link>
           </p>
         </div>
