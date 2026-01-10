@@ -125,7 +125,7 @@ const Loader = ({ size = "md", message = "Loading...", fullScreen = true }) => {
       </div>
 
       {/* Custom Animations */}
-      <style jsx>{`
+      <style>{`
         @keyframes progress-bar {
           0% {
             transform: translateX(-100%);

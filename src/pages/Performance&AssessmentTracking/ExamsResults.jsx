@@ -171,7 +171,10 @@ const ExamsResults = () => {
       const failCount = results.filter((r) => r.status === "rejected").length;
 
       if (failCount === 0) {
-        notification.success(`Successfully added ${successCount} results!`, "Success");
+        notification.success(
+          `Successfully added ${successCount} results!`,
+          "Success"
+        );
       } else {
         notification.warning(
           `Added ${successCount} results successfully. ${failCount} failed (possibly duplicates).`,
@@ -185,7 +188,10 @@ const ExamsResults = () => {
       setSelectedExamId("");
     },
     onError: () => {
-      notification.error("Failed to submit results. Please try again.", "Error");
+      notification.error(
+        "Failed to submit results. Please try again.",
+        "Error"
+      );
     },
   });
 
@@ -229,7 +235,10 @@ const ExamsResults = () => {
   // Handle bulk submit
   const handleBulkSubmit = () => {
     if (!selectedBatchId || !selectedExamId) {
-      notification.warning("Please select both Batch and Exam first!", "Missing Selection");
+      notification.warning(
+        "Please select both Batch and Exam first!",
+        "Missing Selection"
+      );
       return;
     }
 
@@ -268,18 +277,15 @@ const ExamsResults = () => {
     }
 
     if (resultsToSubmit.length === 0) {
-      notification.warning("Please enter marks for at least one student!", "No Data");
+      notification.warning(
+        "Please enter marks for at least one student!",
+        "No Data"
+      );
       return;
     }
 
-    // Confirmation
-    const confirmed = window.confirm(
-      `You are about to submit results for ${resultsToSubmit.length} student(s). Continue?`
-    );
-
-    if (confirmed) {
-      createBulkResultsMutation.mutate(resultsToSubmit);
-    }
+    // Submit results directly
+    createBulkResultsMutation.mutate(resultsToSubmit);
   };
 
   if (isLoading) {
@@ -453,7 +459,11 @@ const ExamsResults = () => {
             <>
               {studentsLoading ? (
                 <div className="py-8">
-                  <Loader size="sm" fullScreen={false} message="Loading students..." />
+                  <Loader
+                    size="sm"
+                    fullScreen={false}
+                    message="Loading students..."
+                  />
                 </div>
               ) : batchStudents.length === 0 ? (
                 <div className="text-center py-8">

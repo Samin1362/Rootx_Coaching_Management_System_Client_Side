@@ -185,7 +185,7 @@ const Notification = ({
       </div>
 
       {/* Custom Animations */}
-      <style jsx>{`
+      <style>{`
         @keyframes slideIn {
           from {
             transform: translateX(100%);

@@ -14,6 +14,8 @@ import {
   MdFilterList,
   MdExpandMore,
   MdExpandLess,
+  MdDelete,
+  MdWarning,
 } from "react-icons/md";
 import {
   FaCommentDots,
@@ -38,6 +40,8 @@ const AdmissionFollowUps = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [expandedFollowUps, setExpandedFollowUps] = useState({});
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [followUpToDelete, setFollowUpToDelete] = useState(null);
 
   const {
     register,
@@ -76,6 +80,37 @@ const AdmissionFollowUps = () => {
     },
   });
 
+  // Delete follow-up mutation
+  const deleteFollowUpMutation = useMutation({
+    mutationFn: async ({ admissionId, followUpIndex }) => {
+      // Get the current admission data
+      const admission = admissions.find((a) => a._id === admissionId);
+      if (!admission) throw new Error("Admission not found");
+
+      // Create a new followUps array without the deleted item
+      const updatedFollowUps = admission.followUps.filter(
+        (_, index) => index !== followUpIndex
+      );
+
+      // Send the updated followUps array to the backend
+      return axiosSecure.patch(`/admissions/${admissionId}`, {
+        followUps: updatedFollowUps,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(["admissions"]);
+      setDeleteModalOpen(false);
+      setFollowUpToDelete(null);
+      notification.success("Follow-up deleted successfully!");
+    },
+    onError: (error) => {
+      const errorMessage =
+        error.response?.data?.message ||
+        "Failed to delete follow-up. Please try again.";
+      notification.error(errorMessage, "Delete Failed");
+    },
+  });
+
   const handleSubmit = (data) => {
     followUpMutation.mutate({
       id: activeId,
@@ -89,6 +124,25 @@ const AdmissionFollowUps = () => {
       ...prev,
       [admissionId]: !prev[admissionId],
     }));
+  };
+
+  // Handle delete follow-up click
+  const handleDeleteClick = (admissionId, followUpIndex) => {
+    setFollowUpToDelete({ admissionId, followUpIndex });
+    setDeleteModalOpen(true);
+  };
+
+  // Handle confirm delete
+  const handleConfirmDelete = () => {
+    if (followUpToDelete) {
+      deleteFollowUpMutation.mutate(followUpToDelete);
+    }
+  };
+
+  // Handle cancel delete
+  const handleCancelDelete = () => {
+    setDeleteModalOpen(false);
+    setFollowUpToDelete(null);
   };
 
   // Filter and search admissions
@@ -429,7 +483,7 @@ const AdmissionFollowUps = () => {
                         {admission.followUps.map((followUp, idx) => (
                           <div
                             key={idx}
-                            className="bg-base-100 rounded-xl p-4 border border-base-300/50 hover:border-primary/30 transition-colors"
+                            className="bg-base-100 rounded-xl p-4 border border-base-300/50 hover:border-primary/30 transition-colors group"
                             style={{
                               animation: `fadeIn 0.3s ease-in-out ${
                                 idx * 0.05
@@ -458,6 +512,16 @@ const AdmissionFollowUps = () => {
                                   </span>
                                 </div>
                               </div>
+                              {/* Delete Button */}
+                              <button
+                                onClick={() =>
+                                  handleDeleteClick(admission._id, idx)
+                                }
+                                className="btn btn-ghost btn-sm btn-circle text-error opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-error/10"
+                                title="Delete follow-up"
+                              >
+                                <MdDelete className="text-lg" />
+                              </button>
                             </div>
                           </div>
                         ))}
@@ -483,6 +547,56 @@ const AdmissionFollowUps = () => {
             </div>
           )}
         </div>
+
+        {/* Delete Confirmation Modal */}
+        {deleteModalOpen && (
+          <div className="modal modal-open">
+            <div className="modal-box max-w-md">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 bg-error/10 rounded-full flex items-center justify-center shrink-0">
+                  <MdWarning className="text-error text-2xl" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-bold text-lg text-base-content mb-2">
+                    Delete Follow-up
+                  </h3>
+                  <p className="text-sm text-base-content/70 leading-relaxed">
+                    Are you sure you want to delete this follow-up note? This
+                    action cannot be undone.
+                  </p>
+                </div>
+              </div>
+
+              <div className="modal-action">
+                <button
+                  onClick={handleCancelDelete}
+                  className="btn btn-ghost"
+                  disabled={deleteFollowUpMutation.isPending}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleConfirmDelete}
+                  className="btn btn-error text-white"
+                  disabled={deleteFollowUpMutation.isPending}
+                >
+                  {deleteFollowUpMutation.isPending ? (
+                    <>
+                      <span className="loading loading-spinner loading-sm"></span>
+                      Deleting...
+                    </>
+                  ) : (
+                    <>
+                      <MdDelete className="text-lg" />
+                      Delete
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+            <div className="modal-backdrop" onClick={handleCancelDelete}></div>
+          </div>
+        )}
       </div>
     </div>
   );

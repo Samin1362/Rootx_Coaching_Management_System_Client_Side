@@ -169,7 +169,7 @@ const CreateBatches = () => {
                   />
 
                   <Input
-                    label="Total Fee (₹)"
+                    label="Total Fee ($)"
                     type="number"
                     placeholder="e.g., 15000"
                     required

@@ -125,7 +125,10 @@ const NewFeeEntry = () => {
   const onSubmit = async (data) => {
     // Validate that batch is selected (which provides totalFee)
     if (!selectedBatch || !totalFee) {
-      notification.warning("Please select a batch with a valid fee", "Missing Information");
+      notification.warning(
+        "Please select a batch with a valid fee",
+        "Missing Information"
+      );
       return;
     }
 
@@ -149,7 +152,10 @@ const NewFeeEntry = () => {
       }
     } catch (error) {
       console.error(error);
-      notification.error("Failed to create fee entry. Please try again.", "Error");
+      notification.error(
+        "Failed to create fee entry. Please try again.",
+        "Error"
+      );
     }
   };
 
@@ -266,7 +272,11 @@ const NewFeeEntry = () => {
                         <div className="absolute z-50 w-full mt-1 bg-base-100 border border-base-300 rounded-xl shadow-xl max-h-60 overflow-y-auto">
                           {isLoadingStudents ? (
                             <div className="p-4">
-                              <Loader size="sm" fullScreen={false} message="Loading students..." />
+                              <Loader
+                                size="sm"
+                                fullScreen={false}
+                                message="Loading students..."
+                              />
                             </div>
                           ) : filteredStudents.length > 0 ? (
                             <ul>
@@ -331,9 +341,9 @@ const NewFeeEntry = () => {
                       },
                       ...batches.map((batch) => ({
                         value: batch._id,
-                        label: `${batch.name} — ${batch.schedule} — $${
-                          batch.totalFee?.toLocaleString() || "N/A"
-                        }`,
+                        label: `${batch.name} — ${batch.course} — ${
+                          batch.schedule
+                        } — $${batch.totalFee?.toLocaleString() || "N/A"}`,
                       })),
                     ]}
                     disabled={isLoadingBatches}
