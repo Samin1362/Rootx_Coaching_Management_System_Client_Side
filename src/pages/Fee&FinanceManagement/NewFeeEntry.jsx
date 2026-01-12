@@ -71,6 +71,15 @@ const NewFeeEntry = () => {
     },
   });
 
+  /* Fetch existing fee entries */
+  const { data: feeEntries = [], isLoading: isLoadingFees } = useQuery({
+    queryKey: ["fee-entries"],
+    queryFn: async () => {
+      const res = await axiosSecure.get("/fees");
+      return res.data;
+    },
+  });
+
   const paidAmount = watch("paidAmount");
   const selectedBatchId = watch("batchId");
 
@@ -93,12 +102,31 @@ const NewFeeEntry = () => {
     );
   }, [students, studentSearch]);
 
+  // Check if student already has a fee entry
+  const hasExistingFeeEntry = (studentId) => {
+    return feeEntries.some((entry) => entry.studentId === studentId);
+  };
+
   // Handle student selection
   const handleStudentSelect = (student) => {
+    // Check if student already has a fee entry
+    if (hasExistingFeeEntry(student._id)) {
+      notification.error(
+        `${student.name} already has a fee entry. Please edit the existing entry instead.`,
+        "Duplicate Entry"
+      );
+      return;
+    }
+
     setSelectedStudent(student);
     setStudentSearch(student.name);
     setShowStudentDropdown(false);
     setValue("studentId", student._id);
+
+    // Auto-select the student's batch if available
+    if (student.batchId) {
+      setValue("batchId", student.batchId);
+    }
   };
 
   // Handle student search input
@@ -125,7 +153,10 @@ const NewFeeEntry = () => {
   const onSubmit = async (data) => {
     // Validate that batch is selected (which provides totalFee)
     if (!selectedBatch || !totalFee) {
-      notification.warning("Please select a batch with a valid fee", "Missing Information");
+      notification.warning(
+        "Please select a batch with a valid fee",
+        "Missing Information"
+      );
       return;
     }
 
@@ -149,7 +180,10 @@ const NewFeeEntry = () => {
       }
     } catch (error) {
       console.error(error);
-      notification.error("Failed to create fee entry. Please try again.", "Error");
+      notification.error(
+        "Failed to create fee entry. Please try again.",
+        "Error"
+      );
     }
   };
 
@@ -160,7 +194,7 @@ const NewFeeEntry = () => {
     setShowStudentDropdown(false);
   };
 
-  const isLoading = isLoadingStudents || isLoadingBatches;
+  const isLoading = isLoadingStudents || isLoadingBatches || isLoadingFees;
   const isDataReady = students.length > 0 && batches.length > 0;
 
   return (
@@ -249,9 +283,14 @@ const NewFeeEntry = () => {
                       <div className="mt-2 p-2 bg-success/10 border border-success/20 rounded-lg flex items-center gap-2">
                         <FaCheckCircle className="text-success text-sm" />
                         <div className="flex-1">
-                          <p className="text-xs font-semibold text-base-content">
-                            {selectedStudent.name}
-                          </p>
+                          <div className="flex items-center gap-2">
+                            <span className="badge badge-primary badge-xs font-bold">
+                              #{selectedStudent.roll || "N/A"}
+                            </span>
+                            <p className="text-xs font-semibold text-base-content">
+                              {selectedStudent.name}
+                            </p>
+                          </div>
                           <p className="text-xs text-base-content/60">
                             {selectedStudent.phone}
                           </p>
@@ -266,33 +305,59 @@ const NewFeeEntry = () => {
                         <div className="absolute z-50 w-full mt-1 bg-base-100 border border-base-300 rounded-xl shadow-xl max-h-60 overflow-y-auto">
                           {isLoadingStudents ? (
                             <div className="p-4">
-                              <Loader size="sm" fullScreen={false} message="Loading students..." />
+                              <Loader
+                                size="sm"
+                                fullScreen={false}
+                                message="Loading students..."
+                              />
                             </div>
                           ) : filteredStudents.length > 0 ? (
                             <ul>
-                              {filteredStudents.map((student) => (
-                                <li key={student._id}>
-                                  <button
-                                    type="button"
-                                    onClick={() => handleStudentSelect(student)}
-                                    className="w-full text-left px-4 py-3 hover:bg-primary/10 transition-colors border-b border-base-300 last:border-b-0"
-                                  >
-                                    <div className="flex items-center gap-3">
-                                      <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center shrink-0">
-                                        <MdPerson className="text-primary" />
+                              {filteredStudents.map((student) => {
+                                const hasFeeEntry = hasExistingFeeEntry(
+                                  student._id
+                                );
+                                return (
+                                  <li key={student._id}>
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        handleStudentSelect(student)
+                                      }
+                                      disabled={hasFeeEntry}
+                                      className={`w-full text-left px-4 py-3 transition-colors border-b border-base-300 last:border-b-0 ${
+                                        hasFeeEntry
+                                          ? "opacity-50 cursor-not-allowed bg-base-200"
+                                          : "hover:bg-primary/10"
+                                      }`}
+                                    >
+                                      <div className="flex items-center gap-3">
+                                        <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center shrink-0">
+                                          <MdPerson className="text-primary" />
+                                        </div>
+                                        <div className="flex-1">
+                                          <div className="flex items-center gap-2">
+                                            <span className="badge badge-primary badge-xs font-bold">
+                                              #{student.roll || "N/A"}
+                                            </span>
+                                            <p className="text-sm font-semibold text-base-content">
+                                              {student.name}
+                                            </p>
+                                            {hasFeeEntry && (
+                                              <span className="badge badge-success badge-xs">
+                                                Already Enrolled
+                                              </span>
+                                            )}
+                                          </div>
+                                          <p className="text-xs text-base-content/60">
+                                            {student.phone}
+                                          </p>
+                                        </div>
                                       </div>
-                                      <div className="flex-1">
-                                        <p className="text-sm font-semibold text-base-content">
-                                          {student.name}
-                                        </p>
-                                        <p className="text-xs text-base-content/60">
-                                          {student.phone}
-                                        </p>
-                                      </div>
-                                    </div>
-                                  </button>
-                                </li>
-                              ))}
+                                    </button>
+                                  </li>
+                                );
+                              })}
                             </ul>
                           ) : (
                             <div className="p-4 text-center text-base-content/60">
@@ -331,9 +396,9 @@ const NewFeeEntry = () => {
                       },
                       ...batches.map((batch) => ({
                         value: batch._id,
-                        label: `${batch.name} — ${batch.schedule} — $${
-                          batch.totalFee?.toLocaleString() || "N/A"
-                        }`,
+                        label: `${batch.name} — ${batch.course} — ${
+                          batch.schedule
+                        } — $${batch.totalFee?.toLocaleString() || "N/A"}`,
                       })),
                     ]}
                     disabled={isLoadingBatches}

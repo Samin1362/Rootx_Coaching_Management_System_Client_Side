@@ -126,6 +126,14 @@ const Overview = () => {
     },
   });
 
+  const { data: expenses = [], isLoading: expensesLoading } = useQuery({
+    queryKey: ["allExpenses"],
+    queryFn: async () => {
+      const res = await axiosSecure.get("/expenses");
+      return res.data.data;
+    },
+  });
+
   // Calculate comprehensive analytics
   const analytics = useMemo(() => {
     // Student Statistics
@@ -161,6 +169,25 @@ const Overview = () => {
       totalFees > 0 ? ((totalPaid / totalFees) * 100).toFixed(2) : 0;
     const clearFees = fees.filter((f) => f.status === "clear").length;
     const dueFees = fees.filter((f) => f.status === "due").length;
+
+    // Expense Statistics
+    const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);
+    const profit = totalPaid - totalExpenses;
+    const profitMargin = totalPaid > 0 ? ((profit / totalPaid) * 100).toFixed(2) : 0;
+
+    // Expense by category
+    const expensesByCategory = expenses.reduce((acc, expense) => {
+      const category = expense.category || "Other";
+      acc[category] = (acc[category] || 0) + expense.amount;
+      return acc;
+    }, {});
+
+    const expenseCategoryData = Object.entries(expensesByCategory).map(
+      ([category, amount]) => ({
+        category,
+        amount,
+      })
+    );
 
     // Attendance Statistics
     const totalAttendanceSessions = attendances.length;
@@ -356,6 +383,9 @@ const Overview = () => {
       averageMarks,
       maleStudents,
       femaleStudents,
+      totalExpenses,
+      profit,
+      profitMargin,
 
       // Chart Data
       studentGrowth: last6Months,
@@ -366,8 +396,9 @@ const Overview = () => {
       genderData,
       paymentMethodData,
       weeklyAttendance,
+      expenseCategoryData,
     };
-  }, [students, batches, admissions, fees, attendances, exams, results]);
+  }, [students, batches, admissions, fees, attendances, exams, results, expenses]);
 
   const isLoading =
     studentsLoading ||
@@ -376,7 +407,8 @@ const Overview = () => {
     feesLoading ||
     attendancesLoading ||
     examsLoading ||
-    resultsLoading;
+    resultsLoading ||
+    expensesLoading;
 
   if (isLoading) {
     return <Loader message={t('common:loadingData')} />;
@@ -556,6 +588,222 @@ const Overview = () => {
             <div className="stat-value text-error text-xl">
               ${analytics.totalDue.toLocaleString()}
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Financial Overview Section */}
+      <div className="bg-gradient-to-br from-primary/5 to-secondary/5 rounded-2xl p-6 border border-primary/20">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-12 h-12 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center shadow-lg">
+            <FaDollarSign className="text-2xl text-white" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold text-base-content">
+              {t('overview:financialOverview')}
+            </h2>
+            <p className="text-sm text-base-content/60">
+              {t('overview:comprehensiveRevenueStats')}
+            </p>
+          </div>
+        </div>
+
+        {/* Financial Metrics Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          {/* Total Fees */}
+          <div className="bg-base-100 rounded-xl p-4 border-2 border-blue-200 dark:border-blue-700 shadow-lg hover:shadow-xl transition-shadow">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-semibold text-base-content">
+                {t('overview:totalFees')}
+              </span>
+              <MdSchool className="text-blue-600 dark:text-blue-400 text-2xl" />
+            </div>
+            <div className="text-3xl font-bold text-base-content">
+              ${analytics.totalFees.toLocaleString()}
+            </div>
+            <div className="text-xs text-base-content/70 mt-1">
+              {t('overview:fromStudents', { count: fees.length })}
+            </div>
+          </div>
+
+          {/* Total Collected */}
+          <div className="bg-base-100 rounded-xl p-4 border-2 border-green-200 dark:border-green-700 shadow-lg hover:shadow-xl transition-shadow">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-semibold text-base-content">
+                {t('overview:collected')}
+              </span>
+              <MdTrendingUp className="text-green-600 dark:text-green-400 text-2xl" />
+            </div>
+            <div className="text-3xl font-bold text-base-content">
+              ${analytics.totalPaid.toLocaleString()}
+            </div>
+            <div className="text-xs text-base-content/70 mt-1">
+              {t('overview:clearedPayments', { count: analytics.clearFees })}
+            </div>
+          </div>
+
+          {/* Total Due */}
+          <div className="bg-base-100 rounded-xl p-4 border-2 border-red-200 dark:border-red-700 shadow-lg hover:shadow-xl transition-shadow">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-semibold text-base-content">
+                {t('overview:pending')}
+              </span>
+              <MdTrendingDown className="text-red-600 dark:text-red-400 text-2xl" />
+            </div>
+            <div className="text-3xl font-bold text-base-content">
+              ${analytics.totalDue.toLocaleString()}
+            </div>
+            <div className="text-xs text-base-content/70 mt-1">
+              {t('overview:pendingPayments', { count: analytics.dueFees })}
+            </div>
+          </div>
+
+          {/* Collection Rate */}
+          <div className="bg-base-100 rounded-xl p-4 border-2 border-purple-200 dark:border-purple-700 shadow-lg hover:shadow-xl transition-shadow">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-semibold text-base-content">
+                {t('overview:collectionRate')}
+              </span>
+              <FaTrophy className="text-purple-600 dark:text-purple-400 text-2xl" />
+            </div>
+            <div className="text-3xl font-bold text-base-content">
+              {analytics.collectionRate}%
+            </div>
+            <div className="text-xs text-base-content/70 mt-1">
+              {analytics.collectionRate >= 75 ? t('overview:excellent') : t('overview:needsAttention')}
+            </div>
+          </div>
+        </div>
+
+        {/* Expenses & Profit Section */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          {/* Total Expenses */}
+          <div className="bg-base-100 rounded-xl p-4 shadow-md border-2 border-orange-200 dark:border-orange-700">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-semibold text-base-content">
+                Total Expenses
+              </span>
+              <div className="w-8 h-8 bg-error/10 rounded-lg flex items-center justify-center">
+                <MdTrendingDown className="text-error text-lg" />
+              </div>
+            </div>
+            <p className="text-3xl font-bold text-error">
+              ${analytics.totalExpenses.toLocaleString()}
+            </p>
+            <p className="text-xs text-base-content/70 mt-1">
+              {expenses.length} expense records
+            </p>
+          </div>
+
+          {/* Net Profit */}
+          <div className={`bg-base-100 rounded-xl p-4 shadow-md border-2 ${
+            analytics.profit >= 0 ? 'border-primary' : 'border-error'
+          }`}>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-semibold text-base-content">
+                Net Profit
+              </span>
+              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                analytics.profit >= 0 ? 'bg-primary/10' : 'bg-error/10'
+              }`}>
+                {analytics.profit >= 0 ? (
+                  <MdTrendingUp className="text-primary text-lg" />
+                ) : (
+                  <MdTrendingDown className="text-error text-lg" />
+                )}
+              </div>
+            </div>
+            <p className={`text-3xl font-bold ${
+              analytics.profit >= 0 ? 'text-primary' : 'text-error'
+            }`}>
+              ${analytics.profit.toLocaleString()}
+            </p>
+            <p className="text-xs text-base-content/70 mt-1">
+              {analytics.profitMargin}% profit margin
+            </p>
+          </div>
+        </div>
+
+        {/* Financial Charts */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Revenue vs Expenses Bar Chart */}
+          <div className="bg-base-100 rounded-xl p-4 shadow-md border border-base-300">
+            <h3 className="text-lg font-semibold text-base-content mb-4">
+              Revenue vs Expenses
+            </h3>
+            <ResponsiveContainer width="100%" height={250}>
+              <BarChart
+                data={[
+                  {
+                    name: "Financial Summary",
+                    Revenue: analytics.totalPaid,
+                    Expenses: analytics.totalExpenses,
+                    Profit: analytics.profit >= 0 ? analytics.profit : 0,
+                  },
+                ]}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="#444" />
+                <XAxis dataKey="name" stroke="#888" style={{ fontSize: "12px" }} />
+                <YAxis stroke="#888" style={{ fontSize: "12px" }} />
+                <Tooltip content={<CustomTooltip />} />
+                <Legend />
+                <Bar dataKey="Revenue" fill="#10b981" radius={[8, 8, 0, 0]} />
+                <Bar dataKey="Expenses" fill="#ef4444" radius={[8, 8, 0, 0]} />
+                <Bar dataKey="Profit" fill="#3b82f6" radius={[8, 8, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Expenses by Category Pie Chart */}
+          <div className="bg-base-100 rounded-xl p-4 shadow-md border border-base-300">
+            <h3 className="text-lg font-semibold text-base-content mb-4">
+              Expenses by Category
+            </h3>
+            {analytics.expenseCategoryData.length > 0 ? (
+              <ResponsiveContainer width="100%" height={250}>
+                <PieChart>
+                  <Pie
+                    data={analytics.expenseCategoryData}
+                    dataKey="amount"
+                    nameKey="category"
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={80}
+                    label={({ category, percent }) =>
+                      `${category} ${(percent * 100).toFixed(0)}%`
+                    }
+                  >
+                    {analytics.expenseCategoryData.map((entry, index) => {
+                      const colors = [
+                        "#3b82f6",
+                        "#ef4444",
+                        "#10b981",
+                        "#f59e0b",
+                        "#8b5cf6",
+                        "#ec4899",
+                        "#06b6d4",
+                        "#84cc16",
+                      ];
+                      return (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={colors[index % colors.length]}
+                        />
+                      );
+                    })}
+                  </Pie>
+                  <Tooltip content={<CustomTooltip />} />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex items-center justify-center h-[250px] text-base-content/60">
+                <div className="text-center">
+                  <FaMoneyBillWave className="text-4xl mx-auto mb-2 opacity-40" />
+                  <p className="text-sm">No expense data available</p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -841,89 +1089,6 @@ const Overview = () => {
             </ResponsiveContainer>
           </div>
         )}
-      </div>
-
-      {/* Financial Overview */}
-      <div className="bg-base-100 rounded-2xl p-6 shadow-xl border border-base-300">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-12 h-12 bg-success/10 rounded-xl flex items-center justify-center">
-            <FaDollarSign className="text-success text-2xl" />
-          </div>
-          <div>
-            <h2 className="text-2xl font-bold text-base-content">
-              {t('overview:financialOverview')}
-            </h2>
-            <p className="text-sm text-base-content/60">
-              {t('overview:comprehensiveRevenueStats')}
-            </p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Total Fees */}
-          <div className="bg-base-100 rounded-xl p-4 border-2 border-blue-200 dark:border-blue-700 shadow-lg hover:shadow-xl transition-shadow">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-semibold text-base-content">
-                {t('overview:totalFees')}
-              </span>
-              <MdSchool className="text-blue-600 dark:text-blue-400 text-2xl" />
-            </div>
-            <div className="text-3xl font-bold text-base-content">
-              ${analytics.totalFees.toLocaleString()}
-            </div>
-            <div className="text-xs text-base-content/70 mt-1">
-              {t('overview:fromStudents', { count: fees.length })}
-            </div>
-          </div>
-
-          {/* Total Collected */}
-          <div className="bg-base-100 rounded-xl p-4 border-2 border-green-200 dark:border-green-700 shadow-lg hover:shadow-xl transition-shadow">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-semibold text-base-content">
-                {t('overview:collected')}
-              </span>
-              <MdTrendingUp className="text-green-600 dark:text-green-400 text-2xl" />
-            </div>
-            <div className="text-3xl font-bold text-base-content">
-              ${analytics.totalPaid.toLocaleString()}
-            </div>
-            <div className="text-xs text-base-content/70 mt-1">
-              {t('overview:clearedPayments', { count: analytics.clearFees })}
-            </div>
-          </div>
-
-          {/* Total Due */}
-          <div className="bg-base-100 rounded-xl p-4 border-2 border-red-200 dark:border-red-700 shadow-lg hover:shadow-xl transition-shadow">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-semibold text-base-content">
-                {t('overview:pending')}
-              </span>
-              <MdTrendingDown className="text-red-600 dark:text-red-400 text-2xl" />
-            </div>
-            <div className="text-3xl font-bold text-base-content">
-              ${analytics.totalDue.toLocaleString()}
-            </div>
-            <div className="text-xs text-base-content/70 mt-1">
-              {t('overview:pendingPayments', { count: analytics.dueFees })}
-            </div>
-          </div>
-
-          {/* Collection Rate */}
-          <div className="bg-base-100 rounded-xl p-4 border-2 border-purple-200 dark:border-purple-700 shadow-lg hover:shadow-xl transition-shadow">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-semibold text-base-content">
-                {t('overview:collectionRate')}
-              </span>
-              <FaTrophy className="text-purple-600 dark:text-purple-400 text-2xl" />
-            </div>
-            <div className="text-3xl font-bold text-base-content">
-              {analytics.collectionRate}%
-            </div>
-            <div className="text-xs text-base-content/70 mt-1">
-              {analytics.collectionRate >= 75 ? t('overview:excellent') : t('overview:needsAttention')}
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* Quick Stats Summary */}

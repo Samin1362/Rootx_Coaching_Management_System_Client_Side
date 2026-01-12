@@ -15,6 +15,7 @@ import FeesCollected from "./pages/Fee&FinanceManagement/FeesCollected";
 import FeesDues from "./pages/Fee&FinanceManagement/FeesDues";
 import FeesReport from "./pages/Fee&FinanceManagement/FeesReport";
 import NewFeeEntry from "./pages/Fee&FinanceManagement/NewFeeEntry";
+import Expense from "./pages/Fee&FinanceManagement/Expense";
 import Batches from "./pages/Batch&ClassManagement/Batches";
 import CreateBatches from "./pages/Batch&ClassManagement/CreateBatches";
 import Exams from "./pages/Performance&AssessmentTracking/Exams";
@@ -129,6 +130,10 @@ const router = createBrowserRouter([
           {
             path: "financesReports",
             Component: FeesReport,
+          },
+          {
+            path: "expenses",
+            Component: Expense,
           },
         ],
       },

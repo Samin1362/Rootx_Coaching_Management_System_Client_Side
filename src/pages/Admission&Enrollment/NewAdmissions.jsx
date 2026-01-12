@@ -48,7 +48,10 @@ const NewAdmissions = () => {
       }
     } catch (error) {
       console.error(error);
-      notification.error("Failed to create admission. Please try again.", "Error");
+      notification.error(
+        "Failed to create admission. Please try again.",
+        "Error"
+      );
     }
   };
 
@@ -145,7 +148,7 @@ const NewAdmissions = () => {
                     },
                     ...batches.map((batch) => ({
                       value: batch._id,
-                      label: `${batch.name} — ${batch.schedule}`,
+                      label: `${batch.name} — ${batch.course} — ${batch.schedule}`,
                     })),
                   ]}
                   disabled={isLoading}
