@@ -247,7 +247,7 @@ const AdmissionFollowUps = () => {
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="select select-bordered bg-base-200 focus:bg-base-100 min-w-[160px]"
+                className="select select-bordered bg-base-200 focus:bg-base-100 min-w-40"
               >
                 <option value="all">All Status</option>
                 <option value="inquiry">Inquiry</option>

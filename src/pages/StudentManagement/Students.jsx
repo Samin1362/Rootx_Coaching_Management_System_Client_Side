@@ -304,6 +304,18 @@ const Students = () => {
   const columns = useMemo(
     () => [
       {
+        accessorKey: "roll",
+        header: "Roll",
+        cell: ({ row }) => (
+          <div className="flex items-center justify-center">
+            <span className="badge badge-primary badge-lg font-bold">
+              {row.original.roll || "N/A"}
+            </span>
+          </div>
+        ),
+        size: 80,
+      },
+      {
         accessorKey: "name",
         header: "Student",
         cell: ({ row }) => (
@@ -723,9 +735,14 @@ const Students = () => {
 
                         {/* Name and Status */}
                         <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold text-base-content truncate">
-                            {student.name}
-                          </h3>
+                          <div className="flex items-center gap-2">
+                            <span className="badge badge-primary badge-sm font-bold">
+                              #{student.roll || "N/A"}
+                            </span>
+                            <h3 className="font-semibold text-base-content truncate">
+                              {student.name}
+                            </h3>
+                          </div>
                           <div className="flex items-center gap-2 mt-1">
                             <span
                               className={`badge badge-sm ${

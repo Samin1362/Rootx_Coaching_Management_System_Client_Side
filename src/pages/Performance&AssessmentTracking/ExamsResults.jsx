@@ -499,6 +499,7 @@ const ExamsResults = () => {
                       <thead>
                         <tr className="bg-base-200">
                           <th className="text-sm font-bold">#</th>
+                          <th className="text-sm font-bold">Roll</th>
                           <th className="text-sm font-bold">Student Name</th>
                           <th className="text-sm font-bold">Phone</th>
                           <th className="text-sm font-bold">Marks Obtained</th>
@@ -509,6 +510,11 @@ const ExamsResults = () => {
                         {batchStudents.map((student, index) => (
                           <tr key={student._id} className="hover">
                             <td>{index + 1}</td>
+                            <td>
+                              <span className="badge badge-primary badge-sm font-bold">
+                                {student.roll || "N/A"}
+                              </span>
+                            </td>
                             <td>
                               <div className="flex items-center gap-3">
                                 <div className="avatar">
@@ -580,7 +586,7 @@ const ExamsResults = () => {
 
                   {/* Mobile Accordion */}
                   <div className="md:hidden space-y-3">
-                    {batchStudents.map((student, index) => (
+                    {batchStudents.map((student) => (
                       <div
                         key={student._id}
                         className="bg-base-200 rounded-lg p-4 border border-base-300"
@@ -598,8 +604,13 @@ const ExamsResults = () => {
                             </div>
                           </div>
                           <div>
-                            <div className="font-semibold text-base-content">
-                              {index + 1}. {student.name}
+                            <div className="flex items-center gap-2">
+                              <span className="badge badge-primary badge-sm font-bold">
+                                #{student.roll || "N/A"}
+                              </span>
+                              <span className="font-semibold text-base-content">
+                                {student.name}
+                              </span>
                             </div>
                             <div className="text-xs text-base-content/60">
                               {student.phone}

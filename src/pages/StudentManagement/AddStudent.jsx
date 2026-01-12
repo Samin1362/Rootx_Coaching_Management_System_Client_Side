@@ -82,8 +82,19 @@ const AddStudent = () => {
 
     try {
       const res = await axiosSecure.post("/students", student);
+
       if (res.data.insertedId) {
-        notification.success("Student added successfully!");
+        const rollNumber = res.data.roll;
+
+        if (rollNumber) {
+          notification.success(
+            `Student added successfully! Roll Number: ${rollNumber}`,
+            "Success"
+          );
+        } else {
+          notification.success("Student added successfully!", "Success");
+        }
+
         reset();
         setImageUrl("");
         setDob(null);

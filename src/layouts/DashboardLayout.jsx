@@ -28,6 +28,7 @@ import {
   MdLiveTv,
   MdAssessment,
   MdAddCircle,
+  MdReceipt,
   MdViewList,
 } from "react-icons/md";
 import { RiSidebarUnfoldFill } from "react-icons/ri";
@@ -43,7 +44,7 @@ const DashboardLayout = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logoutUser } = useAuth();
-  const { t } = useTranslation(['navbar', 'common']);
+  const { t } = useTranslation(["navbar", "common"]);
 
   // Default profile image
   const defaultProfileImage =
@@ -177,7 +178,11 @@ const DashboardLayout = () => {
             <button
               onClick={toggleTheme}
               className="btn btn-circle btn-ghost hover:bg-primary/10 hover:text-primary hover:rotate-180 transition-all duration-500 active:scale-95"
-              title={theme === "rootxlight" ? t('navbar:switchToDarkMode') : t('navbar:switchToLightMode')}
+              title={
+                theme === "rootxlight"
+                  ? t("navbar:switchToDarkMode")
+                  : t("navbar:switchToLightMode")
+              }
             >
               {theme === "rootxlight" ? (
                 <MdDarkMode className="text-xl sm:text-2xl" />
@@ -246,7 +251,7 @@ const DashboardLayout = () => {
                     className="flex items-center gap-3 px-3 py-2 hover:bg-primary/10 hover:text-primary transition-all duration-200 rounded-lg"
                   >
                     <FaUserCircle className="text-lg" />
-                    <span className="text-sm">{t('navbar:myProfile')}</span>
+                    <span className="text-base">{t("navbar:myProfile")}</span>
                   </Link>
                 </li>
 
@@ -257,7 +262,7 @@ const DashboardLayout = () => {
                     className="flex items-center gap-3 px-3 py-2 hover:bg-primary/10 hover:text-primary transition-all duration-200 rounded-lg"
                   >
                     <FaCog className="text-lg" />
-                    <span className="text-sm">{t('navbar:settings')}</span>
+                    <span className="text-base">{t("navbar:settings")}</span>
                   </Link>
                 </li>
 
@@ -270,7 +275,7 @@ const DashboardLayout = () => {
                     className="flex items-center gap-3 px-3 py-2 hover:bg-error/10 hover:text-error transition-all duration-200 rounded-lg font-medium"
                   >
                     <FaSignOutAlt className="text-lg" />
-                    <span className="text-sm">{t('navbar:logout')}</span>
+                    <span className="text-base">{t("navbar:logout")}</span>
                   </button>
                 </li>
               </ul>
@@ -292,7 +297,7 @@ const DashboardLayout = () => {
                 <span className="font-semibold text-primary">
                   Rootx Software
                 </span>
-                . {t('overview:allRightsReserved')}
+                . {t("overview:allRightsReserved")}
               </div>
               <div className="flex gap-6 text-sm">
                 <a
@@ -301,7 +306,7 @@ const DashboardLayout = () => {
                   rel="noopener noreferrer"
                   className="text-base-content/70 hover:text-primary transition-colors duration-200"
                 >
-                  {t('overview:website')}
+                  {t("overview:website")}
                 </a>
                 {/* <a
                   href="https://rootssoftware.com/support"
@@ -337,15 +342,17 @@ const DashboardLayout = () => {
             <Link to="/dashboard/overview">
               <li>
                 <button
-                  className={`is-drawer-close:tooltip is-drawer-close:tooltip-right rounded-lg transition-all duration-200 active:scale-95 ${
+                  className={`is-drawer-close:tooltip is-drawer-close:tooltip-right rounded-lg transition-all duration-200 active:scale-95 py-3 ${
                     location.pathname === "/dashboard/overview"
                       ? "bg-primary text-primary-content font-semibold shadow-md"
                       : "hover:bg-primary/10 hover:text-primary hover:translate-x-1"
                   }`}
-                  data-tip={t('navbar:overview')}
+                  data-tip={t("navbar:overview")}
                 >
-                  <GrOverview className="text-xl" />
-                  <span className="is-drawer-close:hidden">{t('navbar:overview')}</span>
+                  <GrOverview className="text-2xl" />
+                  <span className="is-drawer-close:hidden text-base font-medium">
+                    {t("navbar:overview")}
+                  </span>
                 </button>
               </li>
             </Link>
@@ -353,17 +360,17 @@ const DashboardLayout = () => {
             {/* Student Management with nested menu */}
             <li className="relative">
               <button
-                className={`is-drawer-close:tooltip is-drawer-close:tooltip-right rounded-lg transition-all duration-200 active:scale-95 ${
+                className={`is-drawer-close:tooltip is-drawer-close:tooltip-right rounded-lg transition-all duration-200 active:scale-95 py-3 ${
                   isRouteActive("/dashboard/studentManagement")
                     ? "bg-primary/20 text-primary font-semibold"
                     : "hover:bg-primary/10 hover:text-primary hover:translate-x-1"
                 }`}
-                data-tip={t('navbar:studentManagement')}
+                data-tip={t("navbar:studentManagement")}
                 onClick={() => handleMenuToggle("student")}
               >
-                <MdManageAccounts className="text-xl" />
-                <span className="is-drawer-close:hidden">
-                  {t('navbar:studentManagement')}
+                <MdManageAccounts className="text-2xl" />
+                <span className="is-drawer-close:hidden text-base font-medium">
+                  {t("navbar:studentManagement")}
                 </span>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -371,7 +378,7 @@ const DashboardLayout = () => {
                   strokeWidth="2"
                   fill="none"
                   stroke="currentColor"
-                  className={`ml-auto inline-block size-4 is-drawer-close:hidden transition-transform duration-300 ${
+                  className={`ml-auto inline-block size-5 is-drawer-close:hidden transition-transform duration-300 ${
                     isStudentMenuOpen ? "rotate-90" : ""
                   }`}
                 >
@@ -390,15 +397,17 @@ const DashboardLayout = () => {
                     <li>
                       <button
                         onClick={handleCloseModal}
-                        className={`flex items-center gap-3 w-full transition-all duration-200 px-4 py-3 ${
+                        className={`flex items-center gap-3 w-full transition-all duration-200 px-4 py-3.5 ${
                           location.pathname ===
                           "/dashboard/studentManagement/students"
                             ? "bg-primary text-primary-content font-semibold"
                             : "hover:bg-primary/10 hover:text-primary hover:translate-x-1"
                         }`}
                       >
-                        <FaUserGraduate className="inline-block size-4" />
-                        <span>{t('navbar:allStudents')}</span>
+                        <FaUserGraduate className="inline-block size-5" />
+                        <span className="text-base">
+                          {t("navbar:allStudents")}
+                        </span>
                       </button>
                     </li>
                   </Link>
@@ -406,15 +415,17 @@ const DashboardLayout = () => {
                     <li>
                       <button
                         onClick={handleCloseModal}
-                        className={`flex items-center gap-3 w-full transition-all duration-200 px-4 py-3 ${
+                        className={`flex items-center gap-3 w-full transition-all duration-200 px-4 py-3.5 ${
                           location.pathname ===
                           "/dashboard/studentManagement/addStudents"
                             ? "bg-primary text-primary-content font-semibold"
                             : "hover:bg-primary/10 hover:text-primary hover:translate-x-1"
                         }`}
                       >
-                        <MdPersonAdd className="inline-block size-4" />
-                        <span>{t('navbar:addStudent')}</span>
+                        <MdPersonAdd className="inline-block size-5" />
+                        <span className="text-base">
+                          {t("navbar:addStudent")}
+                        </span>
                       </button>
                     </li>
                   </Link>
@@ -428,30 +439,34 @@ const DashboardLayout = () => {
                 <Link to="/dashboard/studentManagement/students">
                   <li>
                     <button
-                      className={`pl-10 flex items-center gap-3 rounded-lg transition-all duration-200 ${
+                      className={`pl-10 flex items-center gap-3 rounded-lg transition-all duration-200 py-2.5 ${
                         location.pathname ===
                         "/dashboard/studentManagement/students"
                           ? "bg-primary text-primary-content font-semibold"
                           : "hover:bg-primary/10 hover:text-primary hover:translate-x-1"
                       }`}
                     >
-                      <FaUserGraduate className="inline-block size-4" />
-                      <span className="text-sm">{t('navbar:allStudents')}</span>
+                      <FaUserGraduate className="inline-block size-5" />
+                      <span className="text-base">
+                        {t("navbar:allStudents")}
+                      </span>
                     </button>
                   </li>
                 </Link>
                 <Link to="/dashboard/studentManagement/addStudents">
                   <li>
                     <button
-                      className={`pl-10 flex items-center gap-3 rounded-lg transition-all duration-200 ${
+                      className={`pl-10 flex items-center gap-3 rounded-lg transition-all duration-200 py-2.5 ${
                         location.pathname ===
                         "/dashboard/studentManagement/addStudents"
                           ? "bg-primary text-primary-content font-semibold"
                           : "hover:bg-primary/10 hover:text-primary hover:translate-x-1"
                       }`}
                     >
-                      <MdPersonAdd className="inline-block size-4" />
-                      <span className="text-sm">{t('navbar:addStudent')}</span>
+                      <MdPersonAdd className="inline-block size-5" />
+                      <span className="text-base">
+                        {t("navbar:addStudent")}
+                      </span>
                     </button>
                   </li>
                 </Link>
@@ -461,17 +476,17 @@ const DashboardLayout = () => {
             {/* Admission Management with nested menu */}
             <li className="relative">
               <button
-                className={`is-drawer-close:tooltip is-drawer-close:tooltip-right rounded-lg transition-all duration-200 active:scale-95 ${
+                className={`is-drawer-close:tooltip is-drawer-close:tooltip-right rounded-lg transition-all duration-200 active:scale-95 py-3 ${
                   isRouteActive("/dashboard/admissionManagement")
                     ? "bg-primary/20 text-primary font-semibold"
                     : "hover:bg-primary/10 hover:text-primary hover:translate-x-1"
                 }`}
-                data-tip={t('navbar:admissionManagement')}
+                data-tip={t("navbar:admissionManagement")}
                 onClick={() => handleMenuToggle("admission")}
               >
-                <IoIosPersonAdd className="text-xl" />
-                <span className="is-drawer-close:hidden">
-                  {t('navbar:admissionManagement')}
+                <IoIosPersonAdd className="text-2xl" />
+                <span className="is-drawer-close:hidden text-base font-medium">
+                  {t("navbar:admissionManagement")}
                 </span>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -479,7 +494,7 @@ const DashboardLayout = () => {
                   strokeWidth="2"
                   fill="none"
                   stroke="currentColor"
-                  className={`ml-auto inline-block size-4 is-drawer-close:hidden transition-transform duration-300 ${
+                  className={`ml-auto inline-block size-5 is-drawer-close:hidden transition-transform duration-300 ${
                     isAdmissionMenuOpen ? "rotate-90" : ""
                   }`}
                 >
@@ -505,8 +520,8 @@ const DashboardLayout = () => {
                             : "hover:bg-primary/10 hover:text-primary hover:translate-x-1"
                         }`}
                       >
-                        <FaUsers className="inline-block size-4" />
-                        <span>{t('navbar:admissions')}</span>
+                        <FaUsers className="inline-block size-5" />
+                        <span>{t("navbar:admissions")}</span>
                       </button>
                     </li>
                   </Link>
@@ -521,8 +536,8 @@ const DashboardLayout = () => {
                             : "hover:bg-primary/10 hover:text-primary hover:translate-x-1"
                         }`}
                       >
-                        <FaUserPlus className="inline-block size-4" />
-                        <span>{t('navbar:newAdmission')}</span>
+                        <FaUserPlus className="inline-block size-5" />
+                        <span>{t("navbar:newAdmission")}</span>
                       </button>
                     </li>
                   </Link>
@@ -537,8 +552,8 @@ const DashboardLayout = () => {
                             : "hover:bg-primary/10 hover:text-primary hover:translate-x-1"
                         }`}
                       >
-                        <MdFollowTheSigns className="inline-block size-4" />
-                        <span>{t('navbar:admissionFollowUps')}</span>
+                        <MdFollowTheSigns className="inline-block size-5" />
+                        <span>{t("navbar:admissionFollowUps")}</span>
                       </button>
                     </li>
                   </Link>
@@ -559,8 +574,10 @@ const DashboardLayout = () => {
                           : "hover:bg-primary/10 hover:text-primary hover:translate-x-1"
                       }`}
                     >
-                      <FaUsers className="inline-block size-4" />
-                      <span className="text-sm">{t('navbar:admissions')}</span>
+                      <FaUsers className="inline-block size-5" />
+                      <span className="text-base">
+                        {t("navbar:admissions")}
+                      </span>
                     </button>
                   </li>
                 </Link>
@@ -574,8 +591,10 @@ const DashboardLayout = () => {
                           : "hover:bg-primary/10 hover:text-primary hover:translate-x-1"
                       }`}
                     >
-                      <FaUserPlus className="inline-block size-4" />
-                      <span className="text-sm">{t('navbar:newAdmission')}</span>
+                      <FaUserPlus className="inline-block size-5" />
+                      <span className="text-base">
+                        {t("navbar:newAdmission")}
+                      </span>
                     </button>
                   </li>
                 </Link>
@@ -589,8 +608,10 @@ const DashboardLayout = () => {
                           : "hover:bg-primary/10 hover:text-primary hover:translate-x-1"
                       }`}
                     >
-                      <MdFollowTheSigns className="inline-block size-4" />
-                      <span className="text-sm">{t('navbar:admissionFollowUps')}</span>
+                      <MdFollowTheSigns className="inline-block size-5" />
+                      <span className="text-base">
+                        {t("navbar:admissionFollowUps")}
+                      </span>
                     </button>
                   </li>
                 </Link>
@@ -605,12 +626,12 @@ const DashboardLayout = () => {
                     ? "bg-primary/20 text-primary font-semibold"
                     : "hover:bg-primary/10 hover:text-primary hover:translate-x-1"
                 }`}
-                data-tip={t('navbar:attendanceManagement')}
+                data-tip={t("navbar:attendanceManagement")}
                 onClick={() => handleMenuToggle("attendence")}
               >
-                <HiUserGroup className="text-xl" />
-                <span className="is-drawer-close:hidden">
-                  {t('navbar:attendanceManagement')}
+                <HiUserGroup className="text-2xl" />
+                <span className="is-drawer-close:hidden text-base font-medium">
+                  {t("navbar:attendanceManagement")}
                 </span>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -618,7 +639,7 @@ const DashboardLayout = () => {
                   strokeWidth="2"
                   fill="none"
                   stroke="currentColor"
-                  className={`ml-auto inline-block size-4 is-drawer-close:hidden transition-transform duration-300 ${
+                  className={`ml-auto inline-block size-5 is-drawer-close:hidden transition-transform duration-300 ${
                     isAttendenceMenuOpen ? "rotate-90" : ""
                   }`}
                 >
@@ -637,7 +658,7 @@ const DashboardLayout = () => {
                     <li>
                       <button
                         onClick={handleCloseAttendenceModal}
-                        className="flex items-center gap-3 w-full transition-all duration-200 px-4 py-3 hover:bg-primary/10 hover:text-primary hover:translate-x-1"
+                        className="flex items-center gap-3 w-full transition-all duration-200 px-4 py-3.5 hover:bg-primary/10 hover:text-primary hover:translate-x-1"
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -645,7 +666,7 @@ const DashboardLayout = () => {
                           strokeWidth="2"
                           fill="none"
                           stroke="currentColor"
-                          className="inline-block size-4"
+                          className="inline-block size-5"
                         >
                           <path
                             strokeLinecap="round"
@@ -653,8 +674,8 @@ const DashboardLayout = () => {
                             d="M15 19l-7-7 7-7"
                           />
                         </svg>
-                        <FaClipboardCheck className="inline-block size-4 mr-2" />
-                        <span>{t('navbar:attendance')}</span>
+                        <FaClipboardCheck className="inline-block size-5 mr-2" />
+                        <span>{t("navbar:attendance")}</span>
                       </button>
                     </li>
                   </Link>
@@ -662,7 +683,7 @@ const DashboardLayout = () => {
                     <li>
                       <button
                         onClick={handleCloseAttendenceModal}
-                        className="flex items-center gap-3 w-full transition-all duration-200 px-4 py-3 hover:bg-primary/10 hover:text-primary hover:translate-x-1"
+                        className="flex items-center gap-3 w-full transition-all duration-200 px-4 py-3.5 hover:bg-primary/10 hover:text-primary hover:translate-x-1"
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -670,7 +691,7 @@ const DashboardLayout = () => {
                           strokeWidth="2"
                           fill="none"
                           stroke="currentColor"
-                          className="inline-block size-4"
+                          className="inline-block size-5"
                         >
                           <path
                             strokeLinecap="round"
@@ -678,8 +699,8 @@ const DashboardLayout = () => {
                             d="M12 4v16m8-8H4"
                           />
                         </svg>
-                        <MdLiveTv className="inline-block size-4 mr-2" />
-                        <span>{t('navbar:attendanceLive')}</span>
+                        <MdLiveTv className="inline-block size-5 mr-2" />
+                        <span>{t("navbar:attendanceLive")}</span>
                       </button>
                     </li>
                   </Link>
@@ -687,7 +708,7 @@ const DashboardLayout = () => {
                     <li>
                       <button
                         onClick={handleCloseAttendenceModal}
-                        className="flex items-center gap-3 w-full transition-all duration-200 px-4 py-3 hover:bg-primary/10 hover:text-primary hover:translate-x-1"
+                        className="flex items-center gap-3 w-full transition-all duration-200 px-4 py-3.5 hover:bg-primary/10 hover:text-primary hover:translate-x-1"
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -695,7 +716,7 @@ const DashboardLayout = () => {
                           strokeWidth="2"
                           fill="none"
                           stroke="currentColor"
-                          className="inline-block size-4"
+                          className="inline-block size-5"
                         >
                           <path
                             strokeLinecap="round"
@@ -703,8 +724,8 @@ const DashboardLayout = () => {
                             d="M12 4v16m8-8H4"
                           />
                         </svg>
-                        <HiDocumentReport className="inline-block size-4 mr-2" />
-                        <span>{t('navbar:attendanceReports')}</span>
+                        <HiDocumentReport className="inline-block size-5 mr-2" />
+                        <span>{t("navbar:attendanceReports")}</span>
                       </button>
                     </li>
                   </Link>
@@ -717,25 +738,31 @@ const DashboardLayout = () => {
               <ul className="is-drawer-close:hidden animate-[slideDown_0.3s_ease-out]">
                 <Link to="/dashboard/attendenceManagement/attendence">
                   <li>
-                    <button className="pl-10 flex items-center gap-3 rounded-lg transition-all duration-200 hover:bg-primary/10 hover:text-primary hover:translate-x-1">
-                      <FaClipboardCheck className="inline-block size-4" />
-                      <span className="text-sm">{t('navbar:attendance')}</span>
+                    <button className="pl-10 flex items-center gap-3 rounded-lg transition-all duration-200 py-2.5 hover:bg-primary/10 hover:text-primary hover:translate-x-1">
+                      <FaClipboardCheck className="inline-block size-5" />
+                      <span className="text-base">
+                        {t("navbar:attendance")}
+                      </span>
                     </button>
                   </li>
                 </Link>
                 <Link to="/dashboard/attendenceManagement/attendenceLive">
                   <li>
-                    <button className="pl-10 flex items-center gap-3 rounded-lg transition-all duration-200 hover:bg-primary/10 hover:text-primary hover:translate-x-1">
-                      <MdLiveTv className="inline-block size-4" />
-                      <span className="text-sm">{t('navbar:attendanceLive')}</span>
+                    <button className="pl-10 flex items-center gap-3 rounded-lg transition-all duration-200 py-2.5 hover:bg-primary/10 hover:text-primary hover:translate-x-1">
+                      <MdLiveTv className="inline-block size-5" />
+                      <span className="text-base">
+                        {t("navbar:attendanceLive")}
+                      </span>
                     </button>
                   </li>
                 </Link>
                 <Link to="/dashboard/attendenceManagement/attendenceReports">
                   <li>
-                    <button className="pl-10 flex items-center gap-3 rounded-lg transition-all duration-200 hover:bg-primary/10 hover:text-primary hover:translate-x-1">
-                      <HiDocumentReport className="inline-block size-4" />
-                      <span className="text-sm">{t('navbar:attendanceReports')}</span>
+                    <button className="pl-10 flex items-center gap-3 rounded-lg transition-all duration-200 py-2.5 hover:bg-primary/10 hover:text-primary hover:translate-x-1">
+                      <HiDocumentReport className="inline-block size-5" />
+                      <span className="text-base">
+                        {t("navbar:attendanceReports")}
+                      </span>
                     </button>
                   </li>
                 </Link>
@@ -745,17 +772,17 @@ const DashboardLayout = () => {
             {/* Finance Management with nested menu */}
             <li className="relative">
               <button
-                className={`is-drawer-close:tooltip is-drawer-close:tooltip-right rounded-lg transition-all duration-200 active:scale-95 ${
+                className={`is-drawer-close:tooltip is-drawer-close:tooltip-right rounded-lg transition-all duration-200 active:scale-95 py-3 ${
                   isRouteActive("/dashboard/financeManagement")
                     ? "bg-primary/20 text-primary font-semibold"
                     : "hover:bg-primary/10 hover:text-primary hover:translate-x-1"
                 }`}
-                data-tip={t('navbar:financeManagement')}
+                data-tip={t("navbar:financeManagement")}
                 onClick={() => handleMenuToggle("finance")}
               >
-                <MdPayments className="text-xl" />
-                <span className="is-drawer-close:hidden">
-                  {t('navbar:financeManagement')}
+                <MdPayments className="text-2xl" />
+                <span className="is-drawer-close:hidden text-base font-medium">
+                  {t("navbar:financeManagement")}
                 </span>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -763,7 +790,7 @@ const DashboardLayout = () => {
                   strokeWidth="2"
                   fill="none"
                   stroke="currentColor"
-                  className={`ml-auto inline-block size-4 is-drawer-close:hidden transition-transform duration-300 ${
+                  className={`ml-auto inline-block size-5 is-drawer-close:hidden transition-transform duration-300 ${
                     isFinanceMenuOpen ? "rotate-90" : ""
                   }`}
                 >
@@ -782,10 +809,10 @@ const DashboardLayout = () => {
                     <li>
                       <button
                         onClick={handleCloseFinanceModal}
-                        className="flex items-center gap-3 w-full transition-all duration-200 px-4 py-3 hover:bg-primary/10 hover:text-primary hover:translate-x-1"
+                        className="flex items-center gap-3 w-full transition-all duration-200 px-4 py-3.5 hover:bg-primary/10 hover:text-primary hover:translate-x-1"
                       >
-                        <FaMoneyBillWave className="inline-block size-4 mr-2" />
-                        <span>{t('navbar:finance')}</span>
+                        <FaMoneyBillWave className="inline-block size-5 mr-2" />
+                        <span>{t("navbar:finance")}</span>
                       </button>
                     </li>
                   </Link>
@@ -793,10 +820,10 @@ const DashboardLayout = () => {
                     <li>
                       <button
                         onClick={handleCloseFinanceModal}
-                        className="flex items-center gap-3 w-full transition-all duration-200 px-4 py-3 hover:bg-primary/10 hover:text-primary hover:translate-x-1"
+                        className="flex items-center gap-3 w-full transition-all duration-200 px-4 py-3.5 hover:bg-primary/10 hover:text-primary hover:translate-x-1"
                       >
-                        <MdPersonAdd className="inline-block size-4 mr-2" />
-                        <span>{t('navbar:newFeeEntry')}</span>
+                        <MdPersonAdd className="inline-block size-5 mr-2" />
+                        <span>{t("navbar:newFeeEntry")}</span>
                       </button>
                     </li>
                   </Link>
@@ -804,10 +831,10 @@ const DashboardLayout = () => {
                     <li>
                       <button
                         onClick={handleCloseFinanceModal}
-                        className="flex items-center gap-3 w-full transition-all duration-200 px-4 py-3 hover:bg-primary/10 hover:text-primary hover:translate-x-1"
+                        className="flex items-center gap-3 w-full transition-all duration-200 px-4 py-3.5 hover:bg-primary/10 hover:text-primary hover:translate-x-1"
                       >
-                        <FaFileInvoiceDollar className="inline-block size-4 mr-2" />
-                        <span>{t('navbar:feesCollected')}</span>
+                        <FaFileInvoiceDollar className="inline-block size-5 mr-2" />
+                        <span>{t("navbar:feesCollected")}</span>
                       </button>
                     </li>
                   </Link>
@@ -815,10 +842,10 @@ const DashboardLayout = () => {
                     <li>
                       <button
                         onClick={handleCloseFinanceModal}
-                        className="flex items-center gap-3 w-full transition-all duration-200 px-4 py-3 hover:bg-primary/10 hover:text-primary hover:translate-x-1"
+                        className="flex items-center gap-3 w-full transition-all duration-200 px-4 py-3.5 hover:bg-primary/10 hover:text-primary hover:translate-x-1"
                       >
-                        <FaMoneyBillWave className="inline-block size-4 mr-2 text-error" />
-                        <span>{t('navbar:feesDues')}</span>
+                        <FaMoneyBillWave className="inline-block size-5 mr-2 text-error" />
+                        <span>{t("navbar:feesDues")}</span>
                       </button>
                     </li>
                   </Link>
@@ -826,10 +853,21 @@ const DashboardLayout = () => {
                     <li>
                       <button
                         onClick={handleCloseFinanceModal}
-                        className="flex items-center gap-3 w-full transition-all duration-200 px-4 py-3 hover:bg-primary/10 hover:text-primary hover:translate-x-1"
+                        className="flex items-center gap-3 w-full transition-all duration-200 px-4 py-3.5 hover:bg-primary/10 hover:text-primary hover:translate-x-1"
                       >
-                        <FaChartPie className="inline-block size-4 mr-2" />
-                        <span>{t('navbar:feesReports')}</span>
+                        <FaChartPie className="inline-block size-5 mr-2" />
+                        <span>{t("navbar:feesReports")}</span>
+                      </button>
+                    </li>
+                  </Link>
+                  <Link to="/dashboard/financeManagement/expenses">
+                    <li>
+                      <button
+                        onClick={handleCloseFinanceModal}
+                        className="flex items-center gap-3 w-full transition-all duration-200 px-4 py-3.5 hover:bg-primary/10 hover:text-primary hover:translate-x-1"
+                      >
+                        <MdReceipt className="inline-block size-5 mr-2" />
+                        <span>{t("navbar:expenses")}</span>
                       </button>
                     </li>
                   </Link>
@@ -842,41 +880,55 @@ const DashboardLayout = () => {
               <ul className="is-drawer-close:hidden animate-[slideDown_0.3s_ease-out]">
                 <Link to="/dashboard/financeManagement/finances">
                   <li>
-                    <button className="pl-10 flex items-center gap-3 rounded-lg transition-all duration-200 hover:bg-primary/10 hover:text-primary hover:translate-x-1">
-                      <FaMoneyBillWave className="inline-block size-4" />
-                      <span className="text-sm">{t('navbar:finance')}</span>
+                    <button className="pl-10 flex items-center gap-3 rounded-lg transition-all duration-200 py-2.5 hover:bg-primary/10 hover:text-primary hover:translate-x-1">
+                      <FaMoneyBillWave className="inline-block size-5" />
+                      <span className="text-base">{t("navbar:finance")}</span>
                     </button>
                   </li>
                 </Link>
                 <Link to="/dashboard/financeManagement/newFeeEntry">
                   <li>
-                    <button className="pl-10 flex items-center gap-3 rounded-lg transition-all duration-200 hover:bg-primary/10 hover:text-primary hover:translate-x-1">
-                      <MdPersonAdd className="inline-block size-4" />
-                      <span className="text-sm">{t('navbar:newFeeEntry')}</span>
+                    <button className="pl-10 flex items-center gap-3 rounded-lg transition-all duration-200 py-2.5 hover:bg-primary/10 hover:text-primary hover:translate-x-1">
+                      <MdPersonAdd className="inline-block size-5" />
+                      <span className="text-base">
+                        {t("navbar:newFeeEntry")}
+                      </span>
                     </button>
                   </li>
                 </Link>
                 <Link to="/dashboard/financeManagement/financesCollected">
                   <li>
-                    <button className="pl-10 flex items-center gap-3 rounded-lg transition-all duration-200 hover:bg-primary/10 hover:text-primary hover:translate-x-1">
-                      <FaFileInvoiceDollar className="inline-block size-4" />
-                      <span className="text-sm">{t('navbar:feesCollected')}</span>
+                    <button className="pl-10 flex items-center gap-3 rounded-lg transition-all duration-200 py-2.5 hover:bg-primary/10 hover:text-primary hover:translate-x-1">
+                      <FaFileInvoiceDollar className="inline-block size-5" />
+                      <span className="text-base">
+                        {t("navbar:feesCollected")}
+                      </span>
                     </button>
                   </li>
                 </Link>
                 <Link to="/dashboard/financeManagement/financesDues">
                   <li>
-                    <button className="pl-10 flex items-center gap-3 rounded-lg transition-all duration-200 hover:bg-primary/10 hover:text-primary hover:translate-x-1">
-                      <FaMoneyBillWave className="inline-block size-4 text-error" />
-                      <span className="text-sm">{t('navbar:feesDues')}</span>
+                    <button className="pl-10 flex items-center gap-3 rounded-lg transition-all duration-200 py-2.5 hover:bg-primary/10 hover:text-primary hover:translate-x-1">
+                      <FaMoneyBillWave className="inline-block size-5 text-error" />
+                      <span className="text-base">{t("navbar:feesDues")}</span>
                     </button>
                   </li>
                 </Link>
                 <Link to="/dashboard/financeManagement/financesReports">
                   <li>
-                    <button className="pl-10 flex items-center gap-3 rounded-lg transition-all duration-200 hover:bg-primary/10 hover:text-primary hover:translate-x-1">
-                      <FaChartPie className="inline-block size-4" />
-                      <span className="text-sm">{t('navbar:feesReports')}</span>
+                    <button className="pl-10 flex items-center gap-3 rounded-lg transition-all duration-200 py-2.5 hover:bg-primary/10 hover:text-primary hover:translate-x-1">
+                      <FaChartPie className="inline-block size-5" />
+                      <span className="text-base">
+                        {t("navbar:feesReports")}
+                      </span>
+                    </button>
+                  </li>
+                </Link>
+                <Link to="/dashboard/financeManagement/expenses">
+                  <li>
+                    <button className="pl-10 flex items-center gap-3 rounded-lg transition-all duration-200 py-2.5 hover:bg-primary/10 hover:text-primary hover:translate-x-1">
+                      <MdReceipt className="inline-block size-5" />
+                      <span className="text-base">{t("navbar:expenses")}</span>
                     </button>
                   </li>
                 </Link>
@@ -886,23 +938,25 @@ const DashboardLayout = () => {
             {/* Batch Management with nested menu */}
             <li className="relative">
               <button
-                className={`is-drawer-close:tooltip is-drawer-close:tooltip-right rounded-lg transition-all duration-200 active:scale-95 ${
+                className={`is-drawer-close:tooltip is-drawer-close:tooltip-right rounded-lg transition-all duration-200 active:scale-95 py-3 ${
                   isRouteActive("/dashboard/batchManagement")
                     ? "bg-primary/20 text-primary font-semibold"
                     : "hover:bg-primary/10 hover:text-primary hover:translate-x-1"
                 }`}
-                data-tip={t('navbar:batchManagement')}
+                data-tip={t("navbar:batchManagement")}
                 onClick={() => handleMenuToggle("batch")}
               >
-                <FaBookOpen className="text-xl" />
-                <span className="is-drawer-close:hidden">{t('navbar:batchManagement')}</span>
+                <FaBookOpen className="text-2xl" />
+                <span className="is-drawer-close:hidden text-base font-medium">
+                  {t("navbar:batchManagement")}
+                </span>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"
                   strokeWidth="2"
                   fill="none"
                   stroke="currentColor"
-                  className={`ml-auto inline-block size-4 is-drawer-close:hidden transition-transform duration-300 ${
+                  className={`ml-auto inline-block size-5 is-drawer-close:hidden transition-transform duration-300 ${
                     isBatchMenuOpen ? "rotate-90" : ""
                   }`}
                 >
@@ -921,10 +975,10 @@ const DashboardLayout = () => {
                     <li>
                       <button
                         onClick={handleCloseBatchModal}
-                        className="flex items-center gap-3 w-full transition-all duration-200 px-4 py-3 hover:bg-primary/10 hover:text-primary hover:translate-x-1"
+                        className="flex items-center gap-3 w-full transition-all duration-200 px-4 py-3.5 hover:bg-primary/10 hover:text-primary hover:translate-x-1"
                       >
-                        <MdViewList className="inline-block size-4 mr-2" />
-                        <span>{t('navbar:batches')}</span>
+                        <MdViewList className="inline-block size-5 mr-2" />
+                        <span>{t("navbar:batches")}</span>
                       </button>
                     </li>
                   </Link>
@@ -932,10 +986,10 @@ const DashboardLayout = () => {
                     <li>
                       <button
                         onClick={handleCloseBatchModal}
-                        className="flex items-center gap-3 w-full transition-all duration-200 px-4 py-3 hover:bg-primary/10 hover:text-primary hover:translate-x-1"
+                        className="flex items-center gap-3 w-full transition-all duration-200 px-4 py-3.5 hover:bg-primary/10 hover:text-primary hover:translate-x-1"
                       >
-                        <MdAddCircle className="inline-block size-4 mr-2" />
-                        <span>{t('navbar:createBatch')}</span>
+                        <MdAddCircle className="inline-block size-5 mr-2" />
+                        <span>{t("navbar:createBatch")}</span>
                       </button>
                     </li>
                   </Link>
@@ -948,17 +1002,19 @@ const DashboardLayout = () => {
               <ul className="is-drawer-close:hidden animate-[slideDown_0.3s_ease-out]">
                 <Link to="/dashboard/batchManagement/batches">
                   <li>
-                    <button className="pl-10 flex items-center gap-3 rounded-lg transition-all duration-200 hover:bg-primary/10 hover:text-primary hover:translate-x-1">
-                      <MdViewList className="inline-block size-4" />
-                      <span className="text-sm">{t('navbar:batches')}</span>
+                    <button className="pl-10 flex items-center gap-3 rounded-lg transition-all duration-200 py-2.5 hover:bg-primary/10 hover:text-primary hover:translate-x-1">
+                      <MdViewList className="inline-block size-5" />
+                      <span className="text-base">{t("navbar:batches")}</span>
                     </button>
                   </li>
                 </Link>
                 <Link to="/dashboard/batchManagement/createBatches">
                   <li>
-                    <button className="pl-10 flex items-center gap-3 rounded-lg transition-all duration-200 hover:bg-primary/10 hover:text-primary hover:translate-x-1">
-                      <MdAddCircle className="inline-block size-4" />
-                      <span className="text-sm">{t('navbar:createBatch')}</span>
+                    <button className="pl-10 flex items-center gap-3 rounded-lg transition-all duration-200 py-2.5 hover:bg-primary/10 hover:text-primary hover:translate-x-1">
+                      <MdAddCircle className="inline-block size-5" />
+                      <span className="text-base">
+                        {t("navbar:createBatch")}
+                      </span>
                     </button>
                   </li>
                 </Link>
@@ -973,12 +1029,12 @@ const DashboardLayout = () => {
                     ? "bg-primary/20 text-primary font-semibold"
                     : "hover:bg-primary/10 hover:text-primary hover:translate-x-1"
                 }`}
-                data-tip={t('navbar:performanceTracking')}
+                data-tip={t("navbar:performanceTracking")}
                 onClick={() => handleMenuToggle("performance")}
               >
-                <GrDocumentPerformance className="text-xl" />
-                <span className="is-drawer-close:hidden">
-                  {t('navbar:performanceTracking')}
+                <GrDocumentPerformance className="text-2xl" />
+                <span className="is-drawer-close:hidden text-base font-medium">
+                  {t("navbar:performanceTracking")}
                 </span>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -986,7 +1042,7 @@ const DashboardLayout = () => {
                   strokeWidth="2"
                   fill="none"
                   stroke="currentColor"
-                  className={`ml-auto inline-block size-4 is-drawer-close:hidden transition-transform duration-300 ${
+                  className={`ml-auto inline-block size-5 is-drawer-close:hidden transition-transform duration-300 ${
                     isPerformanceMenuOpen ? "rotate-90" : ""
                   }`}
                 >
@@ -1005,10 +1061,10 @@ const DashboardLayout = () => {
                     <li>
                       <button
                         onClick={handleClosePerformanceModal}
-                        className="flex items-center gap-3 w-full transition-all duration-200 px-4 py-3 hover:bg-primary/10 hover:text-primary hover:translate-x-1"
+                        className="flex items-center gap-3 w-full transition-all duration-200 px-4 py-3.5 hover:bg-primary/10 hover:text-primary hover:translate-x-1"
                       >
-                        <BsFileEarmarkText className="inline-block size-4 mr-2" />
-                        <span>{t('navbar:exams')}</span>
+                        <BsFileEarmarkText className="inline-block size-5 mr-2" />
+                        <span>{t("navbar:exams")}</span>
                       </button>
                     </li>
                   </Link>
@@ -1016,10 +1072,10 @@ const DashboardLayout = () => {
                     <li>
                       <button
                         onClick={handleClosePerformanceModal}
-                        className="flex items-center gap-3 w-full transition-all duration-200 px-4 py-3 hover:bg-primary/10 hover:text-primary hover:translate-x-1"
+                        className="flex items-center gap-3 w-full transition-all duration-200 px-4 py-3.5 hover:bg-primary/10 hover:text-primary hover:translate-x-1"
                       >
-                        <MdAssessment className="inline-block size-4 mr-2" />
-                        <span>{t('navbar:examsResults')}</span>
+                        <MdAssessment className="inline-block size-5 mr-2" />
+                        <span>{t("navbar:examsResults")}</span>
                       </button>
                     </li>
                   </Link>
@@ -1027,10 +1083,10 @@ const DashboardLayout = () => {
                     <li>
                       <button
                         onClick={handleClosePerformanceModal}
-                        className="flex items-center gap-3 w-full transition-all duration-200 px-4 py-3 hover:bg-primary/10 hover:text-primary hover:translate-x-1"
+                        className="flex items-center gap-3 w-full transition-all duration-200 px-4 py-3.5 hover:bg-primary/10 hover:text-primary hover:translate-x-1"
                       >
-                        <BsGraphUp className="inline-block size-4 mr-2" />
-                        <span>{t('navbar:examsAnalytics')}</span>
+                        <BsGraphUp className="inline-block size-5 mr-2" />
+                        <span>{t("navbar:examsAnalytics")}</span>
                       </button>
                     </li>
                   </Link>
@@ -1043,25 +1099,27 @@ const DashboardLayout = () => {
               <ul className="is-drawer-close:hidden animate-[slideDown_0.3s_ease-out]">
                 <Link to="/dashboard/performanceManagement/exams">
                   <li>
-                    <button className="pl-10 flex items-center gap-3 rounded-lg transition-all duration-200 hover:bg-primary/10 hover:text-primary hover:translate-x-1">
-                      <BsFileEarmarkText className="inline-block size-4" />
-                      <span className="text-sm">{t('navbar:exams')}</span>
+                    <button className="pl-10 flex items-center gap-3 rounded-lg transition-all duration-200 py-2.5 hover:bg-primary/10 hover:text-primary hover:translate-x-1">
+                      <BsFileEarmarkText className="inline-block size-5" />
+                      <span className="text-base">{t("navbar:exams")}</span>
                     </button>
                   </li>
                 </Link>
                 <Link to="/dashboard/performanceManagement/examsResults">
                   <li>
-                    <button className="pl-10 flex items-center gap-3 rounded-lg transition-all duration-200 hover:bg-primary/10 hover:text-primary hover:translate-x-1">
-                      <MdAssessment className="inline-block size-4" />
-                      <span className="text-sm">{t('navbar:examsResults')}</span>
+                    <button className="pl-10 flex items-center gap-3 rounded-lg transition-all duration-200 py-2.5 hover:bg-primary/10 hover:text-primary hover:translate-x-1">
+                      <MdAssessment className="inline-block size-5" />
+                      <span className="text-base">
+                        {t("navbar:examsResults")}
+                      </span>
                     </button>
                   </li>
                 </Link>
                 <Link to="/dashboard/performanceManagement/examsAnalytics">
                   <li>
-                    <button className="pl-10 flex items-center gap-3 rounded-lg transition-all duration-200 hover:bg-primary/10 hover:text-primary hover:translate-x-1">
-                      <BsGraphUp className="inline-block size-4 mr-2" />
-                      <span>{t('navbar:examsAnalytics')}</span>
+                    <button className="pl-10 flex items-center gap-3 rounded-lg transition-all duration-200 py-2.5 hover:bg-primary/10 hover:text-primary hover:translate-x-1">
+                      <BsGraphUp className="inline-block size-5 mr-2" />
+                      <span>{t("navbar:examsAnalytics")}</span>
                     </button>
                   </li>
                 </Link>

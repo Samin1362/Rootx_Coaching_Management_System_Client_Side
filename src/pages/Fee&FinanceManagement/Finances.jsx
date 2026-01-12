@@ -96,6 +96,14 @@ const Finances = () => {
     [students]
   );
 
+  const getStudentRoll = useCallback(
+    (studentId) => {
+      const student = students.find((s) => s._id === studentId);
+      return student?.roll || "N/A";
+    },
+    [students]
+  );
+
   const getStudentImage = useCallback(
     (studentId) => {
       const student = students.find((s) => s._id === studentId);
@@ -169,8 +177,13 @@ const Finances = () => {
               </div>
             </div>
             <div>
-              <div className="font-semibold text-base-content">
-                {getStudentName(row.original.studentId)}
+              <div className="flex items-center gap-2">
+                <span className="badge badge-primary badge-xs font-bold">
+                  #{getStudentRoll(row.original.studentId)}
+                </span>
+                <span className="font-semibold text-base-content">
+                  {getStudentName(row.original.studentId)}
+                </span>
               </div>
               <div className="text-xs text-base-content/60 flex items-center gap-1">
                 📞 {getStudentPhone(row.original.studentId)}
