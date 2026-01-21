@@ -162,8 +162,8 @@ const Admissions = () => {
   const { data: admissions = [], isLoading } = useQuery({
     queryKey: ["admissions"],
     queryFn: async () => {
-      const res = await axiosSecure.get("/admissions");
-      return res.data;
+      const res = await axiosSecure.get("/admissions?limit=1000");
+      return res.data.data || [];
     },
   });
 
@@ -171,8 +171,8 @@ const Admissions = () => {
   const { data: batches = [] } = useQuery({
     queryKey: ["batches"],
     queryFn: async () => {
-      const res = await axiosSecure.get("/batches");
-      return res.data;
+      const res = await axiosSecure.get("/batches?limit=1000");
+      return res.data.data || [];
     },
   });
 

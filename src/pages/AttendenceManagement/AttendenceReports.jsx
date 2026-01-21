@@ -44,7 +44,7 @@ const AttendenceReports = () => {
     queryKey: ["batches"],
     queryFn: async () => {
       const res = await axiosSecure.get("/batches");
-      return res.data;
+      return res.data?.data || [];
     },
   });
 
@@ -53,7 +53,7 @@ const AttendenceReports = () => {
     queryKey: ["students"],
     queryFn: async () => {
       const res = await axiosSecure.get("/students");
-      return res.data;
+      return res.data?.data || [];
     },
   });
 
@@ -65,7 +65,7 @@ const AttendenceReports = () => {
       if (filterBatchId) url += `batchId=${filterBatchId}&`;
       if (filterDate) url += `date=${filterDate}&`;
       const res = await axiosSecure.get(url);
-      return res.data;
+      return res.data?.data || [];
     },
   });
 

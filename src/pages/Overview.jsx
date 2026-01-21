@@ -36,10 +36,10 @@ import {
   MdTrendingUp,
   MdTrendingDown,
   MdSchool,
-  MdAttachMoney,
   MdPeople,
   MdEventAvailable,
 } from "react-icons/md";
+import { TbCurrencyTaka } from "react-icons/tb";
 import { BiSolidDashboard } from "react-icons/bi";
 import useAxiosSecure from "../hooks/useAxiosSecure";
 import Loader from "../components/Loader";
@@ -73,24 +73,24 @@ const Overview = () => {
   const { data: students = [], isLoading: studentsLoading } = useQuery({
     queryKey: ["allStudents"],
     queryFn: async () => {
-      const res = await axiosSecure.get("/students");
-      return res.data;
+      const res = await axiosSecure.get("/students?limit=1000");
+      return res.data.data || [];
     },
   });
 
   const { data: batches = [], isLoading: batchesLoading } = useQuery({
     queryKey: ["allBatches"],
     queryFn: async () => {
-      const res = await axiosSecure.get("/batches");
-      return res.data;
+      const res = await axiosSecure.get("/batches?limit=1000");
+      return res.data.data || [];
     },
   });
 
   const { data: admissions = [], isLoading: admissionsLoading } = useQuery({
     queryKey: ["allAdmissions"],
     queryFn: async () => {
-      const res = await axiosSecure.get("/admissions");
-      return res.data;
+      const res = await axiosSecure.get("/admissions?limit=1000");
+      return res.data.data || [];
     },
   });
 
@@ -98,7 +98,7 @@ const Overview = () => {
     queryKey: ["allFees"],
     queryFn: async () => {
       const res = await axiosSecure.get("/fees?limit=1000");
-      return res.data;
+      return res.data.data || [];
     },
   });
 
@@ -106,7 +106,7 @@ const Overview = () => {
     queryKey: ["allAttendances"],
     queryFn: async () => {
       const res = await axiosSecure.get("/attendences?limit=1000");
-      return res.data;
+      return res.data.data || [];
     },
   });
 
@@ -114,7 +114,7 @@ const Overview = () => {
     queryKey: ["allExams"],
     queryFn: async () => {
       const res = await axiosSecure.get("/exams");
-      return res.data;
+      return res.data?.data || [];
     },
   });
 
@@ -122,15 +122,15 @@ const Overview = () => {
     queryKey: ["allResults"],
     queryFn: async () => {
       const res = await axiosSecure.get("/results?limit=1000");
-      return res.data;
+      return res.data?.data || [];
     },
   });
 
   const { data: expenses = [], isLoading: expensesLoading } = useQuery({
     queryKey: ["allExpenses"],
     queryFn: async () => {
-      const res = await axiosSecure.get("/expenses");
-      return res.data.data;
+      const res = await axiosSecure.get("/expenses?limit=1000");
+      return res.data.data || [];
     },
   });
 
@@ -162,7 +162,7 @@ const Overview = () => {
     ).length;
 
     // Financial Statistics
-    const totalFees = fees.reduce((sum, f) => sum + f.totalFee, 0);
+    const totalFees = fees.reduce((sum, f) => sum + (f.fees || 0), 0);
     const totalPaid = fees.reduce((sum, f) => sum + f.paidAmount, 0);
     const totalDue = fees.reduce((sum, f) => sum + f.dueAmount, 0);
     const collectionRate =
@@ -478,13 +478,13 @@ const Overview = () => {
         <div className="stats shadow-xl bg-linear-to-br from-green-500 to-green-600 text-white hover:shadow-2xl transition-all duration-300 hover:scale-105">
           <div className="stat">
             <div className="stat-figure text-white/80">
-              <FaDollarSign className="text-4xl" />
+              <TbCurrencyTaka className="text-4xl" />
             </div>
             <div className="stat-title text-white/80 text-sm">
               {t('overview:totalCollected')}
             </div>
             <div className="stat-value text-white text-2xl">
-              ${analytics.totalPaid.toLocaleString()}
+              ৳{analytics.totalPaid.toLocaleString()}
             </div>
             <div className="stat-desc text-white/70 flex items-center gap-1">
               {analytics.collectionRate}% {t('overview:collectionRate')}
@@ -586,7 +586,7 @@ const Overview = () => {
             </div>
             <div className="stat-title text-xs">{t('overview:totalDue')}</div>
             <div className="stat-value text-error text-xl">
-              ${analytics.totalDue.toLocaleString()}
+              ৳{analytics.totalDue.toLocaleString()}
             </div>
           </div>
         </div>
@@ -596,7 +596,7 @@ const Overview = () => {
       <div className="bg-gradient-to-br from-primary/5 to-secondary/5 rounded-2xl p-6 border border-primary/20">
         <div className="flex items-center gap-3 mb-6">
           <div className="w-12 h-12 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center shadow-lg">
-            <FaDollarSign className="text-2xl text-white" />
+            <TbCurrencyTaka className="text-3xl text-white" />
           </div>
           <div>
             <h2 className="text-2xl font-bold text-base-content">
@@ -619,7 +619,7 @@ const Overview = () => {
               <MdSchool className="text-blue-600 dark:text-blue-400 text-2xl" />
             </div>
             <div className="text-3xl font-bold text-base-content">
-              ${analytics.totalFees.toLocaleString()}
+              ৳{analytics.totalFees.toLocaleString()}
             </div>
             <div className="text-xs text-base-content/70 mt-1">
               {t('overview:fromStudents', { count: fees.length })}
@@ -635,7 +635,7 @@ const Overview = () => {
               <MdTrendingUp className="text-green-600 dark:text-green-400 text-2xl" />
             </div>
             <div className="text-3xl font-bold text-base-content">
-              ${analytics.totalPaid.toLocaleString()}
+              ৳{analytics.totalPaid.toLocaleString()}
             </div>
             <div className="text-xs text-base-content/70 mt-1">
               {t('overview:clearedPayments', { count: analytics.clearFees })}
@@ -651,7 +651,7 @@ const Overview = () => {
               <MdTrendingDown className="text-red-600 dark:text-red-400 text-2xl" />
             </div>
             <div className="text-3xl font-bold text-base-content">
-              ${analytics.totalDue.toLocaleString()}
+              ৳{analytics.totalDue.toLocaleString()}
             </div>
             <div className="text-xs text-base-content/70 mt-1">
               {t('overview:pendingPayments', { count: analytics.dueFees })}
@@ -688,7 +688,7 @@ const Overview = () => {
               </div>
             </div>
             <p className="text-3xl font-bold text-error">
-              ${analytics.totalExpenses.toLocaleString()}
+              ৳{analytics.totalExpenses.toLocaleString()}
             </p>
             <p className="text-xs text-base-content/70 mt-1">
               {expenses.length} expense records
@@ -716,7 +716,7 @@ const Overview = () => {
             <p className={`text-3xl font-bold ${
               analytics.profit >= 0 ? 'text-primary' : 'text-error'
             }`}>
-              ${analytics.profit.toLocaleString()}
+              ৳{analytics.profit.toLocaleString()}
             </p>
             <p className="text-xs text-base-content/70 mt-1">
               {analytics.profitMargin}% profit margin
@@ -855,7 +855,7 @@ const Overview = () => {
         <div className="bg-base-100 rounded-2xl p-6 shadow-xl border border-base-300 hover:shadow-2xl transition-shadow">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 bg-success/10 rounded-lg flex items-center justify-center">
-              <MdAttachMoney className="text-success text-xl" />
+              <TbCurrencyTaka className="text-success text-2xl" />
             </div>
             <div>
               <h2 className="text-xl font-bold text-base-content">

@@ -23,15 +23,36 @@ import ExamsResults from "./pages/Performance&AssessmentTracking/ExamsResults";
 import ExamsAnalytics from "./pages/Performance&AssessmentTracking/ExamsAnalytics";
 import AuthLayout from "./layouts/AuthLayout";
 import Login from "./pages/Auth/Login";
-import Register from "./pages/Auth/Register";
+import OrganizationSignup from "./pages/Organization/OrganizationSignup";
+import SubscriptionPlans from "./pages/Subscription/SubscriptionPlans";
+import SubscriptionManagement from "./pages/Subscription/SubscriptionManagement";
+import UserManagement from "./pages/UserManagement/UserManagement";
+import OrganizationSettings from "./pages/Organization/OrganizationSettings";
 
 const router = createBrowserRouter([
-  // Root path redirects to login
+  // Root path redirects to signup (for new organizations)
   {
     path: "/",
-    element: <Navigate to="/login" replace />,
+    element: <Navigate to="/signup" replace />,
   },
-  // Auth routes (Login & Register)
+  // Organization Signup (Public)
+  {
+    path: "/signup",
+    Component: OrganizationSignup,
+    errorElement: <ErrorPage></ErrorPage>,
+  },
+  // Subscription Plans (Public)
+  {
+    path: "/plans",
+    Component: SubscriptionPlans,
+    errorElement: <ErrorPage></ErrorPage>,
+  },
+  // Redirect old register route to signup
+  {
+    path: "/register",
+    element: <Navigate to="/signup" replace />,
+  },
+  // Auth routes (Login only)
   {
     path: "/",
     Component: AuthLayout,
@@ -40,10 +61,6 @@ const router = createBrowserRouter([
       {
         path: "login",
         Component: Login,
-      },
-      {
-        path: "register",
-        Component: Register,
       },
     ],
   },
@@ -166,6 +183,19 @@ const router = createBrowserRouter([
             Component: ExamsAnalytics,
           },
         ],
+      },
+      // Multi-Tenant Routes
+      {
+        path: "subscription",
+        Component: SubscriptionManagement,
+      },
+      {
+        path: "users",
+        Component: UserManagement,
+      },
+      {
+        path: "organization-settings",
+        Component: OrganizationSettings,
       },
     ],
   },

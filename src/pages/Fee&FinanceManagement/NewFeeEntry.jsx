@@ -4,11 +4,11 @@ import { useQuery } from "@tanstack/react-query";
 import {
   MdPerson,
   MdPhone,
-  MdAttachMoney,
   MdPayment,
   MdSearch,
   MdClose,
 } from "react-icons/md";
+import { TbCurrencyTaka } from "react-icons/tb";
 import { FaMoneyBillWave, FaUsers, FaCheckCircle } from "react-icons/fa";
 import { useState, useMemo, useEffect, useRef } from "react";
 import { useNotification } from "../../contexts/NotificationContext";
@@ -58,7 +58,7 @@ const NewFeeEntry = () => {
     queryKey: ["students"],
     queryFn: async () => {
       const res = await axiosSecure.get("/students");
-      return res.data;
+      return res.data.data || [];
     },
   });
 
@@ -67,7 +67,7 @@ const NewFeeEntry = () => {
     queryKey: ["active-batches"],
     queryFn: async () => {
       const res = await axiosSecure.get("/batches?status=active");
-      return res.data;
+      return res.data.data || [];
     },
   });
 
@@ -76,7 +76,7 @@ const NewFeeEntry = () => {
     queryKey: ["fee-entries"],
     queryFn: async () => {
       const res = await axiosSecure.get("/fees");
-      return res.data;
+      return res.data.data || [];
     },
   });
 
@@ -89,7 +89,7 @@ const NewFeeEntry = () => {
     return batches.find((batch) => batch._id === selectedBatchId);
   }, [selectedBatchId, batches]);
 
-  const totalFee = selectedBatch?.totalFee || 0;
+  const fees = selectedBatch?.fees || 0;
 
   // Filter students based on search query
   const filteredStudents = useMemo(() => {
@@ -151,8 +151,8 @@ const NewFeeEntry = () => {
   // No need for handleBatchChange anymore - total fee is automatic
 
   const onSubmit = async (data) => {
-    // Validate that batch is selected (which provides totalFee)
-    if (!selectedBatch || !totalFee) {
+    // Validate that batch is selected (which provides fees)
+    if (!selectedBatch || !fees) {
       notification.warning(
         "Please select a batch with a valid fee",
         "Missing Information"
@@ -163,7 +163,7 @@ const NewFeeEntry = () => {
     const feeEntry = {
       studentId: data.studentId,
       batchId: data.batchId,
-      totalFee: Number(totalFee), // Use totalFee from selected batch
+      fees: Number(fees), // Use fees from selected batch
       paidAmount: data.paidAmount ? Number(data.paidAmount) : 0,
       paymentMethod: data.paymentMethod,
     };
@@ -398,7 +398,7 @@ const NewFeeEntry = () => {
                         value: batch._id,
                         label: `${batch.name} — ${batch.course} — ${
                           batch.schedule
-                        } — $${batch.totalFee?.toLocaleString() || "N/A"}`,
+                        } — ৳${batch.fees?.toLocaleString() || "N/A"}`,
                       })),
                     ]}
                     disabled={isLoadingBatches}
@@ -409,8 +409,8 @@ const NewFeeEntry = () => {
                 {selectedBatch && (
                   <div className="mt-4 p-4 bg-primary/10 border border-primary/20 rounded-xl">
                     <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 bg-primary/20 rounded-lg flex items-center justify-center shrink-0">
-                        <MdAttachMoney className="text-primary text-xl" />
+                      <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center shadow-sm">
+                        <TbCurrencyTaka className="text-primary text-2xl" />
                       </div>
                       <div className="flex-1">
                         <h4 className="text-sm font-semibold text-base-content mb-1">
@@ -421,7 +421,7 @@ const NewFeeEntry = () => {
                             Total Fee for {selectedBatch.name}:
                           </span>
                           <span className="text-2xl font-bold text-primary">
-                            ${totalFee.toLocaleString()}
+                            ৳{fees.toLocaleString()}
                           </span>
                         </div>
                         <p className="text-xs text-base-content/50 mt-1">
@@ -497,8 +497,8 @@ const NewFeeEntry = () => {
                       validate: (value) => {
                         if (
                           value &&
-                          totalFee &&
-                          Number(value) > Number(totalFee)
+                          fees &&
+                          Number(value) > Number(fees)
                         ) {
                           return "Paid amount cannot exceed total fee";
                         }
@@ -509,7 +509,7 @@ const NewFeeEntry = () => {
                 </div>
 
                 {/* Fee Summary */}
-                {selectedBatch && totalFee > 0 && (
+                {selectedBatch && fees > 0 && (
                   <div className="mt-4 p-4 bg-info/10 border border-info/20 rounded-xl">
                     <div className="flex items-start gap-3">
                       <div className="w-8 h-8 bg-info/20 rounded-lg flex items-center justify-center shrink-0">
@@ -523,7 +523,7 @@ const NewFeeEntry = () => {
                           <div className="flex justify-between">
                             <span>Total Fee:</span>
                             <span className="font-semibold">
-                              ${Number(totalFee).toLocaleString()}
+                              ৳{Number(fees).toLocaleString()}
                             </span>
                           </div>
                           <div className="flex justify-between">
@@ -538,9 +538,9 @@ const NewFeeEntry = () => {
                           <div className="flex justify-between pt-1 border-t border-info/20">
                             <span>Due Amount:</span>
                             <span className="font-semibold text-warning">
-                              $
+                              ৳
                               {(
-                                Number(totalFee) - (Number(paidAmount) || 0)
+                                Number(fees) - (Number(paidAmount) || 0)
                               ).toLocaleString()}
                             </span>
                           </div>

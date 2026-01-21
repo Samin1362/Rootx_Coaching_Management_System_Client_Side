@@ -44,8 +44,8 @@ const AddStudent = () => {
   const { data: batches = [], isLoading: isLoadingBatches } = useQuery({
     queryKey: ["batches"],
     queryFn: async () => {
-      const res = await axiosSecure.get("/batches");
-      return res.data;
+      const res = await axiosSecure.get("/batches?limit=1000");
+      return res.data.data || [];
     },
   });
 
@@ -83,8 +83,8 @@ const AddStudent = () => {
     try {
       const res = await axiosSecure.post("/students", student);
 
-      if (res.data.insertedId) {
-        const rollNumber = res.data.roll;
+      if (res.data.success && res.data.data) {
+        const rollNumber = res.data.data.roll;
 
         if (rollNumber) {
           notification.success(
