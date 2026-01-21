@@ -6,8 +6,8 @@ import {
   MdSchool,
   MdCalendarToday,
   MdPeople,
-  MdAttachMoney,
 } from "react-icons/md";
+import { TbCurrencyTaka } from "react-icons/tb";
 import { FaCheckCircle } from "react-icons/fa";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
 import { useNotification } from "../../contexts/NotificationContext";
@@ -29,7 +29,7 @@ const CreateBatches = () => {
   const onSubmit = async (data) => {
     const batch = {
       ...data,
-      totalFee: Number(data.totalFee),
+      fees: Number(data.fees),
       capacity: Number(data.capacity),
       status: data.status || "active",
     };
@@ -37,7 +37,7 @@ const CreateBatches = () => {
     try {
       const res = await axiosSecure.post("/batches", batch);
 
-      if (res.data.insertedId) {
+      if (res.data.success && res.data.data) {
         notification.success("Batch created successfully!");
         reset();
         setStartDate(null);
@@ -45,7 +45,10 @@ const CreateBatches = () => {
       }
     } catch (error) {
       console.error(error);
-      notification.error("Failed to create batch. Please try again.", "Error");
+      notification.error(
+        error.response?.data?.message || "Failed to create batch. Please try again.",
+        "Error"
+      );
     }
   };
 
@@ -169,14 +172,14 @@ const CreateBatches = () => {
                   />
 
                   <Input
-                    label="Total Fee ($)"
+                    label="Fees (৳)"
                     type="number"
                     placeholder="e.g., 15000"
                     required
-                    icon={<MdAttachMoney />}
-                    error={errors.totalFee}
-                    {...register("totalFee", {
-                      required: "Total fee is required",
+                    icon={<TbCurrencyTaka className="text-lg" />}
+                    error={errors.fees}
+                    {...register("fees", {
+                      required: "Fees amount is required",
                       min: { value: 0, message: "Fee cannot be negative" },
                     })}
                   />

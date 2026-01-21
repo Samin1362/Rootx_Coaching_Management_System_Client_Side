@@ -74,8 +74,8 @@ const Students = () => {
   const { data: students = [], isLoading } = useQuery({
     queryKey: ["students"],
     queryFn: async () => {
-      const res = await axiosSecure.get("/students");
-      return res.data;
+      const res = await axiosSecure.get("/students?limit=1000");
+      return res.data.data || [];
     },
   });
 
@@ -83,8 +83,8 @@ const Students = () => {
   const { data: batches = [] } = useQuery({
     queryKey: ["batches"],
     queryFn: async () => {
-      const res = await axiosSecure.get("/batches");
-      return res.data;
+      const res = await axiosSecure.get("/batches?limit=1000");
+      return res.data.data || [];
     },
   });
 
@@ -118,13 +118,13 @@ const Students = () => {
     mutationFn: async (studentId) => {
       // First, fetch all fee records for this student
       const feesRes = await axiosSecure.get(`/fees?studentId=${studentId}`);
-      const studentFees = feesRes.data;
+      const studentFees = feesRes.data.data || [];
 
       // Fetch all exam results for this student
       const resultsRes = await axiosSecure.get(
         `/results?studentId=${studentId}`
       );
-      const studentResults = resultsRes.data;
+      const studentResults = resultsRes.data.data || [];
 
       // Delete all fee records associated with this student
       if (studentFees && studentFees.length > 0) {

@@ -3,7 +3,6 @@ import useAxiosSecure from "../../hooks/useAxiosSecure";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   MdReceipt,
-  MdAttachMoney,
   MdPayment,
   MdDescription,
   MdPerson,
@@ -12,6 +11,7 @@ import {
   MdCategory,
   MdDateRange,
 } from "react-icons/md";
+import { TbCurrencyTaka } from "react-icons/tb";
 import {
   FaMoneyBillWave,
   FaUserTie,
@@ -125,7 +125,7 @@ const Expense = () => {
     queryKey: ["expenses"],
     queryFn: async () => {
       const res = await axiosSecure.get("/expenses");
-      return res.data.data;
+      return res.data?.data || [];
     },
   });
 
@@ -348,7 +348,7 @@ const Expense = () => {
                 <div className="bg-base-100 rounded-2xl shadow-xl border border-base-300/50 overflow-hidden">
                   <div className="bg-gradient-to-r from-primary/10 to-secondary/10 p-4 border-b border-base-300">
                     <h2 className="text-lg font-semibold text-base-content flex items-center gap-2">
-                      <MdAttachMoney className="text-primary" />
+                      <TbCurrencyTaka className="text-primary text-xl" />
                       {isEditMode ? "Edit Expense" : "Add New Expense"} -{" "}
                       {selectedTemplate.name}
                     </h2>
@@ -371,7 +371,7 @@ const Expense = () => {
                           Amount <span className="text-error">*</span>
                         </label>
                         <div className="relative">
-                          <MdAttachMoney className="absolute left-3 top-1/2 -translate-y-1/2 text-base-content/40" />
+                          <TbCurrencyTaka className="absolute left-3 top-1/2 -translate-y-1/2 text-base-content/40 text-lg" />
                           <input
                             type="number"
                             step="0.01"
@@ -528,7 +528,7 @@ const Expense = () => {
                           </>
                         ) : (
                           <>
-                            <MdAttachMoney className="text-lg" />
+                            <TbCurrencyTaka className="text-lg" />
                             {isEditMode ? "Update Expense" : "Add Expense"}
                           </>
                         )}
@@ -558,7 +558,7 @@ const Expense = () => {
                 <div>
                   <p className="text-sm opacity-90">Total Expenses</p>
                   <p className="text-3xl font-bold">
-                    ${totalExpenses.toLocaleString()}
+                    ৳{totalExpenses.toLocaleString()}
                   </p>
                 </div>
               </div>
@@ -599,7 +599,7 @@ const Expense = () => {
                               </span>
                             </div>
                             <p className="font-semibold text-base-content truncate">
-                              ${expense.amount.toLocaleString()}
+                              ৳{expense.amount.toLocaleString()}
                             </p>
                             {expense.description && (
                               <p className="text-xs text-base-content/60 truncate">

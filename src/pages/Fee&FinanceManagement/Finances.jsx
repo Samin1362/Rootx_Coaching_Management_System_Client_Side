@@ -15,7 +15,6 @@ import {
   MdNavigateBefore,
   MdFilterList,
   MdPerson,
-  MdAttachMoney,
   MdCalendarToday,
   MdPayment,
   MdPersonAdd,
@@ -30,6 +29,7 @@ import {
   FaUsers,
   FaMoneyCheck,
 } from "react-icons/fa";
+import { TbCurrencyTaka } from "react-icons/tb";
 import { BiSolidBank } from "react-icons/bi";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
 import Loader from "../../components/Loader";
@@ -58,7 +58,7 @@ const Finances = () => {
     queryKey: ["fees"],
     queryFn: async () => {
       const res = await axiosSecure.get("/fees");
-      return res.data;
+      return res.data.data || [];
     },
   });
 
@@ -67,7 +67,7 @@ const Finances = () => {
     queryKey: ["students"],
     queryFn: async () => {
       const res = await axiosSecure.get("/students");
-      return res.data;
+      return res.data.data || [];
     },
   });
 
@@ -75,7 +75,7 @@ const Finances = () => {
     queryKey: ["batches"],
     queryFn: async () => {
       const res = await axiosSecure.get("/batches");
-      return res.data;
+      return res.data.data || [];
     },
   });
 
@@ -148,16 +148,78 @@ const Finances = () => {
     });
   }, [fees, statusFilter]);
 
-  // Calculate statistics
+  // Calculate statistics based on Students and Batches (more accurate than summing fee records)
   const stats = useMemo(() => {
-    const totalFees = fees.reduce((sum, fee) => sum + (fee.totalFee || 0), 0);
-    const totalPaid = fees.reduce((sum, fee) => sum + (fee.paidAmount || 0), 0);
-    const totalDue = fees.reduce((sum, fee) => sum + (fee.dueAmount || 0), 0);
-    const clearCount = fees.filter((f) => f.status === "clear").length;
-    const dueCount = fees.filter((f) => f.status === "due").length;
+    // 1. Map Batch Fees
+    const batchFees = {};
+    batches.forEach((b) => {
+      batchFees[b._id] = b.fees || 0;
+    });
 
-    return { totalFees, totalPaid, totalDue, clearCount, dueCount };
-  }, [fees]);
+    // 2. Map Student Payments
+    const studentPayments = {};
+    fees.forEach((f) => {
+      // Ensure we treat paidAmount as number and handle potential bad data
+      const paid = Number(f.paidAmount) || 0;
+      const sId = f.studentId;
+      if (sId) {
+        studentPayments[sId] = (studentPayments[sId] || 0) + paid;
+      }
+    });
+
+    let totalExpectedFees = 0;
+    let totalPaid = 0;
+    let totalDue = 0;
+    let clearCount = 0;
+    let dueCount = 0;
+
+    const studentDues = {};
+
+    // 3. Aggregate totals for each student
+    students.forEach((student) => {
+      // Only consider students assigned to a batch
+      if (student.batchId) {
+        // Check if batch exists (it might have been deleted)
+        const expected = batchFees[student.batchId] || 0;
+        const paid = studentPayments[student._id] || 0;
+        
+        // Due cannot be negative (overpayment is just 0 due, or strictly speaking negative due, but usually "Total Due" implies what is OWED)
+        // If we want "Total Balance" that's different. Assuming "Total Due" means "Sum of positive debts".
+        const due = Math.max(0, expected - paid);
+        
+        studentDues[student._id] = due;
+
+        totalExpectedFees += expected;
+        totalPaid += paid; // We sum all actual payments
+        totalDue += due;
+
+        if (expected > 0) {
+            if (due <= 0) clearCount++;
+            else dueCount++;
+        }
+      }
+    });
+
+    // If there are payments from students NOT in the current list (e.g. deleted students),
+    // strictly speaking valid financial records include them.
+    // However, "Total Due" usually focuses on active/current students.
+    // "Total Paid" should probably include ALL payments found in 'fees', even if student is gone.
+    // Let's adjust totalPaid to be the simple sum of all payment records to be accurate financially.
+    const grandTotalPaid = fees.reduce((sum, f) => sum + (Number(f.paidAmount) || 0), 0);
+
+    return { 
+        stats: {
+          totalFees: totalExpectedFees, 
+          totalPaid: grandTotalPaid, 
+          totalDue, 
+          clearCount, 
+          dueCount 
+        },
+        studentDues
+    };
+  }, [fees, students, batches]);
+
+  const { stats: financialStats, studentDues } = stats; // Destructure after useMemo
 
   // Table columns configuration
   const columns = useMemo(
@@ -207,15 +269,15 @@ const Finances = () => {
         ),
       },
       {
-        accessorKey: "totalFee",
-        header: "Total Fee",
+        accessorKey: "fees",
+        header: "Fees",
         cell: ({ getValue }) => (
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-info/10 rounded-lg flex items-center justify-center">
-              <MdAttachMoney className="text-info text-sm" />
+              <TbCurrencyTaka className="text-info text-lg" />
             </div>
             <span className="font-semibold text-base-content">
-              ${getValue()?.toLocaleString() || "0"}
+              ৳{getValue()?.toLocaleString() || "0"}
             </span>
           </div>
         ),
@@ -229,24 +291,29 @@ const Finances = () => {
               <FaMoneyCheck className="text-success text-sm" />
             </div>
             <span className="font-semibold text-success">
-              ${getValue()?.toLocaleString() || "0"}
+              ৳{getValue()?.toLocaleString() || "0"}
             </span>
           </div>
         ),
       },
+
+
       {
         accessorKey: "dueAmount",
         header: "Due Amount",
-        cell: ({ getValue }) => (
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-warning/10 rounded-lg flex items-center justify-center">
-              <FaClock className="text-warning text-sm" />
-            </div>
-            <span className="font-semibold text-warning">
-              ${getValue()?.toLocaleString() || "0"}
-            </span>
-          </div>
-        ),
+        cell: ({ row }) => {
+            const due = studentDues[row.original.studentId] !== undefined ? studentDues[row.original.studentId] : 0;
+            return (
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 bg-warning/10 rounded-lg flex items-center justify-center">
+                  <FaClock className="text-warning text-sm" />
+                </div>
+                <span className="font-semibold text-warning">
+                  ৳{due.toLocaleString()}
+                </span>
+              </div>
+            );
+        },
       },
       {
         accessorKey: "paymentMethod",
@@ -368,11 +435,11 @@ const Finances = () => {
         <div className="stats shadow-md bg-base-100 border border-base-300">
           <div className="stat py-4 px-6">
             <div className="stat-figure text-primary">
-              <MdAttachMoney className="text-3xl" />
+              <TbCurrencyTaka className="text-4xl" />
             </div>
             <div className="stat-title text-xs">Total Fees</div>
             <div className="stat-value text-2xl text-primary">
-              ${stats.totalFees.toLocaleString()}
+              ৳{financialStats.totalFees.toLocaleString()}
             </div>
             <div className="stat-desc text-xs">{fees.length} entries</div>
           </div>
@@ -385,7 +452,7 @@ const Finances = () => {
             </div>
             <div className="stat-title text-xs">Total Paid</div>
             <div className="stat-value text-2xl text-success">
-              ${stats.totalPaid.toLocaleString()}
+              ৳{financialStats.totalPaid.toLocaleString()}
             </div>
             <div className="stat-desc text-xs">{stats.clearCount} cleared</div>
           </div>
@@ -397,8 +464,8 @@ const Finances = () => {
               <FaClock className="text-3xl" />
             </div>
             <div className="stat-title text-xs">Total Due</div>
-            <div className="stat-value text-2xl text-warning">
-              ${stats.totalDue.toLocaleString()}
+            <div className="stat-value text-2xl text-error">
+              ৳{financialStats.totalDue.toLocaleString()}
             </div>
             <div className="stat-desc text-xs">{stats.dueCount} pending</div>
           </div>
@@ -411,8 +478,8 @@ const Finances = () => {
             </div>
             <div className="stat-title text-xs">Collection Rate</div>
             <div className="stat-value text-2xl text-info">
-              {stats.totalFees > 0
-                ? Math.round((stats.totalPaid / stats.totalFees) * 100)
+              {financialStats.totalFees > 0
+                ? Math.round((financialStats.totalPaid / financialStats.totalFees) * 100)
                 : 0}
               %
             </div>
@@ -587,7 +654,7 @@ const Finances = () => {
                               {fee.status === "clear" ? "Paid" : "Due"}
                             </span>
                             <span className="text-xs text-base-content/60">
-                              ${fee.totalFee}
+                              ৳{fee.fees}
                             </span>
                           </div>
                         </div>
@@ -617,11 +684,11 @@ const Finances = () => {
                         </div>
                       )}
 
-                      {/* Total Fee */}
+                      {/* Fees */}
                       <div className="flex items-center gap-2 text-sm">
-                        <MdAttachMoney className="text-primary shrink-0" />
+                        <TbCurrencyTaka className="text-primary text-lg shrink-0" />
                         <span className="text-base-content/70">
-                          Total: ${fee.totalFee?.toLocaleString()}
+                          Total: ৳{fee.fees?.toLocaleString()}
                         </span>
                       </div>
 
@@ -629,7 +696,7 @@ const Finances = () => {
                       <div className="flex items-center gap-2 text-sm">
                         <FaCheckCircle className="text-success shrink-0" />
                         <span className="text-base-content/70">
-                          Paid: ${fee.paidAmount?.toLocaleString()}
+                          Paid: ৳{fee.paidAmount?.toLocaleString()}
                         </span>
                       </div>
 
@@ -638,7 +705,7 @@ const Finances = () => {
                         <div className="flex items-center gap-2 text-sm">
                           <FaClock className="text-warning shrink-0" />
                           <span className="text-base-content/70">
-                            Due: ${fee.dueAmount?.toLocaleString()}
+                            Due: ৳{fee.dueAmount?.toLocaleString()}
                           </span>
                         </div>
                       )}

@@ -14,6 +14,7 @@ import {
 } from "react-icons/fa";
 import { MdAdminPanelSettings } from "react-icons/md";
 import useAuth from "../../hooks/useAuth";
+import axios from "axios";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -123,16 +124,31 @@ const Register = () => {
     setLoading(true);
 
     try {
-      // Register user with Firebase
-      await registerUser(formData.email, formData.password);
+      // 1. Register user with Firebase
+      const userCredential = await registerUser(formData.email, formData.password);
 
-      // Update user profile with name and photo
+      // 2. Update user profile with name and photo
       await updateUser(formData.name, profileImage || null);
 
-      // Show success message
+      // 3. Create user in backend database
+      try {
+        const apiBaseURL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3001";
+        await axios.post(`${apiBaseURL}/users/register`, {
+          name: formData.name,
+          email: formData.email,
+          firebaseUid: userCredential.user.uid,
+          photoURL: profileImage || null,
+          role: "admin", // Default role for self-registered users
+        });
+      } catch (backendError) {
+        console.error("Backend registration error:", backendError);
+        // Continue even if backend registration fails - user can be added later
+      }
+
+      // 4. Show success message
       setSuccess(true);
 
-      // Redirect to login after 2 seconds
+      // 5. Redirect to login after 2 seconds
       setTimeout(() => {
         navigate("/login");
       }, 2000);
@@ -150,8 +166,7 @@ const Register = () => {
         setError("Network error. Please check your internet connection.");
       } else {
         setError("Failed to create account. Please try again.");
-      }
-      setLoading(false);
+      } setLoading(false);
     }
   };
 

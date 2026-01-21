@@ -40,7 +40,7 @@ const Attendences = () => {
     queryKey: ["batches"],
     queryFn: async () => {
       const res = await axiosSecure.get("/batches");
-      return res.data;
+      return res.data?.data || [];
     },
   });
 
@@ -50,7 +50,7 @@ const Attendences = () => {
     queryFn: async () => {
       if (!selectedBatch) return [];
       const res = await axiosSecure.get("/students");
-      const allStudents = res.data;
+      const allStudents = res.data?.data || [];
       // Filter students by selected batch
       return allStudents.filter((s) => s.batchId === selectedBatch._id);
     },
@@ -66,7 +66,7 @@ const Attendences = () => {
         if (filterBatchId) url += `batchId=${filterBatchId}&`;
         if (filterDate) url += `date=${filterDate}&`;
         const res = await axiosSecure.get(url);
-        return res.data;
+        return res.data?.data || [];
       },
     });
 
@@ -174,12 +174,15 @@ const Attendences = () => {
 
   // Calculate statistics
   const stats = useMemo(() => {
-    const totalRecords = attendanceHistory.length;
-    const totalPresent = attendanceHistory.reduce((sum, record) => {
-      return sum + record.records.filter((r) => r.status === "present").length;
+    // Ensure attendanceHistory is an array before calling reduce
+    const history = Array.isArray(attendanceHistory) ? attendanceHistory : [];
+    
+    const totalRecords = history.length;
+    const totalPresent = history.reduce((sum, record) => {
+      return sum + (record.records || []).filter((r) => r.status === "present").length;
     }, 0);
-    const totalAbsent = attendanceHistory.reduce((sum, record) => {
-      return sum + record.records.filter((r) => r.status === "absent").length;
+    const totalAbsent = history.reduce((sum, record) => {
+      return sum + (record.records || []).filter((r) => r.status === "absent").length;
     }, 0);
 
     return {

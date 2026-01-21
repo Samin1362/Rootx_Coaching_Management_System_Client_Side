@@ -56,7 +56,7 @@ const AdmissionFollowUps = () => {
     queryKey: ["admissions"],
     queryFn: async () => {
       const res = await axiosSecure.get("/admissions");
-      return res.data;
+      return res.data.data || [];
     },
   });
 

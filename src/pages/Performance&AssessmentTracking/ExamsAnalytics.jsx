@@ -69,7 +69,7 @@ const ExamsAnalytics = () => {
     queryKey: ["allExams"],
     queryFn: async () => {
       const res = await axiosSecure.get("/exams");
-      return res.data;
+      return res.data?.data || [];
     },
   });
 
@@ -78,7 +78,7 @@ const ExamsAnalytics = () => {
     queryKey: ["allResults"],
     queryFn: async () => {
       const res = await axiosSecure.get("/results?limit=1000");
-      return res.data;
+      return res.data?.data || [];
     },
   });
 
@@ -87,7 +87,7 @@ const ExamsAnalytics = () => {
     queryKey: ["allBatches"],
     queryFn: async () => {
       const res = await axiosSecure.get("/batches");
-      return res.data;
+      return res.data?.data || [];
     },
   });
 
@@ -96,7 +96,7 @@ const ExamsAnalytics = () => {
     queryKey: ["allStudents"],
     queryFn: async () => {
       const res = await axiosSecure.get("/students");
-      return res.data;
+      return res.data?.data || [];
     },
   });
 

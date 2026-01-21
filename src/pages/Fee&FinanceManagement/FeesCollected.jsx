@@ -13,13 +13,13 @@ import {
   MdNavigateNext,
   MdNavigateBefore,
   MdPerson,
-  MdAttachMoney,
   MdCalendarToday,
   MdExpandMore,
   MdExpandLess,
   MdSchool,
   MdPayment,
 } from "react-icons/md";
+import { TbCurrencyTaka } from "react-icons/tb";
 import {
   FaMoneyBillWave,
   FaCheckCircle,
@@ -56,7 +56,7 @@ const FeesCollected = () => {
     queryKey: ["fees-collected"],
     queryFn: async () => {
       const res = await axiosSecure.get("/fees?status=clear");
-      return res.data;
+      return res.data.data || [];
     },
   });
 
@@ -65,7 +65,7 @@ const FeesCollected = () => {
     queryKey: ["students"],
     queryFn: async () => {
       const res = await axiosSecure.get("/students");
-      return res.data;
+      return res.data.data || [];
     },
   });
 
@@ -73,7 +73,7 @@ const FeesCollected = () => {
     queryKey: ["batches"],
     queryFn: async () => {
       const res = await axiosSecure.get("/batches");
-      return res.data;
+      return res.data.data || [];
     },
   });
 
@@ -206,15 +206,15 @@ const FeesCollected = () => {
         ),
       },
       {
-        accessorKey: "totalFee",
-        header: "Total Fee",
+        accessorKey: "fees",
+        header: "Fees",
         cell: ({ getValue }) => (
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-info/10 rounded-lg flex items-center justify-center">
-              <MdAttachMoney className="text-info text-sm" />
+              <TbCurrencyTaka className="text-info text-lg" />
             </div>
             <span className="font-semibold text-base-content">
-              ${getValue()?.toLocaleString() || "0"}
+              ৳{getValue()?.toLocaleString() || "0"}
             </span>
           </div>
         ),
@@ -228,7 +228,7 @@ const FeesCollected = () => {
               <FaMoneyCheck className="text-success text-sm" />
             </div>
             <span className="font-semibold text-success">
-              ${getValue()?.toLocaleString() || "0"}
+              ৳{getValue()?.toLocaleString() || "0"}
             </span>
           </div>
         ),
@@ -338,7 +338,7 @@ const FeesCollected = () => {
             </div>
             <div className="stat-title text-xs">Total Collected</div>
             <div className="stat-value text-2xl text-success">
-              ${stats.totalCollected.toLocaleString()}
+              ৳{stats.totalCollected.toLocaleString()}
             </div>
             <div className="stat-desc text-xs">
               {stats.totalRecords} cleared records
@@ -480,7 +480,7 @@ const FeesCollected = () => {
                                       </div>
                                       <div>
                                         <p className="text-sm font-semibold text-base-content">
-                                          ${payment.amount?.toLocaleString()}
+                                          ৳{payment.amount?.toLocaleString()}
                                         </p>
                                         <p className="text-xs text-base-content/60">
                                           {payment.method === "cash"
@@ -567,7 +567,7 @@ const FeesCollected = () => {
                               Cleared
                             </span>
                             <span className="text-xs text-base-content/60">
-                              ${fee.paidAmount?.toLocaleString()}
+                              ৳{fee.paidAmount?.toLocaleString()}
                             </span>
                           </div>
                         </div>
@@ -597,11 +597,11 @@ const FeesCollected = () => {
                         </div>
                       )}
 
-                      {/* Total Fee */}
+                      {/* Fees */}
                       <div className="flex items-center gap-2 text-sm">
-                        <MdAttachMoney className="text-primary shrink-0" />
+                        <TbCurrencyTaka className="text-primary text-lg shrink-0" />
                         <span className="text-base-content/70">
-                          Total: ${fee.totalFee?.toLocaleString()}
+                          Total: ৳{fee.fees?.toLocaleString()}
                         </span>
                       </div>
 
@@ -609,7 +609,7 @@ const FeesCollected = () => {
                       <div className="flex items-center gap-2 text-sm">
                         <FaCheckCircle className="text-success shrink-0" />
                         <span className="text-base-content/70">
-                          Paid: ${fee.paidAmount?.toLocaleString()}
+                          Paid: ৳{fee.paidAmount?.toLocaleString()}
                         </span>
                       </div>
 

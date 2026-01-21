@@ -51,7 +51,7 @@ const AttendenceLive = () => {
     queryKey: ["activeBatches"],
     queryFn: async () => {
       const res = await axiosSecure.get("/batches?status=active");
-      return res.data;
+      return res.data?.data || [];
     },
   });
 
@@ -60,7 +60,7 @@ const AttendenceLive = () => {
     queryKey: ["students"],
     queryFn: async () => {
       const res = await axiosSecure.get("/students");
-      return res.data;
+      return res.data?.data || [];
     },
   });
 

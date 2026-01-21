@@ -11,6 +11,7 @@ import {
 } from "react-icons/fa";
 import useAuth from "../../hooks/useAuth";
 import { useTranslation } from "react-i18next";
+import axios from "axios";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -59,8 +60,33 @@ const Login = () => {
     setLoading(true);
 
     try {
-      // Sign in user with Firebase
-      await signInUser(formData.email, formData.password);
+      // Step 1: Sign in user with Firebase
+      const userCredential = await signInUser(formData.email, formData.password);
+      const firebaseUser = userCredential.user;
+
+      // Step 2: Check if user exists in MongoDB, if not create them
+      try {
+        const apiBaseURL = "http://localhost:3001";
+
+        // Check if user exists in backend
+        const checkResponse = await axios.get(`${apiBaseURL}/users/me`, {
+          headers: {
+            'x-user-email': firebaseUser.email
+          }
+        }).catch(() => null);
+
+        // If user doesn't exist in backend, check if they should have an organization
+        if (!checkResponse || !checkResponse.data.success) {
+          // User doesn't exist in MongoDB - this might be a new user
+          // They should sign up through /signup instead of login
+          setError("User account not found in database. Please sign up first or contact your organization admin.");
+          setLoading(false);
+          return;
+        }
+      } catch (syncError) {
+        console.error("Error syncing user with backend:", syncError);
+        // Continue anyway - the user is logged into Firebase
+      }
 
       // Show success message
       setSuccess(true);
@@ -236,15 +262,24 @@ const Login = () => {
           )}
         </button>
 
-        {/* Register Link */}
+        {/* Signup Link */}
         <div className="text-center pt-3 sm:pt-4">
           <p className="text-base-content/70 text-sm sm:text-base">
             {t('auth:dontHaveAccount')}{" "}
             <Link
-              to="/register"
+              to="/signup"
               className="text-primary font-semibold hover:underline transition-all duration-300"
             >
               {t('auth:createAccount')}
+            </Link>
+          </p>
+          <p className="text-base-content/70 text-sm sm:text-base mt-2">
+            Want to create an organization?{" "}
+            <Link
+              to="/signup"
+              className="text-primary font-semibold hover:underline transition-all duration-300"
+            >
+              Sign Up Here
             </Link>
           </p>
         </div>

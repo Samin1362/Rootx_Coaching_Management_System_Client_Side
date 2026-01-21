@@ -58,7 +58,7 @@ const Exams = () => {
     queryKey: ["batches"],
     queryFn: async () => {
       const res = await axiosSecure.get("/batches");
-      return res.data;
+      return res.data?.data || [];
     },
   });
 
@@ -70,7 +70,7 @@ const Exams = () => {
       if (filterBatchId) url += `batchId=${filterBatchId}&`;
       if (globalFilter) url += `name=${globalFilter}&`;
       const res = await axiosSecure.get(url);
-      return res.data;
+      return res.data?.data || [];
     },
   });
 

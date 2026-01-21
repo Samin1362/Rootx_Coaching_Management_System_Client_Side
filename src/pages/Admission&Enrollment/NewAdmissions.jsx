@@ -1,6 +1,5 @@
 import { useForm } from "react-hook-form";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
-import { useNavigate } from "react-router";
 import { useQuery } from "@tanstack/react-query";
 import {
   MdPerson,
@@ -14,7 +13,6 @@ import { useNotification } from "../../contexts/NotificationContext";
 
 const NewAdmissions = () => {
   const axiosSecure = useAxiosSecure();
-  const navigate = useNavigate();
   const notification = useNotification();
 
   const {
@@ -29,7 +27,7 @@ const NewAdmissions = () => {
     queryKey: ["active-batches"],
     queryFn: async () => {
       const res = await axiosSecure.get("/batches?status=active");
-      return res.data;
+      return res.data.data || [];
     },
   });
 
@@ -41,9 +39,8 @@ const NewAdmissions = () => {
 
     try {
       const res = await axiosSecure.post("/admissions", admission);
-      if (res.data.insertedId) {
+      if (res.data.success) {
         notification.success("Admission created successfully!");
-        navigate("/dashboard/admissionManagement/admissions");
         reset();
       }
     } catch (error) {

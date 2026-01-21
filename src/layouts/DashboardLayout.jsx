@@ -14,6 +14,8 @@ import {
   FaSignOutAlt,
   FaUserCircle,
   FaCog,
+  FaCrown,
+  FaBuilding,
 } from "react-icons/fa";
 import { GrDocumentPerformance, GrOverview } from "react-icons/gr";
 import { HiUserGroup, HiDocumentReport } from "react-icons/hi";
@@ -1125,6 +1127,68 @@ const DashboardLayout = () => {
                 </Link>
               </ul>
             )}
+
+            {/* Divider for Multi-Tenant Section */}
+            <div className="divider is-drawer-close:hidden my-2 text-xs text-base-content/40">
+              ORGANIZATION
+            </div>
+
+            {/* Subscription Management */}
+            <Link to="/dashboard/subscription">
+              <li>
+                <button
+                  className={`is-drawer-close:tooltip is-drawer-close:tooltip-right rounded-lg transition-all duration-200 active:scale-95 py-3 ${
+                    location.pathname === "/dashboard/subscription"
+                      ? "bg-primary text-primary-content font-semibold shadow-md"
+                      : "hover:bg-primary/10 hover:text-primary hover:translate-x-1"
+                  }`}
+                  data-tip="Subscription"
+                >
+                  <FaCrown className="text-2xl" />
+                  <span className="is-drawer-close:hidden text-base font-medium">
+                    Subscription
+                  </span>
+                </button>
+              </li>
+            </Link>
+
+            {/* User Management */}
+            <Link to="/dashboard/users">
+              <li>
+                <button
+                  className={`is-drawer-close:tooltip is-drawer-close:tooltip-right rounded-lg transition-all duration-200 active:scale-95 py-3 ${
+                    location.pathname === "/dashboard/users"
+                      ? "bg-primary text-primary-content font-semibold shadow-md"
+                      : "hover:bg-primary/10 hover:text-primary hover:translate-x-1"
+                  }`}
+                  data-tip="Team"
+                >
+                  <FaUsers className="text-2xl" />
+                  <span className="is-drawer-close:hidden text-base font-medium">
+                    Team
+                  </span>
+                </button>
+              </li>
+            </Link>
+
+            {/* Organization Settings */}
+            <Link to="/dashboard/organization-settings">
+              <li>
+                <button
+                  className={`is-drawer-close:tooltip is-drawer-close:tooltip-right rounded-lg transition-all duration-200 active:scale-95 py-3 ${
+                    location.pathname === "/dashboard/organization-settings"
+                      ? "bg-primary text-primary-content font-semibold shadow-md"
+                      : "hover:bg-primary/10 hover:text-primary hover:translate-x-1"
+                  }`}
+                  data-tip="Organization Settings"
+                >
+                  <FaBuilding className="text-2xl" />
+                  <span className="is-drawer-close:hidden text-base font-medium">
+                    Organization
+                  </span>
+                </button>
+              </li>
+            </Link>
           </ul>
         </div>
       </div>

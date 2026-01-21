@@ -77,7 +77,7 @@ const ExamsResults = () => {
     queryKey: ["activeBatches"],
     queryFn: async () => {
       const res = await axiosSecure.get("/batches?status=active");
-      return res.data;
+      return res.data?.data || [];
     },
   });
 
@@ -92,7 +92,7 @@ const ExamsResults = () => {
     queryFn: async () => {
       if (!selectedBatchId) return [];
       const res = await axiosSecure.get(`/exams?batchId=${selectedBatchId}`);
-      return res.data;
+      return res.data?.data || [];
     },
     enabled: !!selectedBatchId,
   });
@@ -103,7 +103,7 @@ const ExamsResults = () => {
     queryFn: async () => {
       if (!selectedBatchId) return [];
       const res = await axiosSecure.get("/students");
-      const allStudents = res.data;
+      const allStudents = res.data?.data || [];
       return allStudents.filter((s) => s.batchId === selectedBatchId);
     },
     enabled: !!selectedBatchId,
@@ -114,7 +114,7 @@ const ExamsResults = () => {
     queryKey: ["allExams"],
     queryFn: async () => {
       const res = await axiosSecure.get("/exams");
-      return res.data;
+      return res.data?.data || [];
     },
   });
 
@@ -123,7 +123,7 @@ const ExamsResults = () => {
     queryKey: ["allStudents"],
     queryFn: async () => {
       const res = await axiosSecure.get("/students");
-      return res.data;
+      return res.data?.data || [];
     },
   });
 
@@ -132,7 +132,7 @@ const ExamsResults = () => {
     queryKey: ["allBatches"],
     queryFn: async () => {
       const res = await axiosSecure.get("/batches");
-      return res.data;
+      return res.data?.data || [];
     },
   });
 
@@ -149,7 +149,7 @@ const ExamsResults = () => {
       if (filterExamId) url += `examId=${filterExamId}&`;
       if (filterStudentId) url += `studentId=${filterStudentId}&`;
       const res = await axiosSecure.get(url);
-      return res.data;
+      return res.data?.data || [];
     },
   });
 

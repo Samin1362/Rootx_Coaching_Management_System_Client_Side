@@ -19,10 +19,10 @@ import {
   MdFilterList,
   MdCalendarToday,
   MdPeople,
-  MdAttachMoney,
   MdExpandMore,
   MdExpandLess,
 } from "react-icons/md";
+import { TbCurrencyTaka } from "react-icons/tb";
 import { FaCheckCircle, FaClock } from "react-icons/fa";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
 import Loader from "../../components/Loader";
@@ -49,8 +49,8 @@ const Batches = () => {
   const { data: batches = [], isLoading } = useQuery({
     queryKey: ["batches"],
     queryFn: async () => {
-      const res = await axiosSecure.get("/batches");
-      return res.data;
+      const res = await axiosSecure.get("/batches?limit=1000");
+      return res.data.data || [];
     },
   });
 
@@ -99,15 +99,15 @@ const Batches = () => {
         ),
       },
       {
-        accessorKey: "totalFee",
-        header: "Fee",
+        accessorKey: "fees",
+        header: "Fees",
         cell: ({ getValue }) => (
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-secondary/10 rounded-lg flex items-center justify-center">
-              <MdAttachMoney className="text-secondary text-sm" />
+              <TbCurrencyTaka className="text-secondary text-lg" />
             </div>
             <span className="font-semibold text-base-content">
-              ₹{getValue()?.toLocaleString()}
+              ৳{getValue()?.toLocaleString()}
             </span>
           </div>
         ),
@@ -421,12 +421,12 @@ const Batches = () => {
                           </div>
                         )}
 
-                        {/* Total Fee */}
-                        {batch.totalFee && (
+                        {/* Fees */}
+                        {batch.fees && (
                           <div className="flex items-center gap-2 text-sm">
-                            <MdAttachMoney className="text-primary shrink-0" />
+                            <TbCurrencyTaka className="text-primary text-xl shrink-0" />
                             <span className="text-base-content/70">
-                              ${batch.totalFee}
+                              ৳{batch.fees}
                             </span>
                           </div>
                         )}
