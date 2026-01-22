@@ -3,8 +3,7 @@ import { useEffect } from 'react';
 import useAuth from './useAuth';
 
 const axiosSecure = axios.create({
-  // baseURL: "https://rootx-coaching-management-server-si.vercel.app"
-  baseURL: "http://localhost:3001/"
+  baseURL: "http://localhost:3001"
 })
 
 const useAxiosSecure = () => {
@@ -47,7 +46,7 @@ const useAxiosSecure = () => {
       axiosSecure.interceptors.request.eject(requestInterceptor);
       axiosSecure.interceptors.response.eject(responseInterceptor);
     };
-  }, [user]);
+  }, [user?.email]);
 
   return axiosSecure;
 };

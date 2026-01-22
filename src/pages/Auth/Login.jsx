@@ -11,12 +11,13 @@ import {
 } from "react-icons/fa";
 import useAuth from "../../hooks/useAuth";
 import { useTranslation } from "react-i18next";
-import axios from "axios";
+import useAxiosSecure from "../../hooks/useAxiosSecure";
 
 const Login = () => {
   const navigate = useNavigate();
   const { signInUser } = useAuth();
   const { t } = useTranslation(['auth', 'common']);
+  const axiosSecure = useAxiosSecure();
 
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -64,37 +65,10 @@ const Login = () => {
       const userCredential = await signInUser(formData.email, formData.password);
       const firebaseUser = userCredential.user;
 
-      // Step 2: Check if user exists in MongoDB, if not create them
-      try {
-        const apiBaseURL = "http://localhost:3001";
-
-        // Check if user exists in backend
-        const checkResponse = await axios.get(`${apiBaseURL}/users/me`, {
-          headers: {
-            'x-user-email': firebaseUser.email
-          }
-        }).catch(() => null);
-
-        // If user doesn't exist in backend, check if they should have an organization
-        if (!checkResponse || !checkResponse.data.success) {
-          // User doesn't exist in MongoDB - this might be a new user
-          // They should sign up through /signup instead of login
-          setError("User account not found in database. Please sign up first or contact your organization admin.");
-          setLoading(false);
-          return;
-        }
-      } catch (syncError) {
-        console.error("Error syncing user with backend:", syncError);
-        // Continue anyway - the user is logged into Firebase
-      }
-
-      // Show success message
+      // Step 2: Redirect to dashboard immediately
+      // The DashboardLayout and OrganizationProvider will handle organization verification
       setSuccess(true);
-
-      // Redirect to dashboard after 1 second
-      setTimeout(() => {
-        navigate("/dashboard/overview");
-      }, 1000);
+      navigate("/dashboard/overview");
     } catch (err) {
       console.error("Login error:", err);
 
@@ -267,7 +241,7 @@ const Login = () => {
           <p className="text-base-content/70 text-sm sm:text-base">
             {t('auth:dontHaveAccount')}{" "}
             <Link
-              to="/signup"
+              to="/register"
               className="text-primary font-semibold hover:underline transition-all duration-300"
             >
               {t('auth:createAccount')}

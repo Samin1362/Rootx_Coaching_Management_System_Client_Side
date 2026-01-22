@@ -38,6 +38,7 @@ import { BsFileEarmarkText, BsGraphUp } from "react-icons/bs";
 import { Link, Outlet, useLocation, useNavigate } from "react-router";
 import Logo from "../components/Logo";
 import useAuth from "../hooks/useAuth";
+import { useOrganization } from "../contexts/organization/OrganizationContext";
 import { useTranslation } from "react-i18next";
 import LanguageSwitcher from "../components/LanguageSwitcher";
 
@@ -45,8 +46,26 @@ const DashboardLayout = () => {
   // Get current location for active route highlighting
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, logoutUser } = useAuth();
+  const { user, loader, logoutUser } = useAuth();
+  const { organization, loading: orgLoading, error: orgError } = useOrganization();
   const { t } = useTranslation(["navbar", "common"]);
+
+  // Protect dashboard routes - redirect to login if not authenticated
+  useEffect(() => {
+    if (!loader && !user) {
+      navigate("/login", { replace: true });
+    }
+  }, [user, loader, navigate]);
+
+  // Check for organization membership
+  useEffect(() => {
+    if (!loader && !orgLoading && user) {
+      // If user is authenticated but has no organization, redirect to waiting page
+      if (orgError && orgError.includes("No organization")) {
+        navigate("/waiting-for-organization", { replace: true });
+      }
+    }
+  }, [user, loader, organization, orgLoading, orgError, navigate]);
 
   // Default profile image
   const defaultProfileImage =
@@ -152,6 +171,25 @@ const DashboardLayout = () => {
     setTheme(newTheme);
     localStorage.setItem("rootx-theme", newTheme);
   };
+
+  // Show loading while checking authentication or organization
+  if (loader || orgLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-base-200">
+        <div className="text-center">
+          <span className="loading loading-spinner loading-lg text-primary"></span>
+          <p className="mt-4 text-base-content/60">
+            {orgLoading ? "Loading your organization..." : "Loading..."}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render dashboard if not authenticated (will be redirected by useEffect)
+  if (!user) {
+    return null;
+  }
 
   return (
     <div className="drawer lg:drawer-open">
