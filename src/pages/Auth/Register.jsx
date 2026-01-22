@@ -14,11 +14,12 @@ import {
 } from "react-icons/fa";
 import { MdAdminPanelSettings } from "react-icons/md";
 import useAuth from "../../hooks/useAuth";
-import axios from "axios";
+import useAxiosSecure from "../../hooks/useAxiosSecure";
 
 const Register = () => {
   const navigate = useNavigate();
   const { registerUser, updateUser } = useAuth();
+  const axiosSecure = useAxiosSecure();
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -132,13 +133,12 @@ const Register = () => {
 
       // 3. Create user in backend database
       try {
-        const apiBaseURL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3001";
-        await axios.post(`${apiBaseURL}/users/register`, {
+        await axiosSecure.post("/users/register", {
           name: formData.name,
           email: formData.email,
           firebaseUid: userCredential.user.uid,
           photoURL: profileImage || null,
-          role: "admin", // Default role for self-registered users
+          role: "staff", // Default role for self-registered users
         });
       } catch (backendError) {
         console.error("Backend registration error:", backendError);
@@ -148,9 +148,9 @@ const Register = () => {
       // 4. Show success message
       setSuccess(true);
 
-      // 5. Redirect to login after 2 seconds
+      // 5. Redirect to waiting page after 2 seconds
       setTimeout(() => {
-        navigate("/login");
+        navigate("/waiting-for-organization");
       }, 2000);
     } catch (err) {
       console.error("Registration error:", err);
@@ -444,11 +444,10 @@ const Register = () => {
           </div>
           <div className="min-w-0">
             <h4 className="font-semibold text-base-content mb-1 text-sm sm:text-base">
-              Admin Approval Required
+              Organization Invitation Required
             </h4>
             <p className="text-xs sm:text-sm text-base-content/60 leading-relaxed">
-              Your account will be activated after admin verification. You'll
-              receive an email once approved.
+              After creating your account, you'll need to be invited to an organization by an admin to access the dashboard features.
             </p>
           </div>
         </div>

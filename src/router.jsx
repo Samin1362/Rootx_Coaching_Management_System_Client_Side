@@ -23,7 +23,9 @@ import ExamsResults from "./pages/Performance&AssessmentTracking/ExamsResults";
 import ExamsAnalytics from "./pages/Performance&AssessmentTracking/ExamsAnalytics";
 import AuthLayout from "./layouts/AuthLayout";
 import Login from "./pages/Auth/Login";
+import Register from "./pages/Auth/Register";
 import OrganizationSignup from "./pages/Organization/OrganizationSignup";
+import WaitingForOrganization from "./pages/WaitingForOrganization";
 import SubscriptionPlans from "./pages/Subscription/SubscriptionPlans";
 import SubscriptionManagement from "./pages/Subscription/SubscriptionManagement";
 import UserManagement from "./pages/UserManagement/UserManagement";
@@ -47,12 +49,13 @@ const router = createBrowserRouter([
     Component: SubscriptionPlans,
     errorElement: <ErrorPage></ErrorPage>,
   },
-  // Redirect old register route to signup
+  // Waiting for Organization (Public)
   {
-    path: "/register",
-    element: <Navigate to="/signup" replace />,
+    path: "/waiting-for-organization",
+    Component: WaitingForOrganization,
+    errorElement: <ErrorPage></ErrorPage>,
   },
-  // Auth routes (Login only)
+  // Auth routes (Login and Register)
   {
     path: "/",
     Component: AuthLayout,
@@ -61,6 +64,10 @@ const router = createBrowserRouter([
       {
         path: "login",
         Component: Login,
+      },
+      {
+        path: "register",
+        Component: Register,
       },
     ],
   },

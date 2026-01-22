@@ -13,9 +13,10 @@ import useAxiosSecure from "../../hooks/useAxiosSecure";
 
 const UserManagement = () => {
   const axiosSecure = useAxiosSecure();
-  
+
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterRole, setFilterRole] = useState("all");
   const [showInviteModal, setShowInviteModal] = useState(false);
@@ -33,10 +34,12 @@ const UserManagement = () => {
 
   const fetchUsers = async () => {
     try {
+      setError(null);
       const response = await axiosSecure.get("/users");
       setUsers(response.data.data || []);
     } catch (error) {
       console.error("Error fetching users:", error);
+      setError(error.response?.data?.message || error.message || "Failed to fetch users. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -44,37 +47,43 @@ const UserManagement = () => {
 
   const handleInviteUser = async (e) => {
     e.preventDefault();
-    
+
     try {
+      setError(null);
       await axiosSecure.post("/users/invite", inviteForm);
-      
+
       // Reset form and close modal
       setInviteForm({ name: "", email: "", role: "staff", phone: "" });
       setShowInviteModal(false);
-      
+
       // Refresh users list
       fetchUsers();
     } catch (error) {
       console.error("Error inviting user:", error);
+      setError(error.response?.data?.message || error.message || "Failed to invite user. Please try again.");
     }
   };
 
   const handleUpdateRole = async (userId, newRole) => {
     try {
+      setError(null);
       await axiosSecure.patch(`/users/${userId}/role`, { role: newRole });
       fetchUsers();
     } catch (error) {
       console.error("Error updating role:", error);
+      setError(error.response?.data?.message || error.message || "Failed to update user role. Please try again.");
     }
   };
 
   const handleDeleteUser = async (userId) => {
     if (window.confirm("Are you sure you want to remove this user?")) {
       try {
+        setError(null);
         await axiosSecure.delete(`/users/${userId}`);
         fetchUsers();
       } catch (error) {
         console.error("Error deleting user:", error);
+        setError(error.response?.data?.message || error.message || "Failed to delete user. Please try again.");
       }
     }
   };
@@ -112,6 +121,28 @@ const UserManagement = () => {
 
   return (
     <div className="p-6 space-y-6">
+      {/* Error Alert */}
+      {error && (
+        <div className="alert alert-error shadow-lg">
+          <div className="flex items-center justify-between w-full">
+            <div className="flex items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current flex-shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>{error}</span>
+            </div>
+            <div className="flex gap-2">
+              <button onClick={() => { setError(null); fetchUsers(); }} className="btn btn-sm btn-ghost">
+                Retry
+              </button>
+              <button onClick={() => setError(null)} className="btn btn-sm btn-ghost">
+                Dismiss
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -218,10 +249,21 @@ const UserManagement = () => {
                     <td>
                       <div className="flex items-center gap-3">
                         <div className="avatar placeholder">
-                          <div className="bg-primary text-white rounded-full w-10">
-                            <span className="text-lg">
-                              {user.name?.charAt(0).toUpperCase()}
-                            </span>
+                          <div className="bg-primary text-white rounded-full w-10 h-10 ring-2 ring-primary/20">
+                            {user.photoURL ? (
+                              <img
+                                src={user.photoURL}
+                                alt={user.name}
+                                className="rounded-full"
+                                onError={(e) => {
+                                  e.target.outerHTML = `<span class="text-lg">${user.name?.charAt(0).toUpperCase()}</span>`;
+                                }}
+                              />
+                            ) : (
+                              <span className="text-lg">
+                                {user.name?.charAt(0).toUpperCase()}
+                              </span>
+                            )}
                           </div>
                         </div>
                         <div>

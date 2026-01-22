@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router";
 import {
   FaCheck,
   FaTimes,
@@ -8,11 +9,16 @@ import {
   FaBuilding,
 } from "react-icons/fa";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
+import { useOrganization } from "../../contexts/organization";
 
 const SubscriptionPlans = () => {
   const axiosSecure = useAxiosSecure();
+  const navigate = useNavigate();
+  const { organization, subscription, refreshOrganization } = useOrganization();
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [upgrading, setUpgrading] = useState(false);
+  const [error, setError] = useState(null);
   const [billingCycle, setBillingCycle] = useState("monthly"); // monthly or yearly
 
   useEffect(() => {
@@ -21,10 +27,12 @@ const SubscriptionPlans = () => {
 
   const fetchPlans = async () => {
     try {
+      setError(null);
       const response = await axiosSecure.get("/subscriptions/plans");
       setPlans(response.data.data || []);
     } catch (error) {
       console.error("Error fetching plans:", error);
+      setError(error.response?.data?.message || error.message || "Failed to load subscription plans. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -72,10 +80,61 @@ const SubscriptionPlans = () => {
     return limit === -1 ? "Unlimited" : limit.toLocaleString();
   };
 
+  const handleChoosePlan = async (plan) => {
+    if (!organization) {
+      navigate("/login");
+      return;
+    }
+
+    try {
+      setUpgrading(true);
+      setError(null);
+
+      const response = await axiosSecure.post("/subscriptions/upgrade", {
+        planId: plan._id,
+        billingCycle,
+      });
+
+      if (response.data.success) {
+        await refreshOrganization();
+        navigate("/dashboard/subscription");
+      }
+    } catch (err) {
+      console.error("Upgrade error:", err);
+      setError(
+        err.response?.data?.message ||
+          "Failed to upgrade plan. Please try again."
+      );
+    } finally {
+      setUpgrading(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-base-200 flex items-center justify-center">
         <span className="loading loading-spinner loading-lg text-primary"></span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-base-200 flex items-center justify-center p-4">
+        <div className="card bg-base-100 shadow-xl max-w-md">
+          <div className="card-body items-center text-center">
+            <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current flex-shrink-0 h-16 w-16 text-error" fill="none" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <h2 className="card-title text-error">Error Loading Plans</h2>
+            <p className="text-base-content/70">{error}</p>
+            <div className="card-actions justify-center mt-4">
+              <button onClick={fetchPlans} className="btn btn-primary">
+                Retry
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -235,7 +294,11 @@ const SubscriptionPlans = () => {
 
                 {/* CTA Button */}
                 <button
+                  onClick={() => handleChoosePlan(plan)}
+                  disabled={upgrading || (organization && subscription?.planId === plan._id && subscription?.billingCycle === billingCycle)}
                   className={`btn w-full ${
+                    upgrading ? "loading" : ""
+                  } ${
                     plan.isPopular
                       ? "btn-warning text-white"
                       : plan.tier === "free"
@@ -243,7 +306,7 @@ const SubscriptionPlans = () => {
                       : "btn-primary text-white"
                   } shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300`}
                 >
-                  {plan.tier === "free" ? "Get Started Free" : "Choose Plan"}
+                  {upgrading ? "Processing..." : plan.tier === "free" ? "Get Started Free" : "Choose Plan"}
                 </button>
 
                 {/* Trial Info */}

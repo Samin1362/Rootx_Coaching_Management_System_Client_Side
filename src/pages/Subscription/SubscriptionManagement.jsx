@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router";
 import {
   FaCrown,
   FaCalendar,
@@ -9,21 +10,34 @@ import {
   FaHistory,
   FaDownload,
 } from "react-icons/fa";
-// import useAxiosSecure from "../../hooks/useAxiosSecure";
 import { useOrganization } from "../../contexts/organization";
+import useAxiosSecure from "../../hooks/useAxiosSecure";
 
 const SubscriptionManagement = () => {
-  // const axiosSecure = useAxiosSecure();
-  const { organization, subscription, loading: orgLoading, refreshOrganization } = useOrganization();
-  
+  const { organization, subscription, loading: orgLoading, error: orgError, refreshOrganization } = useOrganization();
+  const axiosSecure = useAxiosSecure();
+  const navigate = useNavigate();
+
   const [loading, setLoading] = useState(false);
+  const [payments, setPayments] = useState([]);
+  const [paymentsLoading, setPaymentsLoading] = useState(true);
 
   useEffect(() => {
-    // Refresh organization data when component mounts
-    if (refreshOrganization) {
-      refreshOrganization();
+    fetchPayments();
+  }, [organization?._id]);
+
+  const fetchPayments = async () => {
+    if (!organization?._id) return;
+    try {
+      setPaymentsLoading(true);
+      const response = await axiosSecure.get("/subscriptions/payments");
+      setPayments(response.data.data || []);
+    } catch (error) {
+      console.error("Error fetching payments:", error);
+    } finally {
+      setPaymentsLoading(false);
     }
-  }, []);
+  };
 
   const getStatusBadge = (status) => {
     const badges = {
@@ -77,6 +91,27 @@ const SubscriptionManagement = () => {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <span className="loading loading-spinner loading-lg text-primary"></span>
+      </div>
+    );
+  }
+
+  if (orgError) {
+    return (
+      <div className="flex items-center justify-center min-h-screen p-4">
+        <div className="card bg-base-100 shadow-xl max-w-md">
+          <div className="card-body items-center text-center">
+            <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current flex-shrink-0 h-16 w-16 text-error" fill="none" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <h2 className="card-title text-error">Error Loading Organization</h2>
+            <p className="text-base-content/70">{orgError}</p>
+            <div className="card-actions justify-center mt-4">
+              <button onClick={refreshOrganization} className="btn btn-primary">
+                Retry
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -139,7 +174,10 @@ const SubscriptionManagement = () => {
               </div>
             </div>
             <div className="flex flex-col gap-2">
-              <button className="btn btn-white bg-white text-primary hover:bg-base-100">
+              <button
+                onClick={() => navigate("/plans")}
+                className="btn btn-white bg-white text-primary hover:bg-base-100"
+              >
                 <FaArrowUp />
                 Upgrade Plan
               </button>
@@ -281,7 +319,7 @@ const SubscriptionManagement = () => {
                 to add more students.
               </div>
             </div>
-            <button className="btn btn-sm btn-primary">Upgrade Now</button>
+            <button onClick={() => navigate("/plans")} className="btn btn-sm btn-primary">Upgrade Now</button>
           </div>
         )}
 
@@ -301,32 +339,37 @@ const SubscriptionManagement = () => {
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td>INV-2026-001</td>
-                  <td>Jan 20, 2026</td>
-                  <td>{formatCurrency(5000)}</td>
-                  <td>
-                    <div className="badge badge-success">Paid</div>
-                  </td>
-                  <td>
-                    <button className="btn btn-ghost btn-sm">
-                      <FaDownload />
-                    </button>
-                  </td>
-                </tr>
-                <tr>
-                  <td>INV-2025-012</td>
-                  <td>Dec 20, 2025</td>
-                  <td>{formatCurrency(5000)}</td>
-                  <td>
-                    <div className="badge badge-success">Paid</div>
-                  </td>
-                  <td>
-                    <button className="btn btn-ghost btn-sm">
-                      <FaDownload />
-                    </button>
-                  </td>
-                </tr>
+                {paymentsLoading ? (
+                  <tr>
+                    <td colSpan="5" className="text-center py-4">
+                      <span className="loading loading-spinner text-primary"></span>
+                    </td>
+                  </tr>
+                ) : payments.length > 0 ? (
+                  payments.map((payment) => (
+                    <tr key={payment._id}>
+                      <td>{payment.invoiceNumber}</td>
+                      <td>{formatDate(payment.date)}</td>
+                      <td>{formatCurrency(payment.amount)}</td>
+                      <td>
+                        <div className={`badge badge-${payment.status === "paid" ? "success" : "warning"} capitalize`}>
+                          {payment.status}
+                        </div>
+                      </td>
+                      <td>
+                        <button className="btn btn-ghost btn-sm" title="Download Invoice">
+                          <FaDownload />
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="5" className="text-center py-8 text-base-content/40">
+                      No invoices found
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>

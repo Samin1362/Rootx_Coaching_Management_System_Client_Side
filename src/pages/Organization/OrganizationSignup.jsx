@@ -16,11 +16,12 @@ import {
   FaUserCircle,
 } from "react-icons/fa";
 import useAuth from "../../hooks/useAuth";
-import axios from "axios";
+import useAxiosSecure from "../../hooks/useAxiosSecure";
 
 const OrganizationSignup = () => {
   const navigate = useNavigate();
-  const { registerUser, updateUser } = useAuth();
+  const { registerUser, signInUser, updateUser } = useAuth();
+  const axiosSecure = useAxiosSecure();
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -34,7 +35,6 @@ const OrganizationSignup = () => {
   // Cloudinary configuration
   const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
   const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
-  const apiBaseURL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3001";
 
   // Form state
   const [formData, setFormData] = useState({
@@ -180,17 +180,60 @@ const OrganizationSignup = () => {
     setLoading(true);
 
     try {
-      // Step 1: Register user with Firebase
-      const userCredential = await registerUser(
-        formData.ownerEmail,
-        formData.ownerPassword
-      );
+      let userCredential;
+      let isExistingUser = false;
+
+      // Step 1: Try to register user with Firebase
+      try {
+        userCredential = await registerUser(
+          formData.ownerEmail,
+          formData.ownerPassword
+        );
+      } catch (firebaseErr) {
+        // If email already exists, sign in the user instead
+        if (firebaseErr.code === "auth/email-already-in-use") {
+          isExistingUser = true;
+
+          // Try to sign in with provided credentials
+          try {
+            userCredential = await signInUser(
+              formData.ownerEmail,
+              formData.ownerPassword
+            );
+          } catch (signInErr) {
+            if (signInErr.code === "auth/wrong-password") {
+              setError("This email is already registered with a different password. Please use the correct password or sign in first.");
+              setLoading(false);
+              return;
+            }
+            throw signInErr;
+          }
+
+          // Check if user already has an organization
+          try {
+            const userCheckResponse = await axiosSecure.get("/users/me");
+            const userData = userCheckResponse.data.data;
+
+            if (userData.organizationId) {
+              setError("You already belong to an organization. Each user can only be part of one organization.");
+              setLoading(false);
+              return;
+            }
+          } catch (checkErr) {
+            // If user doesn't exist in MongoDB, that's fine - we'll create them
+            console.log("User not in MongoDB yet, will create with organization");
+          }
+        } else {
+          // Other Firebase errors
+          throw firebaseErr;
+        }
+      }
 
       // Step 2: Update Firebase profile with name and photo
       await updateUser(formData.ownerName, profileImage || null);
 
       // Step 3: Create organization in backend (which also creates the user)
-      const response = await axios.post(`${apiBaseURL}/organizations`, {
+      const response = await axiosSecure.post("/organizations", {
         name: formData.organizationName,
         slug: formData.slug,
         email: formData.email,
@@ -212,9 +255,7 @@ const OrganizationSignup = () => {
       console.error("Signup error:", err);
 
       // Handle specific Firebase errors
-      if (err.code === "auth/email-already-in-use") {
-        setError("This email is already registered. Please sign in instead.");
-      } else if (err.code === "auth/invalid-email") {
+      if (err.code === "auth/invalid-email") {
         setError("Invalid email address format");
       } else if (err.code === "auth/weak-password") {
         setError("Password is too weak. Please use a stronger password.");
@@ -369,7 +410,7 @@ const OrganizationSignup = () => {
                         className="input input-bordered join-item flex-1 focus:input-primary"
                         required
                         disabled={loading || success}
-                        pattern="[a-z0-9-]+"
+                        pattern="[a-z0-9\-]+"
                       />
                     </div>
                     <label className="label">
