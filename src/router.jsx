@@ -1,5 +1,6 @@
 import { createBrowserRouter, Navigate } from "react-router";
 import DashboardLayout from "./layouts/DashboardLayout";
+import SuperAdminLayout from "./layouts/SuperAdminLayout";
 import Overview from "./pages/Overview";
 import Students from "./pages/StudentManagement/Students";
 import AddStudent from "./pages/StudentManagement/AddStudent";
@@ -30,6 +31,23 @@ import SubscriptionPlans from "./pages/Subscription/SubscriptionPlans";
 import SubscriptionManagement from "./pages/Subscription/SubscriptionManagement";
 import UserManagement from "./pages/UserManagement/UserManagement";
 import OrganizationSettings from "./pages/Organization/OrganizationSettings";
+
+// Super Admin Pages
+import {
+  SuperAdminDashboard,
+  OrganizationsList,
+  OrganizationDetails,
+  CreateOrganization,
+  PlatformUsers,
+  UserDetails,
+  SubscriptionsList,
+  SubscriptionDetails,
+  PlansList,
+  ActivityLogsViewer,
+  PlatformAnalytics,
+  PlatformSettings,
+  Reports,
+} from "./pages/SuperAdmin";
 
 const router = createBrowserRouter([
   // Root path redirects to signup (for new organizations)
@@ -203,6 +221,85 @@ const router = createBrowserRouter([
       {
         path: "organization-settings",
         Component: OrganizationSettings,
+      },
+    ],
+  },
+  // Super Admin routes (Protected - only for super_admin role)
+  {
+    path: "/super-admin",
+    Component: SuperAdminLayout,
+    errorElement: <ErrorPage />,
+    children: [
+      {
+        index: true,
+        element: <Navigate to="/super-admin/dashboard" replace />,
+      },
+      {
+        path: "dashboard",
+        Component: SuperAdminDashboard,
+      },
+      {
+        path: "organizations",
+        children: [
+          {
+            index: true,
+            Component: OrganizationsList,
+          },
+          {
+            path: "create",
+            Component: CreateOrganization,
+          },
+          {
+            path: ":orgId",
+            Component: OrganizationDetails,
+          },
+        ],
+      },
+      {
+        path: "users",
+        children: [
+          {
+            index: true,
+            Component: PlatformUsers,
+          },
+          {
+            path: ":userId",
+            Component: UserDetails,
+          },
+        ],
+      },
+      {
+        path: "subscriptions",
+        children: [
+          {
+            index: true,
+            Component: SubscriptionsList,
+          },
+          {
+            path: ":subscriptionId",
+            Component: SubscriptionDetails,
+          },
+        ],
+      },
+      {
+        path: "plans",
+        Component: PlansList,
+      },
+      {
+        path: "activity-logs",
+        Component: ActivityLogsViewer,
+      },
+      {
+        path: "analytics",
+        Component: PlatformAnalytics,
+      },
+      {
+        path: "settings",
+        Component: PlatformSettings,
+      },
+      {
+        path: "reports",
+        Component: Reports,
       },
     ],
   },

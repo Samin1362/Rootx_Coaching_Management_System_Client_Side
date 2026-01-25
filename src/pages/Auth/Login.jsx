@@ -61,14 +61,20 @@ const Login = () => {
     setLoading(true);
 
     try {
-      // Step 1: Sign in user with Firebase
-      const userCredential = await signInUser(formData.email, formData.password);
-      const firebaseUser = userCredential.user;
+      // Step 1: Sign in user with Firebase and get MongoDB user data
+      const result = await signInUser(formData.email, formData.password);
+      const dbUser = result.dbUser;
 
-      // Step 2: Redirect to dashboard immediately
-      // The DashboardLayout and OrganizationProvider will handle organization verification
       setSuccess(true);
-      navigate("/dashboard/overview");
+
+      // Step 2: Redirect based on user role
+      if (dbUser?.isSuperAdmin || dbUser?.role === "super_admin" || dbUser?.role === "super-admin") {
+        // Super admin goes to super admin dashboard
+        navigate("/super-admin/dashboard", { replace: true });
+      } else {
+        // Regular users go to normal dashboard
+        navigate("/dashboard/overview", { replace: true });
+      }
     } catch (err) {
       console.error("Login error:", err);
 

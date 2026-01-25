@@ -46,9 +46,10 @@ const DashboardLayout = () => {
   // Get current location for active route highlighting
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, loader, logoutUser } = useAuth();
+  const { user, loader, isSuperAdmin, dbUser, dbUserLoading } = useAuth();
   const { organization, loading: orgLoading, error: orgError } = useOrganization();
   const { t } = useTranslation(["navbar", "common"]);
+  const { logoutUser } = useAuth();
 
   // Protect dashboard routes - redirect to login if not authenticated
   useEffect(() => {
@@ -57,15 +58,22 @@ const DashboardLayout = () => {
     }
   }, [user, loader, navigate]);
 
-  // Check for organization membership
+  // Redirect super admin to super admin dashboard
   useEffect(() => {
-    if (!loader && !orgLoading && user) {
+    if (!loader && !dbUserLoading && user && isSuperAdmin) {
+      navigate("/super-admin/dashboard", { replace: true });
+    }
+  }, [user, loader, dbUserLoading, isSuperAdmin, navigate]);
+
+  // Check for organization membership (skip for super admins)
+  useEffect(() => {
+    if (!loader && !orgLoading && !dbUserLoading && user && !isSuperAdmin) {
       // If user is authenticated but has no organization, redirect to waiting page
       if (orgError && orgError.includes("No organization")) {
         navigate("/waiting-for-organization", { replace: true });
       }
     }
-  }, [user, loader, organization, orgLoading, orgError, navigate]);
+  }, [user, loader, organization, orgLoading, orgError, dbUserLoading, isSuperAdmin, navigate]);
 
   // Default profile image
   const defaultProfileImage =
@@ -172,14 +180,14 @@ const DashboardLayout = () => {
     localStorage.setItem("rootx-theme", newTheme);
   };
 
-  // Show loading while checking authentication or organization
-  if (loader || orgLoading) {
+  // Show loading while checking authentication, user data, or organization
+  if (loader || dbUserLoading || (orgLoading && !isSuperAdmin)) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-base-200">
         <div className="text-center">
           <span className="loading loading-spinner loading-lg text-primary"></span>
           <p className="mt-4 text-base-content/60">
-            {orgLoading ? "Loading your organization..." : "Loading..."}
+            {dbUserLoading ? "Verifying your account..." : orgLoading ? "Loading your organization..." : "Loading..."}
           </p>
         </div>
       </div>
