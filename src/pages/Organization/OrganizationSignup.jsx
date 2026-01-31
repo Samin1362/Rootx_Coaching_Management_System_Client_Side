@@ -97,7 +97,6 @@ const OrganizationSignup = () => {
       (error, result) => {
         setUploadingImage(false);
         if (error) {
-          console.error("Upload error:", error);
           setError("Failed to upload image. Please try again.");
           return;
         }
@@ -221,7 +220,6 @@ const OrganizationSignup = () => {
             }
           } catch (checkErr) {
             // If user doesn't exist in MongoDB, that's fine - we'll create them
-            console.log("User not in MongoDB yet, will create with organization");
           }
         } else {
           // Other Firebase errors
@@ -252,8 +250,6 @@ const OrganizationSignup = () => {
         navigate("/login");
       }, 2000);
     } catch (err) {
-      console.error("Signup error:", err);
-
       // Handle specific Firebase errors
       if (err.code === "auth/invalid-email") {
         setError("Invalid email address format");

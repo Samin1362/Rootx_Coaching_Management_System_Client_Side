@@ -84,7 +84,7 @@ const Reports = () => {
       link.click();
       link.remove();
     } catch (error) {
-      console.error("Export error:", error);
+      // Export error - ignore silently
     }
   };
 
@@ -225,7 +225,7 @@ const Reports = () => {
                         <div className="stat-value text-lg">
                           {typeof value === "number"
                             ? key.toLowerCase().includes("revenue") || key.toLowerCase().includes("amount")
-                              ? `$${value.toLocaleString()}`
+                              ? `৳${value.toLocaleString()}`
                               : value.toLocaleString()
                             : value}
                         </div>
@@ -254,7 +254,7 @@ const Reports = () => {
                               {col.type === "date"
                                 ? new Date(row[col.key]).toLocaleDateString()
                                 : col.type === "currency"
-                                ? `$${(row[col.key] || 0).toLocaleString()}`
+                                ? `৳${(row[col.key] || 0).toLocaleString()}`
                                 : col.type === "badge"
                                 ? <span className={`badge badge-sm ${getBadgeClass(row[col.key])}`}>{row[col.key]}</span>
                                 : row[col.key] || "N/A"}

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router";
+import { useNavigate, Link } from "react-router";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   FaCheck,
   FaTimes,
@@ -7,19 +8,55 @@ import {
   FaRocket,
   FaStar,
   FaBuilding,
+  FaClock,
+  FaExclamationTriangle,
+  FaArrowLeft,
 } from "react-icons/fa";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
 import { useOrganization } from "../../contexts/organization";
+import { useNotification } from "../../contexts/NotificationContext";
 
 const SubscriptionPlans = () => {
   const axiosSecure = useAxiosSecure();
   const navigate = useNavigate();
   const { organization, subscription, refreshOrganization } = useOrganization();
+  const notification = useNotification();
+  const queryClient = useQueryClient();
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [upgrading, setUpgrading] = useState(false);
   const [error, setError] = useState(null);
   const [billingCycle, setBillingCycle] = useState("monthly"); // monthly or yearly
+
+  // Fetch pending subscription request
+  const { data: pendingRequest, refetch: refetchPending } = useQuery({
+    queryKey: ["pending-subscription-request", organization?._id],
+    queryFn: async () => {
+      const response = await axiosSecure.get("/subscriptions/requests/pending");
+      return response.data.data;
+    },
+    enabled: !!organization?._id,
+  });
+
+  // Cancel request mutation
+  const cancelRequestMutation = useMutation({
+    mutationFn: async (requestId) => {
+      return axiosSecure.delete(`/subscriptions/requests/${requestId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(["pending-subscription-request"]);
+      notification.success("Subscription request cancelled successfully");
+    },
+    onError: (error) => {
+      notification.error(error.response?.data?.message || "Failed to cancel request");
+    },
+  });
+
+  const handleCancelRequest = () => {
+    if (pendingRequest && window.confirm("Are you sure you want to cancel this subscription request?")) {
+      cancelRequestMutation.mutate(pendingRequest._id);
+    }
+  };
 
   useEffect(() => {
     fetchPlans();
@@ -31,7 +68,6 @@ const SubscriptionPlans = () => {
       const response = await axiosSecure.get("/subscriptions/plans");
       setPlans(response.data.data || []);
     } catch (error) {
-      console.error("Error fetching plans:", error);
       setError(error.response?.data?.message || error.message || "Failed to load subscription plans. Please try again.");
     } finally {
       setLoading(false);
@@ -69,20 +105,25 @@ const SubscriptionPlans = () => {
   };
 
   const formatPrice = (price) => {
-    return new Intl.NumberFormat("en-BD", {
-      style: "currency",
-      currency: "BDT",
+    return "৳" + new Intl.NumberFormat("en-BD", {
       minimumFractionDigits: 0,
     }).format(price);
   };
 
   const formatLimit = (limit) => {
+    if (limit === undefined || limit === null) return "0";
     return limit === -1 ? "Unlimited" : limit.toLocaleString();
   };
 
   const handleChoosePlan = async (plan) => {
     if (!organization) {
       navigate("/login");
+      return;
+    }
+
+    // Check if there's already a pending request
+    if (pendingRequest) {
+      notification.warning("You already have a pending subscription request. Please wait for admin approval or cancel the existing request.");
       return;
     }
 
@@ -96,15 +137,19 @@ const SubscriptionPlans = () => {
       });
 
       if (response.data.success) {
-        await refreshOrganization();
+        // Show success notification for pending approval
+        notification.success(
+          response.data.message || `Your request to ${plan.name} plan has been submitted for approval.`
+        );
+        // Refresh the pending request
+        await refetchPending();
+        // Navigate back to subscription management
         navigate("/dashboard/subscription");
       }
     } catch (err) {
-      console.error("Upgrade error:", err);
-      setError(
-        err.response?.data?.message ||
-          "Failed to upgrade plan. Please try again."
-      );
+      const errorMessage = err.response?.data?.message || "Failed to submit plan request. Please try again.";
+      setError(errorMessage);
+      notification.error(errorMessage);
     } finally {
       setUpgrading(false);
     }
@@ -142,6 +187,51 @@ const SubscriptionPlans = () => {
   return (
     <div className="min-h-screen bg-base-200 py-12 px-4">
       <div className="max-w-7xl mx-auto">
+        {/* Back to Dashboard Link */}
+        {organization && (
+          <div className="mb-6">
+            <Link to="/dashboard/subscription" className="btn btn-ghost btn-sm gap-2">
+              <FaArrowLeft /> Back to Subscription
+            </Link>
+          </div>
+        )}
+
+        {/* Pending Request Banner */}
+        {pendingRequest && (
+          <div className="mb-8 alert alert-warning shadow-lg">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4 w-full">
+              <div className="flex items-center gap-3 flex-1">
+                <FaClock className="text-2xl flex-shrink-0" />
+                <div>
+                  <h3 className="font-bold">You have a pending subscription request</h3>
+                  <p className="text-sm opacity-80">
+                    Requested: <span className="font-semibold capitalize">{pendingRequest.requestedPlanName || pendingRequest.requestedTier}</span> plan
+                    ({pendingRequest.requestedBillingCycle}) - Awaiting admin approval
+                  </p>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <Link to="/dashboard/subscription" className="btn btn-ghost btn-sm">
+                  View Details
+                </Link>
+                <button
+                  onClick={handleCancelRequest}
+                  disabled={cancelRequestMutation.isPending}
+                  className="btn btn-outline btn-sm"
+                >
+                  {cancelRequestMutation.isPending ? (
+                    <span className="loading loading-spinner loading-xs"></span>
+                  ) : (
+                    <>
+                      <FaTimes className="text-xs" /> Cancel
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-5xl font-bold text-base-content mb-4">
@@ -180,141 +270,164 @@ const SubscriptionPlans = () => {
         </div>
 
         {/* Plans Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {plans.map((plan) => (
             <div
               key={plan._id}
-              className={`card bg-base-100 shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-105 border-2 ${getPlanColor(
-                plan.tier
-              )} ${plan.isPopular ? "ring-4 ring-warning ring-offset-4" : ""}`}
+              className={`group card bg-base-100/60 backdrop-blur-xl border border-base-content/10 shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-3 ${
+                plan.isPopular ? "ring-2 ring-primary ring-offset-4 ring-offset-base-200" : ""
+              }`}
             >
               {/* Popular Badge */}
               {plan.isPopular && (
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                  <div className="badge badge-warning badge-lg font-bold text-white shadow-lg">
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-10">
+                  <div className="badge badge-primary badge-lg font-bold text-white shadow-lg animate-bounce">
                     ⭐ MOST POPULAR
                   </div>
                 </div>
               )}
 
-              <div className="card-body p-6">
-                {/* Icon */}
-                <div className="flex justify-center mb-4">
+              <div className="card-body p-8 flex flex-col items-center text-center">
+                {/* Icon Container */}
+                <div className="w-20 h-20 rounded-2xl bg-base-200 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500 shadow-inner">
                   {getPlanIcon(plan.tier)}
                 </div>
 
                 {/* Plan Name */}
-                <h2 className="card-title text-2xl font-bold text-center justify-center mb-2">
+                <h2 className="text-3xl font-black text-base-content tracking-tight mb-2">
                   {plan.name}
                 </h2>
 
                 {/* Description */}
-                <p className="text-center text-base-content/60 text-sm mb-4">
+                <p className="text-base-content/60 text-sm mb-6 min-h-[40px]">
                   {plan.description}
                 </p>
 
-                {/* Price */}
-                <div className="text-center mb-6">
-                  <div className="text-4xl font-bold text-primary">
-                    {billingCycle === "monthly"
-                      ? formatPrice(plan.monthlyPrice)
-                      : formatPrice(plan.yearlyPrice)}
-                  </div>
-                  <div className="text-sm text-base-content/60">
-                    per {billingCycle === "monthly" ? "month" : "year"}
+                {/* Price Section */}
+                <div className="mb-8 w-full py-4 rounded-xl bg-base-content/5">
+                  <div className="flex flex-col items-center">
+                    <span className="text-5xl font-black text-primary mb-1">
+                      {formatPrice(billingCycle === "monthly" ? plan.monthlyPrice : plan.yearlyPrice)}
+                    </span>
+                    <span className="text-sm font-medium text-base-content/50">
+                      per {billingCycle === "monthly" ? "month" : "year"}
+                    </span>
                   </div>
                   {billingCycle === "yearly" && plan.yearlyPrice > 0 && (
-                    <div className="text-xs text-success font-semibold mt-1">
-                      Save{" "}
-                      {formatPrice(
-                        plan.monthlyPrice * 12 - plan.yearlyPrice
-                      )}
-                      /year
+                    <div className="badge badge-success badge-sm text-white font-bold mt-2 py-3 px-4">
+                      Save {formatPrice(plan.monthlyPrice * 12 - plan.yearlyPrice)}/year
                     </div>
                   )}
                 </div>
 
-                {/* Features */}
-                <div className="space-y-3 mb-6">
+                {/* Features Section */}
+                <div className="w-full text-left space-y-4 mb-8">
+                  <div className="text-xs font-bold uppercase tracking-widest text-base-content/40 mb-4 px-1 border-b border-base-content/5 pb-2">
+                    Features & Limits
+                  </div>
+                  
                   {/* Students */}
-                  <div className="flex items-center gap-2">
-                    <FaCheck className="text-success flex-shrink-0" />
-                    <span className="text-sm">
-                      <strong>{formatLimit(plan.limits.maxStudents)}</strong>{" "}
-                      Students
+                  <div className="flex items-start gap-3 group/feature">
+                    <div className="mt-1 w-5 h-5 rounded-full bg-success/10 flex items-center justify-center flex-shrink-0">
+                      <FaCheck className="text-success text-[10px]" />
+                    </div>
+                    <span className="text-sm text-base-content/80">
+                      <strong className="text-base-content">{formatLimit(plan.limits.maxStudents)}</strong> Students
                     </span>
                   </div>
 
                   {/* Batches */}
-                  <div className="flex items-center gap-2">
-                    <FaCheck className="text-success flex-shrink-0" />
-                    <span className="text-sm">
-                      <strong>{formatLimit(plan.limits.maxBatches)}</strong>{" "}
-                      Batches
+                  <div className="flex items-start gap-3 group/feature">
+                    <div className="mt-1 w-5 h-5 rounded-full bg-success/10 flex items-center justify-center flex-shrink-0">
+                      <FaCheck className="text-success text-[10px]" />
+                    </div>
+                    <span className="text-sm text-base-content/80">
+                      <strong className="text-base-content">{formatLimit(plan.limits.maxBatches)}</strong> Batches
                     </span>
                   </div>
 
                   {/* Staff */}
-                  <div className="flex items-center gap-2">
-                    <FaCheck className="text-success flex-shrink-0" />
-                    <span className="text-sm">
-                      <strong>{formatLimit(plan.limits.maxStaff)}</strong> Staff
-                      Members
+                  <div className="flex items-start gap-3 group/feature">
+                    <div className="mt-1 w-5 h-5 rounded-full bg-success/10 flex items-center justify-center flex-shrink-0">
+                      <FaCheck className="text-success text-[10px]" />
+                    </div>
+                    <span className="text-sm text-base-content/80">
+                      <strong className="text-base-content">{formatLimit(plan.limits.maxStaff || plan.limits.maxUsers)}</strong> Staff
                     </span>
                   </div>
 
                   {/* Storage */}
-                  <div className="flex items-center gap-2">
-                    <FaCheck className="text-success flex-shrink-0" />
-                    <span className="text-sm">
-                      <strong>{plan.limits.maxStorage} MB</strong> Storage
+                  <div className="flex items-start gap-3 group/feature">
+                    <div className="mt-1 w-5 h-5 rounded-full bg-success/10 flex items-center justify-center flex-shrink-0">
+                      <FaCheck className="text-success text-[10px]" />
+                    </div>
+                    <span className="text-sm text-base-content/80">
+                      <strong className="text-base-content">{plan.limits.maxStorage} MB</strong> Storage
                     </span>
                   </div>
 
-                  {/* Divider */}
-                  <div className="divider my-2"></div>
-
-                  {/* Key Features */}
-                  {plan.limits.features.slice(0, 5).map((feature, index) => (
-                    <div key={index} className="flex items-center gap-2">
-                      <FaCheck className="text-success flex-shrink-0" />
-                      <span className="text-sm capitalize">
+                  {/* Key Features List */}
+                  {(plan.limits?.features || []).slice(0, 5).map((feature, index) => (
+                    <div key={index} className="flex items-start gap-3 group/feature animate-in fade-in slide-in-from-left-2" style={{ animationDelay: `${index * 50}ms` }}>
+                      <div className="mt-1 w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                        <FaCheck className="text-primary text-[10px]" />
+                      </div>
+                      <span className="text-sm text-base-content/80 capitalize">
                         {feature.replace(/_/g, " ")}
                       </span>
                     </div>
                   ))}
 
                   {/* More features indicator */}
-                  {plan.limits.features.length > 5 && (
-                    <div className="text-xs text-primary font-semibold text-center">
-                      + {plan.limits.features.length - 5} more features
+                  {(plan.limits?.features || []).length > 5 && (
+                    <div className="text-center">
+                      <button className="text-xs font-bold text-primary/60 hover:text-primary transition-colors">
+                        + {(plan.limits?.features || []).length - 5} more advanced features
+                      </button>
                     </div>
                   )}
                 </div>
 
                 {/* CTA Button */}
-                <button
-                  onClick={() => handleChoosePlan(plan)}
-                  disabled={upgrading || (organization && subscription?.planId === plan._id && subscription?.billingCycle === billingCycle)}
-                  className={`btn w-full ${
-                    upgrading ? "loading" : ""
-                  } ${
-                    plan.isPopular
-                      ? "btn-warning text-white"
+                <div className="mt-auto w-full">
+                  <button
+                    onClick={() => handleChoosePlan(plan)}
+                    disabled={
+                      upgrading ||
+                      !!pendingRequest ||
+                      (organization && subscription?.planId === plan._id && subscription?.billingCycle === billingCycle)
+                    }
+                    className={`btn btn-lg w-full h-16 rounded-2xl border-none font-black text-lg transition-all duration-300 shadow-lg hover:shadow-2xl hover:scale-102 active:scale-95 ${
+                      upgrading ? "loading" : ""
+                    } ${
+                      pendingRequest
+                        ? "btn-disabled bg-base-300 text-base-content/50"
+                        : plan.isPopular
+                        ? "bg-gradient-to-r from-primary to-secondary text-white"
+                        : plan.tier === "free"
+                        ? "btn-outline border-2 border-primary text-primary hover:bg-primary"
+                        : "bg-base-content text-base-100 hover:bg-base-content/90"
+                    }`}
+                    title={pendingRequest ? "You have a pending subscription request" : ""}
+                  >
+                    {upgrading
+                      ? "Processing..."
+                      : pendingRequest
+                      ? "Request Pending"
                       : plan.tier === "free"
-                      ? "btn-outline btn-primary"
-                      : "btn-primary text-white"
-                  } shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300`}
-                >
-                  {upgrading ? "Processing..." : plan.tier === "free" ? "Get Started Free" : "Choose Plan"}
-                </button>
-
-                {/* Trial Info */}
-                {plan.trialDays > 0 && (
-                  <div className="text-center text-xs text-base-content/60 mt-2">
-                    {plan.trialDays}-day free trial included
-                  </div>
-                )}
+                      ? "Get Started Free"
+                      : "Request Plan"}
+                  </button>
+                  
+                  {/* Trial Info */}
+                  {plan.trialDays > 0 && (
+                    <div className="text-center mt-4">
+                      <span className="text-xs font-bold text-base-content/40 bg-base-content/5 px-3 py-1 rounded-full">
+                        {plan.trialDays}-day free trial included
+                      </span>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           ))}

@@ -3,6 +3,7 @@ import DashboardLayout from "./layouts/DashboardLayout";
 import SuperAdminLayout from "./layouts/SuperAdminLayout";
 import Overview from "./pages/Overview";
 import Students from "./pages/StudentManagement/Students";
+import StudentDetails from "./pages/StudentManagement/StudentDetails";
 import AddStudent from "./pages/StudentManagement/AddStudent";
 import ErrorPage from "./pages/ErrorPage";
 import Admissions from "./pages/Admission&Enrollment/Admissions";
@@ -19,6 +20,7 @@ import NewFeeEntry from "./pages/Fee&FinanceManagement/NewFeeEntry";
 import Expense from "./pages/Fee&FinanceManagement/Expense";
 import Batches from "./pages/Batch&ClassManagement/Batches";
 import CreateBatches from "./pages/Batch&ClassManagement/CreateBatches";
+import BatchDetails from "./pages/Batch&ClassManagement/BatchDetails";
 import Exams from "./pages/Performance&AssessmentTracking/Exams";
 import ExamsResults from "./pages/Performance&AssessmentTracking/ExamsResults";
 import ExamsAnalytics from "./pages/Performance&AssessmentTracking/ExamsAnalytics";
@@ -27,6 +29,7 @@ import Login from "./pages/Auth/Login";
 import Register from "./pages/Auth/Register";
 import OrganizationSignup from "./pages/Organization/OrganizationSignup";
 import WaitingForOrganization from "./pages/WaitingForOrganization";
+import OrganizationSuspended from "./pages/OrganizationSuspended";
 import SubscriptionPlans from "./pages/Subscription/SubscriptionPlans";
 import SubscriptionManagement from "./pages/Subscription/SubscriptionManagement";
 import UserManagement from "./pages/UserManagement/UserManagement";
@@ -37,11 +40,13 @@ import {
   SuperAdminDashboard,
   OrganizationsList,
   OrganizationDetails,
+  OrganizationEdit,
   CreateOrganization,
   PlatformUsers,
   UserDetails,
   SubscriptionsList,
   SubscriptionDetails,
+  SubscriptionApprovalDashboard,
   PlansList,
   ActivityLogsViewer,
   PlatformAnalytics,
@@ -50,10 +55,10 @@ import {
 } from "./pages/SuperAdmin";
 
 const router = createBrowserRouter([
-  // Root path redirects to signup (for new organizations)
+  // Root path redirects to login
   {
     path: "/",
-    element: <Navigate to="/signup" replace />,
+    element: <Navigate to="/login" replace />,
   },
   // Organization Signup (Public)
   {
@@ -71,6 +76,12 @@ const router = createBrowserRouter([
   {
     path: "/waiting-for-organization",
     Component: WaitingForOrganization,
+    errorElement: <ErrorPage></ErrorPage>,
+  },
+  // Organization Suspended (Public)
+  {
+    path: "/organization-suspended",
+    Component: OrganizationSuspended,
     errorElement: <ErrorPage></ErrorPage>,
   },
   // Auth routes (Login and Register)
@@ -109,6 +120,10 @@ const router = createBrowserRouter([
           {
             path: "students",
             Component: Students,
+          },
+          {
+            path: "students/:studentId",
+            Component: StudentDetails,
           },
           {
             path: "addStudents",
@@ -187,6 +202,10 @@ const router = createBrowserRouter([
             Component: Batches,
           },
           {
+            path: "batches/:batchId",
+            Component: BatchDetails,
+          },
+          {
             path: "createBatches",
             Component: CreateBatches,
           },
@@ -253,6 +272,10 @@ const router = createBrowserRouter([
             path: ":orgId",
             Component: OrganizationDetails,
           },
+          {
+            path: ":orgId/edit",
+            Component: OrganizationEdit,
+          },
         ],
       },
       {
@@ -280,6 +303,10 @@ const router = createBrowserRouter([
             Component: SubscriptionDetails,
           },
         ],
+      },
+      {
+        path: "subscription-approvals",
+        Component: SubscriptionApprovalDashboard,
       },
       {
         path: "plans",

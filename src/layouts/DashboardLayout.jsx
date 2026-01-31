@@ -75,6 +75,15 @@ const DashboardLayout = () => {
     }
   }, [user, loader, organization, orgLoading, orgError, dbUserLoading, isSuperAdmin, navigate]);
 
+  // Check if organization is suspended
+  useEffect(() => {
+    if (!loader && !orgLoading && !dbUserLoading && user && !isSuperAdmin && organization) {
+      if (organization.status === "suspended") {
+        navigate("/organization-suspended", { replace: true });
+      }
+    }
+  }, [user, loader, organization, orgLoading, dbUserLoading, isSuperAdmin, navigate]);
+
   // Default profile image
   const defaultProfileImage =
     "https://static.vecteezy.com/system/resources/thumbnails/020/765/399/small/default-profile-account-unknown-icon-black-silhouette-free-vector.jpg";
@@ -88,7 +97,7 @@ const DashboardLayout = () => {
       await logoutUser();
       navigate("/login");
     } catch (error) {
-      console.error("Logout error:", error);
+      // Logout error - ignore silently
     }
   };
 

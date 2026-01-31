@@ -104,6 +104,10 @@ const PlatformUsers = () => {
     );
   };
 
+  // Default profile image
+  const defaultProfileImage =
+    "https://static.vecteezy.com/system/resources/thumbnails/020/765/399/small/default-profile-account-unknown-icon-black-silhouette-free-vector.jpg";
+
   if (error) {
     return (
       <div className="alert alert-error">
@@ -215,11 +219,15 @@ const PlatformUsers = () => {
                       <tr key={user._id} className="hover">
                         <td>
                           <div className="flex items-center gap-3">
-                            <div className="avatar placeholder">
-                              <div className="bg-primary/10 text-primary rounded-full w-10">
-                                <span className="text-lg">
-                                  {user.name?.charAt(0)?.toUpperCase() || user.email?.charAt(0)?.toUpperCase()}
-                                </span>
+                            <div className="avatar">
+                              <div className="rounded-full w-10">
+                                <img
+                                  src={user.photoURL || defaultProfileImage}
+                                  alt={user.name}
+                                  onError={(e) => {
+                                    e.target.src = defaultProfileImage;
+                                  }}
+                                />
                               </div>
                             </div>
                             <div>

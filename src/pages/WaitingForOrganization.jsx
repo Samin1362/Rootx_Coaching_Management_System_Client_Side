@@ -19,7 +19,7 @@ const WaitingForOrganization = () => {
       await logoutUser();
       navigate("/login");
     } catch (error) {
-      console.error("Logout error:", error);
+      // Logout error - ignore silently
     }
   };
 

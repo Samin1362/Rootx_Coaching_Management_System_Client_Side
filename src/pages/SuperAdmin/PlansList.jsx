@@ -20,6 +20,7 @@ const PlansList = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [formData, setFormData] = useState({
+    tier: "",
     name: "",
     description: "",
     price: {
@@ -28,7 +29,7 @@ const PlansList = () => {
     },
     features: [],
     limits: {
-      maxUsers: 10,
+      maxStaff: 10,
       maxStudents: 100,
       maxBatches: 5,
       maxStorage: 1,
@@ -61,7 +62,7 @@ const PlansList = () => {
   // Update plan mutation
   const updateMutation = useMutation({
     mutationFn: async ({ planId, data }) => {
-      return axiosSecure.put(`/super-admin/plans/${planId}`, data);
+      return axiosSecure.patch(`/super-admin/plans/${planId}`, data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries(["super-admin-plans"]);
@@ -85,11 +86,12 @@ const PlansList = () => {
 
   const resetForm = () => {
     setFormData({
+      tier: "",
       name: "",
       description: "",
       price: { monthly: 0, yearly: 0 },
       features: [],
-      limits: { maxUsers: 10, maxStudents: 100, maxBatches: 5, maxStorage: 1 },
+      limits: { maxStaff: 10, maxStudents: 100, maxBatches: 5, maxStorage: 1 },
       isPopular: false,
       isActive: true,
     });
@@ -98,11 +100,15 @@ const PlansList = () => {
   const handleEditClick = (plan) => {
     setSelectedPlan(plan);
     setFormData({
+      tier: plan.tier || "",
       name: plan.name || "",
       description: plan.description || "",
-      price: plan.price || { monthly: 0, yearly: 0 },
+      price: {
+        monthly: plan.monthlyPrice || 0,
+        yearly: plan.yearlyPrice || 0,
+      },
       features: plan.features || [],
-      limits: plan.limits || { maxUsers: 10, maxStudents: 100, maxBatches: 5, maxStorage: 1 },
+      limits: plan.limits || { maxStaff: 10, maxStudents: 100, maxBatches: 5, maxStorage: 1 },
       isPopular: plan.isPopular || false,
       isActive: plan.isActive !== false,
     });
@@ -181,19 +187,19 @@ const PlansList = () => {
                 {/* Pricing */}
                 <div className="mt-4">
                   <div className="flex items-baseline gap-1">
-                    <span className="text-3xl font-bold">${plan.price?.monthly || 0}</span>
+                    <span className="text-3xl font-bold">৳{plan.monthlyPrice || 0}</span>
                     <span className="text-base-content/60">/month</span>
                   </div>
                   <p className="text-sm text-base-content/60">
-                    or ${plan.price?.yearly || 0}/year
+                    or ৳{plan.yearlyPrice || 0}/year
                   </p>
                 </div>
 
                 {/* Limits */}
                 <div className="mt-4 space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span>Max Users</span>
-                    <span className="font-medium">{plan.limits?.maxUsers || "Unlimited"}</span>
+                    <span>Max Staff</span>
+                    <span className="font-medium">{plan.limits?.maxStaff || plan.limits?.maxUsers || "Unlimited"}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span>Max Students</span>
@@ -264,15 +270,36 @@ const PlansList = () => {
             <form
               onSubmit={(e) => {
                 e.preventDefault();
+                const payload = {
+                  ...formData,
+                  monthlyPrice: formData.price.monthly,
+                  yearlyPrice: formData.price.yearly,
+                };
+                delete payload.price;
+
                 if (showEditModal) {
-                  updateMutation.mutate({ planId: selectedPlan._id, data: formData });
+                  updateMutation.mutate({ planId: selectedPlan._id, data: payload });
                 } else {
-                  createMutation.mutate(formData);
+                  createMutation.mutate(payload);
                 }
               }}
               className="space-y-4 mt-4"
             >
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="form-control">
+                  <label className="label">
+                    <span className="label-text">Plan Tier * (Unique slug)</span>
+                  </label>
+                  <input
+                    type="text"
+                    className="input input-bordered"
+                    value={formData.tier}
+                    onChange={(e) => setFormData({ ...formData, tier: e.target.value })}
+                    required
+                    placeholder="e.g. pro_monthly"
+                    disabled={showEditModal}
+                  />
+                </div>
                 <div className="form-control">
                   <label className="label">
                     <span className="label-text">Plan Name *</span>
@@ -318,7 +345,7 @@ const PlansList = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="form-control">
                   <label className="label">
-                    <span className="label-text">Monthly Price ($)</span>
+                    <span className="label-text">Monthly Price (৳)</span>
                   </label>
                   <input
                     type="number"
@@ -336,7 +363,7 @@ const PlansList = () => {
                 </div>
                 <div className="form-control">
                   <label className="label">
-                    <span className="label-text">Yearly Price ($)</span>
+                    <span className="label-text">Yearly Price (৳)</span>
                   </label>
                   <input
                     type="number"
@@ -358,16 +385,16 @@ const PlansList = () => {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="form-control">
                   <label className="label">
-                    <span className="label-text">Max Users</span>
+                    <span className="label-text">Max Staff</span>
                   </label>
                   <input
                     type="number"
                     className="input input-bordered input-sm"
-                    value={formData.limits.maxUsers}
+                    value={formData.limits.maxStaff}
                     onChange={(e) =>
                       setFormData({
                         ...formData,
-                        limits: { ...formData.limits, maxUsers: parseInt(e.target.value) || 0 },
+                        limits: { ...formData.limits, maxStaff: parseInt(e.target.value) || 0 },
                       })
                     }
                     min="0"

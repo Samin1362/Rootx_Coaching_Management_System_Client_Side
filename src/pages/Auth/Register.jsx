@@ -76,7 +76,6 @@ const Register = () => {
       (error, result) => {
         setUploadingImage(false);
         if (error) {
-          console.error("Upload error:", error);
           setError("Failed to upload image. Please try again.");
           return;
         }
@@ -141,7 +140,6 @@ const Register = () => {
           role: "staff", // Default role for self-registered users
         });
       } catch (backendError) {
-        console.error("Backend registration error:", backendError);
         // Continue even if backend registration fails - user can be added later
       }
 
@@ -153,8 +151,6 @@ const Register = () => {
         navigate("/waiting-for-organization");
       }, 2000);
     } catch (err) {
-      console.error("Registration error:", err);
-
       // Handle specific Firebase errors
       if (err.code === "auth/email-already-in-use") {
         setError("This email is already registered. Please sign in instead.");

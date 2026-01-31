@@ -41,11 +41,13 @@ import {
   FaUsers,
 } from "react-icons/fa";
 import { BsGenderMale, BsGenderFemale } from "react-icons/bs";
+import { useNavigate } from "react-router";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
 import { useNotification } from "../../contexts/NotificationContext";
 import Loader from "../../components/Loader";
 
 const Students = () => {
+  const navigate = useNavigate();
   const axiosSecure = useAxiosSecure();
   const queryClient = useQueryClient();
   const notification = useNotification();
@@ -471,6 +473,7 @@ const Students = () => {
         cell: ({ row }) => (
           <div className="flex items-center gap-2">
             <button
+              onClick={() => navigate(`/dashboard/studentManagement/students/${row.original._id}`)}
               className="btn btn-sm btn-ghost btn-square hover:bg-primary/10 hover:text-primary transition-all duration-200"
               title="View Details"
             >
@@ -494,7 +497,7 @@ const Students = () => {
         ),
       },
     ],
-    [handleDeleteClick, handleEditClick, getBatchInfo]
+    [handleDeleteClick, handleEditClick, getBatchInfo, navigate]
   );
 
   // TanStack Table returns functions that cannot be safely memoized

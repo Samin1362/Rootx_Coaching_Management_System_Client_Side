@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import useAxiosSecure from "../hooks/useAxiosSecure";
 import {
   FaBuilding,
   FaUsers,
   FaCreditCard,
   FaChartLine,
   FaClipboardList,
+  FaClipboardCheck,
   FaCog,
   FaSignOutAlt,
   FaUserCircle,
@@ -25,6 +28,20 @@ const SuperAdminLayout = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, loader, logoutUser, isSuperAdmin, dbUser, dbUserLoading } = useAuth();
+  const axiosSecure = useAxiosSecure();
+
+  // Fetch pending subscription request count for badge
+  const { data: pendingCountData } = useQuery({
+    queryKey: ["pending-request-count"],
+    queryFn: async () => {
+      const response = await axiosSecure.get("/super-admin/subscription-requests/count");
+      return response.data.data.pendingCount;
+    },
+    refetchInterval: 30000, // Refetch every 30 seconds
+    enabled: !!user && isSuperAdmin, // Only fetch if user is authenticated and is super admin
+  });
+
+  const pendingRequestCount = pendingCountData || 0;
 
   // Protect super admin routes - redirect to login if not authenticated
   useEffect(() => {
@@ -56,7 +73,7 @@ const SuperAdminLayout = () => {
       await logoutUser();
       navigate("/login");
     } catch (error) {
-      console.error("Logout error:", error);
+      // Logout error - ignore silently
     }
   };
 
@@ -422,14 +439,21 @@ const SuperAdminLayout = () => {
             <li className="relative">
               <button
                 className={`is-drawer-close:tooltip is-drawer-close:tooltip-right rounded-lg transition-all duration-200 active:scale-95 py-3 ${
-                  isRouteActive("/super-admin/subscriptions") || isRouteActive("/super-admin/plans")
+                  isRouteActive("/super-admin/subscriptions") || isRouteActive("/super-admin/plans") || isRouteActive("/super-admin/subscription-approvals")
                     ? "bg-primary/20 text-primary font-semibold"
                     : "hover:bg-primary/10 hover:text-primary hover:translate-x-1"
                 }`}
                 data-tip="Subscriptions"
                 onClick={() => handleMenuToggle("subscriptions")}
               >
-                <FaCreditCard className="text-2xl" />
+                <div className="relative">
+                  <FaCreditCard className="text-2xl" />
+                  {pendingRequestCount > 0 && (
+                    <span className="absolute -top-2 -right-2 badge badge-error badge-xs text-white font-bold min-w-[18px] h-[18px] p-0 flex items-center justify-center">
+                      {pendingRequestCount > 99 ? "99+" : pendingRequestCount}
+                    </span>
+                  )}
+                </div>
                 <span className="is-drawer-close:hidden text-base font-medium">Subscriptions</span>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -448,6 +472,26 @@ const SuperAdminLayout = () => {
               {/* Popup menu for collapsed drawer */}
               {isSubscriptionsMenuOpen && (
                 <ul className="is-drawer-open:hidden absolute left-full top-0 ml-2 bg-base-100 rounded-lg shadow-xl border border-base-300 z-100 min-w-55 overflow-hidden animate-[scaleIn_0.2s_ease-out]">
+                  <Link to="/super-admin/subscription-approvals">
+                    <li>
+                      <button
+                        onClick={handleCloseSubscriptionsModal}
+                        className={`flex items-center gap-3 w-full transition-all duration-200 px-4 py-3.5 ${
+                          location.pathname === "/super-admin/subscription-approvals"
+                            ? "bg-primary text-primary-content font-semibold"
+                            : "hover:bg-primary/10 hover:text-primary hover:translate-x-1"
+                        }`}
+                      >
+                        <FaClipboardCheck className="inline-block size-5" />
+                        <span className="text-base">Approvals</span>
+                        {pendingRequestCount > 0 && (
+                          <span className="badge badge-error badge-sm ml-auto">
+                            {pendingRequestCount}
+                          </span>
+                        )}
+                      </button>
+                    </li>
+                  </Link>
                   <Link to="/super-admin/subscriptions">
                     <li>
                       <button
@@ -485,6 +529,25 @@ const SuperAdminLayout = () => {
             {/* Nested Subscriptions Links for open drawer */}
             {isSubscriptionsMenuOpen && (
               <ul className="is-drawer-close:hidden animate-[slideDown_0.3s_ease-out]">
+                <Link to="/super-admin/subscription-approvals">
+                  <li>
+                    <button
+                      className={`pl-10 flex items-center gap-3 rounded-lg transition-all duration-200 py-2.5 ${
+                        location.pathname === "/super-admin/subscription-approvals"
+                          ? "bg-primary text-primary-content font-semibold"
+                          : "hover:bg-primary/10 hover:text-primary hover:translate-x-1"
+                      }`}
+                    >
+                      <FaClipboardCheck className="inline-block size-5" />
+                      <span className="text-base">Approvals</span>
+                      {pendingRequestCount > 0 && (
+                        <span className="badge badge-error badge-sm ml-auto">
+                          {pendingRequestCount}
+                        </span>
+                      )}
+                    </button>
+                  </li>
+                </Link>
                 <Link to="/super-admin/subscriptions">
                   <li>
                     <button

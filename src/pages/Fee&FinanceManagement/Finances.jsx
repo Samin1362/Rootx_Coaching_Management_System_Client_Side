@@ -375,7 +375,7 @@ const Finances = () => {
         ),
       },
     ],
-    [getStudentName, getStudentPhone, getStudentImage, getBatchName]
+    [getStudentName, getStudentPhone, getStudentRoll, getStudentImage, getBatchName, studentDues]
   );
 
   // TanStack Table returns functions that cannot be safely memoized

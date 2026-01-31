@@ -38,7 +38,6 @@ const UserManagement = () => {
       const response = await axiosSecure.get("/users");
       setUsers(response.data.data || []);
     } catch (error) {
-      console.error("Error fetching users:", error);
       setError(error.response?.data?.message || error.message || "Failed to fetch users. Please try again.");
     } finally {
       setLoading(false);
@@ -59,7 +58,6 @@ const UserManagement = () => {
       // Refresh users list
       fetchUsers();
     } catch (error) {
-      console.error("Error inviting user:", error);
       setError(error.response?.data?.message || error.message || "Failed to invite user. Please try again.");
     }
   };
@@ -70,7 +68,6 @@ const UserManagement = () => {
       await axiosSecure.patch(`/users/${userId}/role`, { role: newRole });
       fetchUsers();
     } catch (error) {
-      console.error("Error updating role:", error);
       setError(error.response?.data?.message || error.message || "Failed to update user role. Please try again.");
     }
   };
@@ -82,7 +79,6 @@ const UserManagement = () => {
         await axiosSecure.delete(`/users/${userId}`);
         fetchUsers();
       } catch (error) {
-        console.error("Error deleting user:", error);
         setError(error.response?.data?.message || error.message || "Failed to delete user. Please try again.");
       }
     }

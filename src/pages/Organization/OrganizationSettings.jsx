@@ -11,11 +11,13 @@ import {
 } from "react-icons/fa";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
 import { useOrganization } from "../../contexts/organization";
+import { useNotification } from "../../contexts/NotificationContext";
 
 const OrganizationSettings = () => {
   const axiosSecure = useAxiosSecure();
   const { organization: orgData, refreshOrganization } = useOrganization();
-  
+  const notification = useNotification();
+
   // const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -81,7 +83,10 @@ const OrganizationSettings = () => {
 
     try {
       if (!orgData?._id) {
-        alert("Organization ID not found. Please try again.");
+        notification.error(
+          "Organization ID not found. Please try again.",
+          "Configuration Error"
+        );
         setSaving(false);
         return;
       }
@@ -93,11 +98,15 @@ const OrganizationSettings = () => {
         await refreshOrganization();
       }
 
-      // Show success message
-      alert("Organization settings updated successfully!");
+      notification.success(
+        "Organization settings updated successfully!",
+        "Success"
+      );
     } catch (error) {
-      console.error("Error updating organization:", error);
-      alert("Failed to update settings. Please try again.");
+      notification.error(
+        "Failed to update settings. Please try again.",
+        "Error"
+      );
     } finally {
       setSaving(false);
     }

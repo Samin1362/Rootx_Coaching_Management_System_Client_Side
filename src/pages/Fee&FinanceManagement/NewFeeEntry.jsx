@@ -1,6 +1,6 @@
 import { useForm } from "react-hook-form";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   MdPerson,
   MdPhone,
@@ -16,6 +16,7 @@ import Loader from "../../components/Loader";
 
 const NewFeeEntry = () => {
   const axiosSecure = useAxiosSecure();
+  const queryClient = useQueryClient();
   const notification = useNotification();
 
   const [studentSearch, setStudentSearch] = useState("");
@@ -171,6 +172,11 @@ const NewFeeEntry = () => {
     try {
       const res = await axiosSecure.post("/fees", feeEntry);
       if (res.data.insertedId) {
+        // Invalidate all fee-related queries so other pages get fresh data
+        queryClient.invalidateQueries({ queryKey: ["fees"] });
+        queryClient.invalidateQueries({ queryKey: ["fee-entries"] });
+        queryClient.invalidateQueries({ queryKey: ["fees-dues"] });
+        queryClient.invalidateQueries({ queryKey: ["fees-collected"] });
         notification.success("Fee entry created successfully!");
         reset();
         // Clear student search state
@@ -179,7 +185,6 @@ const NewFeeEntry = () => {
         setShowStudentDropdown(false);
       }
     } catch (error) {
-      console.error(error);
       notification.error(
         "Failed to create fee entry. Please try again.",
         "Error"

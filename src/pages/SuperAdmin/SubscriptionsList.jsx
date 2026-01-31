@@ -148,7 +148,7 @@ const SubscriptionsList = () => {
         </div>
         <div className="stat">
           <div className="stat-title">Total Revenue</div>
-          <div className="stat-value text-2xl">${data?.stats?.totalRevenue?.toLocaleString() || 0}</div>
+          <div className="stat-value text-2xl">৳{data?.stats?.totalRevenue?.toLocaleString() || 0}</div>
         </div>
       </div>
 
@@ -247,7 +247,7 @@ const SubscriptionsList = () => {
                         </td>
                         <td>{getDaysRemaining(sub.endDate)}</td>
                         <td>
-                          <div className="font-medium">${sub.amount?.toFixed(2) || "0.00"}</div>
+                          <div className="font-medium">৳{sub.amount?.toFixed(2) || "0.00"}</div>
                         </td>
                         <td>
                           <div className="flex gap-1">

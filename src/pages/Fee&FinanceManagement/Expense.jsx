@@ -227,7 +227,7 @@ const Expense = () => {
         await createExpenseMutation.mutateAsync(expenseData);
       }
     } catch (error) {
-      console.error("Error submitting expense:", error);
+      // Error handled by mutation onError callback
     }
   };
 

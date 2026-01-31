@@ -1,4 +1,5 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   useReactTable,
@@ -264,6 +265,29 @@ const FeesDues = () => {
     setPaymentAmount("");
     setPaymentMethod("cash");
   };
+
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    if (paymentModal.isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [paymentModal.isOpen]);
+
+  // Close modal on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && paymentModal.isOpen && !paymentMutation.isPending) {
+        handleCloseModal();
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [paymentModal.isOpen, paymentMutation.isPending]);
 
   // Handle payment submission
   const handleSubmitPayment = (e) => {
@@ -924,158 +948,265 @@ const FeesDues = () => {
         )}
       </div>
 
-      {/* Payment Modal */}
-      {paymentModal.isOpen && (
-        <div className="modal modal-open">
-          <div className="modal-box max-w-md">
-            <button
-              onClick={handleCloseModal}
-              className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
-            >
-              <MdClose className="text-lg" />
-            </button>
+      {/* Payment Modal - Portaled to document.body to escape drawer stacking context */}
+      {paymentModal.isOpen && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 animate-modalBackdropIn">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={handleCloseModal}
+          />
 
-            <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
-              <MdPayment className="text-primary" />
-              Add Payment
-            </h3>
+          {/* Modal Container */}
+          <div className="relative z-[10000] bg-base-100 rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto animate-modalSlideUp border border-base-300">
 
-            {/* Fee Summary */}
-            <div className="bg-base-200 rounded-xl p-4 mb-6">
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-base-content/60">Student:</span>
-                  <span className="font-semibold">
-                    {getStudentName(paymentModal.feeData?.studentId)}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-base-content/60">Batch:</span>
-                  <span className="font-semibold">
-                    {getBatchName(paymentModal.feeData?.batchId)}
-                  </span>
-                </div>
-                <div className="divider my-2"></div>
-                <div className="flex justify-between">
-                  <span className="text-base-content/60">Total Fee:</span>
-                  <span className="font-semibold">
-                    ৳{paymentModal.feeData?.fees?.toLocaleString()}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-base-content/60">Already Paid:</span>
-                  <span className="font-semibold text-success">
-                    ৳{paymentModal.feeData?.paidAmount?.toLocaleString()}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-base-content/60">Remaining Due:</span>
-                  <span className="font-semibold text-error">
-                    ৳{paymentModal.feeData?.dueAmount?.toLocaleString()}
-                  </span>
-                </div>
-              </div>
-            </div>
+            {/* Gradient Header Banner */}
+            <div className="bg-gradient-to-r from-primary to-secondary p-6 rounded-t-2xl relative overflow-hidden">
+              {/* Decorative circles */}
+              <div className="absolute -top-6 -right-6 w-24 h-24 bg-white/10 rounded-full" />
+              <div className="absolute -bottom-4 -left-4 w-16 h-16 bg-white/10 rounded-full" />
 
-            {/* Payment Form */}
-            <form onSubmit={handleSubmitPayment}>
-              <div className="space-y-4">
-                {/* Payment Amount */}
+              <div className="relative flex items-center justify-between">
                 <div>
-                  <label className="block text-sm font-semibold text-base-content mb-2">
-                    Payment Amount
-                    <span className="text-error ml-1">*</span>
-                  </label>
-                  <div className="relative">
-                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-base-content/40">
-                      <TbCurrencyTaka className="text-xl" />
-                    </div>
-                    <input
-                      type="number"
-                      value={paymentAmount}
-                      onChange={(e) => setPaymentAmount(e.target.value)}
-                      placeholder={`Max: ৳${paymentModal.feeData?.dueAmount}`}
-                      className="input input-bordered w-full pl-10"
-                      required
-                      min="1"
-                      max={paymentModal.feeData?.dueAmount}
-                    />
+                  <h3 className="text-xl font-bold text-white">Add Payment</h3>
+                  <div className="flex items-center gap-2 mt-2">
+                    <MdPerson className="text-white/80" />
+                    <span className="text-white/90 font-medium">
+                      {getStudentName(paymentModal.feeData?.studentId)}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 mt-1">
+                    <MdSchool className="text-white/80 text-sm" />
+                    <span className="text-white/80 text-sm">
+                      {getBatchName(paymentModal.feeData?.batchId)}
+                    </span>
                   </div>
                 </div>
-
-                {/* Payment Method */}
-                <div>
-                  <label className="block text-sm font-semibold text-base-content mb-2">
-                    Payment Method
-                    <span className="text-error ml-1">*</span>
-                  </label>
-                  <div className="grid grid-cols-2 gap-3">
-                    <label className="relative cursor-pointer">
-                      <input
-                        type="radio"
-                        value="cash"
-                        checked={paymentMethod === "cash"}
-                        onChange={(e) => setPaymentMethod(e.target.value)}
-                        className="peer sr-only"
-                      />
-                      <div className="p-4 border-2 border-base-300 rounded-xl transition-all duration-200 peer-checked:border-primary peer-checked:bg-primary/5 hover:border-primary/50">
-                        <div className="flex flex-col items-center gap-2">
-                          <FaMoneyBillWave className="text-success text-2xl" />
-                          <span className="font-semibold text-sm">Cash</span>
-                        </div>
-                      </div>
-                    </label>
-
-                    <label className="relative cursor-pointer">
-                      <input
-                        type="radio"
-                        value="online"
-                        checked={paymentMethod === "online"}
-                        onChange={(e) => setPaymentMethod(e.target.value)}
-                        className="peer sr-only"
-                      />
-                      <div className="p-4 border-2 border-base-300 rounded-xl transition-all duration-200 peer-checked:border-primary peer-checked:bg-primary/5 hover:border-primary/50">
-                        <div className="flex flex-col items-center gap-2">
-                          <BiSolidBank className="text-info text-2xl" />
-                          <span className="font-semibold text-sm">Online</span>
-                        </div>
-                      </div>
-                    </label>
-                  </div>
-                </div>
-              </div>
-
-              {/* Form Actions */}
-              <div className="modal-action">
                 <button
                   type="button"
                   onClick={handleCloseModal}
-                  className="btn btn-ghost"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
+                  className="btn btn-circle btn-sm bg-white/20 border-0 hover:bg-white/30 text-white"
                   disabled={paymentMutation.isPending}
-                  className="btn btn-primary text-white"
                 >
-                  {paymentMutation.isPending ? (
-                    <>
-                      <span className="loading loading-spinner loading-sm"></span>
-                      Processing...
-                    </>
-                  ) : (
-                    <>
-                      <MdPayment />
-                      Add Payment
-                    </>
-                  )}
+                  <MdClose className="text-lg" />
                 </button>
               </div>
-            </form>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 space-y-6">
+
+              {/* Payment Progress */}
+              {(() => {
+                const total = paymentModal.feeData?.fees || 0;
+                const paid = paymentModal.feeData?.paidAmount || 0;
+                const percentage = total > 0 ? Math.round((paid / total) * 100) : 0;
+                const circumference = 2 * Math.PI * 34;
+
+                return (
+                  <div className="flex items-center gap-4 p-4 bg-base-200 rounded-xl">
+                    {/* Circular Progress Ring */}
+                    <div className="relative w-20 h-20 shrink-0">
+                      <svg className="w-20 h-20 -rotate-90" viewBox="0 0 80 80">
+                        <circle cx="40" cy="40" r="34" fill="none" stroke="currentColor"
+                          className="text-base-300" strokeWidth="8" />
+                        <circle cx="40" cy="40" r="34" fill="none" stroke="currentColor"
+                          className="text-primary" strokeWidth="8" strokeLinecap="round"
+                          strokeDasharray={circumference}
+                          strokeDashoffset={circumference * (1 - percentage / 100)}
+                          style={{ transition: 'stroke-dashoffset 0.6s ease-out' }}
+                        />
+                      </svg>
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <span className="text-sm font-bold text-base-content">{percentage}%</span>
+                      </div>
+                    </div>
+
+                    <div className="text-sm text-base-content/70">
+                      <p><span className="font-semibold text-base-content">{percentage}%</span> of total fees paid</p>
+                      <p className="text-xs mt-1">৳{paid.toLocaleString()} of ৳{total.toLocaleString()}</p>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* Fee Breakdown Cards */}
+              <div className="grid grid-cols-3 gap-3">
+                <div className="bg-base-200 rounded-xl p-3 text-center border border-base-300">
+                  <div className="w-8 h-8 bg-info/10 rounded-lg flex items-center justify-center mx-auto mb-2">
+                    <TbCurrencyTaka className="text-info text-lg" />
+                  </div>
+                  <p className="text-xs text-base-content/60">Total Fee</p>
+                  <p className="font-bold text-base-content text-sm">
+                    ৳{(paymentModal.feeData?.fees || 0).toLocaleString()}
+                  </p>
+                </div>
+                <div className="bg-success/5 rounded-xl p-3 text-center border border-success/20">
+                  <div className="w-8 h-8 bg-success/10 rounded-lg flex items-center justify-center mx-auto mb-2">
+                    <FaMoneyCheck className="text-success text-sm" />
+                  </div>
+                  <p className="text-xs text-base-content/60">Paid</p>
+                  <p className="font-bold text-success text-sm">
+                    ৳{(paymentModal.feeData?.paidAmount || 0).toLocaleString()}
+                  </p>
+                </div>
+                <div className="bg-error/5 rounded-xl p-3 text-center border border-error/20">
+                  <div className="w-8 h-8 bg-error/10 rounded-lg flex items-center justify-center mx-auto mb-2">
+                    <FaExclamationTriangle className="text-error text-sm" />
+                  </div>
+                  <p className="text-xs text-base-content/60">Remaining</p>
+                  <p className="font-bold text-error text-sm">
+                    ৳{(paymentModal.feeData?.dueAmount || 0).toLocaleString()}
+                  </p>
+                </div>
+              </div>
+
+              {/* Payment Form */}
+              <form onSubmit={handleSubmitPayment}>
+                <div className="space-y-5">
+
+                  {/* Quick-Fill Amount Buttons + Custom Input */}
+                  <div>
+                    <label className="block text-sm font-semibold text-base-content mb-3">
+                      Payment Amount
+                      <span className="text-error ml-1">*</span>
+                    </label>
+                    <div className="grid grid-cols-2 gap-3 mb-3">
+                      <button
+                        type="button"
+                        onClick={() => setPaymentAmount(String(paymentModal.feeData?.dueAmount || 0))}
+                        className={`btn btn-sm h-auto py-3 ${
+                          Number(paymentAmount) === paymentModal.feeData?.dueAmount
+                            ? 'btn-primary text-white'
+                            : 'btn-outline btn-primary'
+                        } transition-all duration-200`}
+                      >
+                        <TbCurrencyTaka className="text-lg" />
+                        <div className="text-left">
+                          <div className="font-semibold">Pay Full</div>
+                          <div className="text-xs opacity-80">
+                            ৳{(paymentModal.feeData?.dueAmount || 0).toLocaleString()}
+                          </div>
+                        </div>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setPaymentAmount(String(Math.ceil((paymentModal.feeData?.dueAmount || 0) / 2)))}
+                        className={`btn btn-sm h-auto py-3 ${
+                          Number(paymentAmount) === Math.ceil((paymentModal.feeData?.dueAmount || 0) / 2)
+                            ? 'btn-secondary text-white'
+                            : 'btn-outline btn-secondary'
+                        } transition-all duration-200`}
+                      >
+                        <TbCurrencyTaka className="text-lg" />
+                        <div className="text-left">
+                          <div className="font-semibold">Pay Half</div>
+                          <div className="text-xs opacity-80">
+                            ৳{Math.ceil((paymentModal.feeData?.dueAmount || 0) / 2).toLocaleString()}
+                          </div>
+                        </div>
+                      </button>
+                    </div>
+
+                    {/* Custom Amount Input */}
+                    <div className="relative">
+                      <div className="absolute left-3 top-1/2 -translate-y-1/2 text-base-content/40">
+                        <TbCurrencyTaka className="text-xl" />
+                      </div>
+                      <input
+                        type="number"
+                        value={paymentAmount}
+                        onChange={(e) => setPaymentAmount(e.target.value)}
+                        placeholder={`Custom amount (max: ৳${paymentModal.feeData?.dueAmount})`}
+                        className="w-full border border-base-300 rounded-xl pl-10 pr-4 py-3 bg-base-100 text-base-content transition-all duration-200 focus:outline-none focus:ring-2 focus:border-primary focus:ring-primary/20"
+                        required
+                        min="1"
+                        max={paymentModal.feeData?.dueAmount}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Payment Method */}
+                  <div>
+                    <label className="block text-sm font-semibold text-base-content mb-3">
+                      Payment Method
+                      <span className="text-error ml-1">*</span>
+                    </label>
+                    <div className="grid grid-cols-2 gap-3">
+                      <label className="relative cursor-pointer group">
+                        <input
+                          type="radio"
+                          value="cash"
+                          checked={paymentMethod === "cash"}
+                          onChange={(e) => setPaymentMethod(e.target.value)}
+                          className="peer sr-only"
+                        />
+                        <div className="p-4 border-2 border-base-300 rounded-xl transition-all duration-300 peer-checked:border-success peer-checked:bg-success/5 peer-checked:shadow-md hover:border-success/50 group-hover:shadow-sm">
+                          <div className="flex flex-col items-center gap-2">
+                            <div className="w-12 h-12 bg-success/10 rounded-full flex items-center justify-center transition-transform duration-300 group-hover:scale-105">
+                              <FaMoneyBillWave className="text-success text-xl" />
+                            </div>
+                            <span className="font-semibold text-sm text-base-content">Cash</span>
+                            <span className="text-xs text-base-content/50">Pay with cash</span>
+                          </div>
+                        </div>
+                      </label>
+
+                      <label className="relative cursor-pointer group">
+                        <input
+                          type="radio"
+                          value="online"
+                          checked={paymentMethod === "online"}
+                          onChange={(e) => setPaymentMethod(e.target.value)}
+                          className="peer sr-only"
+                        />
+                        <div className="p-4 border-2 border-base-300 rounded-xl transition-all duration-300 peer-checked:border-info peer-checked:bg-info/5 peer-checked:shadow-md hover:border-info/50 group-hover:shadow-sm">
+                          <div className="flex flex-col items-center gap-2">
+                            <div className="w-12 h-12 bg-info/10 rounded-full flex items-center justify-center transition-transform duration-300 group-hover:scale-105">
+                              <BiSolidBank className="text-info text-xl" />
+                            </div>
+                            <span className="font-semibold text-sm text-base-content">Online</span>
+                            <span className="text-xs text-base-content/50">Bank transfer</span>
+                          </div>
+                        </div>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Form Actions */}
+                <div className="flex gap-3 justify-end pt-6 mt-6 border-t border-base-300">
+                  <button
+                    type="button"
+                    onClick={handleCloseModal}
+                    className="btn btn-ghost"
+                    disabled={paymentMutation.isPending}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={paymentMutation.isPending || !paymentAmount}
+                    className="btn btn-primary text-white shadow-md hover:shadow-lg transition-all duration-200"
+                  >
+                    {paymentMutation.isPending ? (
+                      <>
+                        <span className="loading loading-spinner loading-sm"></span>
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        <MdPayment />
+                        Confirm Payment
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
-          <div className="modal-backdrop" onClick={handleCloseModal}></div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
