@@ -1,10 +1,10 @@
 import axios from 'axios';
 import { useEffect } from 'react';
 import useAuth from './useAuth';
+import { API_BASE_URL } from '../config/api';
 
 const axiosSecure = axios.create({
-  // baseURL: "https://rootx-coaching-management-server-si.vercel.app"
-  baseURL: "http://localhost:3001"
+  baseURL: API_BASE_URL
 })
 
 const useAxiosSecure = () => {
@@ -29,14 +29,10 @@ const useAxiosSecure = () => {
     const responseInterceptor = axiosSecure.interceptors.response.use(
       (response) => response,
       (error) => {
-        // Handle 401 Unauthorized
-        if (error.response?.status === 401) {
-          console.error('Unauthorized access - please login again');
-          // Could redirect to login here
-        }
-        // Handle 403 Forbidden (e.g., insufficient permissions)
-        if (error.response?.status === 403) {
-          console.error('Access forbidden:', error.response?.data?.message);
+        // Handle 403 Forbidden - Organization suspension
+        if (error.response?.status === 403 && error.response?.data?.suspended) {
+          // Use window.location instead of navigate since this hook can be called outside Router context
+          window.location.href = '/organization-suspended';
         }
         return Promise.reject(error);
       }

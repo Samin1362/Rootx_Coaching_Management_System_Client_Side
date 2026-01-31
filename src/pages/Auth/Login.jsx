@@ -61,23 +61,15 @@ const Login = () => {
     setLoading(true);
 
     try {
-      // Step 1: Sign in user with Firebase and get MongoDB user data
-      const result = await signInUser(formData.email, formData.password);
-      const dbUser = result.dbUser;
+      // Sign in user with Firebase
+      await signInUser(formData.email, formData.password);
 
       setSuccess(true);
 
-      // Step 2: Redirect based on user role
-      if (dbUser?.isSuperAdmin || dbUser?.role === "super_admin" || dbUser?.role === "super-admin") {
-        // Super admin goes to super admin dashboard
-        navigate("/super-admin/dashboard", { replace: true });
-      } else {
-        // Regular users go to normal dashboard
-        navigate("/dashboard/overview", { replace: true });
-      }
+      // Navigate to dashboard - DashboardLayout will handle role-based redirects
+      // (e.g., super admins will be redirected to /super-admin/dashboard)
+      navigate("/dashboard/overview", { replace: true });
     } catch (err) {
-      console.error("Login error:", err);
-
       // Handle specific Firebase errors
       if (err.code === "auth/user-not-found") {
         setError(t('auth:userNotFound'));

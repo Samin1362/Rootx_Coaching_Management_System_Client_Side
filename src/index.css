@@ -216,6 +216,35 @@
   }
 }
 
+/* Modal Animations */
+@keyframes modalBackdropIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modalSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-modalBackdropIn {
+  animation: modalBackdropIn 0.3s ease-out forwards;
+}
+
+.animate-modalSlideUp {
+  animation: modalSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
 /* Smooth transitions for menu items */
 .menu-item-transition {
   transition: all 0.2s ease-in-out;

@@ -101,7 +101,6 @@ const AddStudent = () => {
         setAdmissionDate(null);
       }
     } catch (error) {
-      console.error(error);
       notification.error("Failed to add student. Please try again.", "Error");
     }
   };

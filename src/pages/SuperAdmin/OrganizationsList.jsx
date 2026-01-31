@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
 import { Link, useNavigate } from "react-router";
+import { useNotification } from "../../contexts/NotificationContext";
 import {
   FaBuilding,
   FaSearch,
@@ -20,6 +21,11 @@ const OrganizationsList = () => {
   const axiosSecure = useAxiosSecure();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const notification = useNotification();
+
+  // Default profile image
+  const defaultProfileImage =
+    "https://static.vecteezy.com/system/resources/thumbnails/020/765/399/small/default-profile-account-unknown-icon-black-silhouette-free-vector.jpg";
 
   // State
   const [searchTerm, setSearchTerm] = useState("");
@@ -47,15 +53,35 @@ const OrganizationsList = () => {
     },
   });
 
+  // Fetch pending reactivation request count
+  const { data: reactivationCountData } = useQuery({
+    queryKey: ["reactivation-request-count"],
+    queryFn: async () => {
+      const response = await axiosSecure.get("/super-admin/reactivation-requests/count");
+      return response.data.data.pendingCount;
+    },
+    refetchInterval: 30000, // Refetch every 30 seconds
+  });
+
   // Suspend organization mutation
   const suspendMutation = useMutation({
     mutationFn: async ({ orgId, reason }) => {
       return axiosSecure.put(`/super-admin/organizations/${orgId}/suspend`, { reason });
     },
-    onSuccess: () => {
+    onSuccess: (response) => {
       queryClient.invalidateQueries(["super-admin-organizations"]);
       setShowSuspendModal(false);
       setSelectedOrg(null);
+      notification.success(
+        response.data.message || "Organization suspended successfully",
+        "Success"
+      );
+    },
+    onError: (error) => {
+      notification.error(
+        error.response?.data?.message || "Failed to suspend organization",
+        "Error"
+      );
     },
   });
 
@@ -64,8 +90,18 @@ const OrganizationsList = () => {
     mutationFn: async (orgId) => {
       return axiosSecure.put(`/super-admin/organizations/${orgId}/activate`);
     },
-    onSuccess: () => {
+    onSuccess: (response) => {
       queryClient.invalidateQueries(["super-admin-organizations"]);
+      notification.success(
+        response.data.message || "Organization activated successfully",
+        "Success"
+      );
+    },
+    onError: (error) => {
+      notification.error(
+        error.response?.data?.message || "Failed to activate organization",
+        "Error"
+      );
     },
   });
 
@@ -74,10 +110,20 @@ const OrganizationsList = () => {
     mutationFn: async (orgId) => {
       return axiosSecure.delete(`/super-admin/organizations/${orgId}`);
     },
-    onSuccess: () => {
+    onSuccess: (response) => {
       queryClient.invalidateQueries(["super-admin-organizations"]);
       setShowDeleteModal(false);
       setSelectedOrg(null);
+      notification.success(
+        response.data.message || "Organization deleted successfully",
+        "Success"
+      );
+    },
+    onError: (error) => {
+      notification.error(
+        error.response?.data?.message || "Failed to delete organization",
+        "Error"
+      );
     },
   });
 
@@ -129,6 +175,14 @@ const OrganizationsList = () => {
             Organizations
           </h1>
           <p className="text-base-content/60 mt-1">Manage all platform organizations</p>
+          {reactivationCountData > 0 && (
+            <div className="mt-2">
+              <div className="badge badge-warning badge-lg gap-2">
+                <FaBan />
+                {reactivationCountData} Pending Reactivation Request{reactivationCountData !== 1 ? 's' : ''}
+              </div>
+            </div>
+          )}
         </div>
         <Link to="/super-admin/organizations/create" className="btn btn-primary btn-sm sm:btn-md">
           <FaPlus className="mr-1" /> New Organization
@@ -230,9 +284,22 @@ const OrganizationsList = () => {
                           </div>
                         </td>
                         <td>
-                          <div className="text-sm">
-                            <div>{org.owner?.name || "N/A"}</div>
-                            <div className="text-base-content/60">{org.owner?.email || "N/A"}</div>
+                          <div className="flex items-center gap-3">
+                            <div className="avatar">
+                              <div className="rounded-full w-8">
+                                <img
+                                  src={org.owner?.photoURL || defaultProfileImage}
+                                  alt={org.owner?.name}
+                                  onError={(e) => {
+                                    e.target.src = defaultProfileImage;
+                                  }}
+                                />
+                              </div>
+                            </div>
+                            <div className="text-sm">
+                              <div>{org.owner?.name || "N/A"}</div>
+                              <div className="text-base-content/60">{org.owner?.email || "N/A"}</div>
+                            </div>
                           </div>
                         </td>
                         <td>{getStatusBadge(org.status)}</td>
@@ -368,6 +435,11 @@ const OrganizationsList = () => {
                   required
                 ></textarea>
               </div>
+              {suspendMutation.isError && (
+                <div className="alert alert-error mt-4">
+                  <span>{suspendMutation.error?.response?.data?.message || "Failed to suspend organization"}</span>
+                </div>
+              )}
               <div className="modal-action">
                 <button
                   type="button"
@@ -407,6 +479,11 @@ const OrganizationsList = () => {
             <p className="py-4">
               Are you sure you want to delete <strong>{selectedOrg?.name}</strong>? This action cannot be undone and will permanently delete all organization data.
             </p>
+            {deleteMutation.isError && (
+              <div className="alert alert-error">
+                <span>{deleteMutation.error?.response?.data?.message || "Failed to delete organization"}</span>
+              </div>
+            )}
             <div className="modal-action">
               <button
                 className="btn"

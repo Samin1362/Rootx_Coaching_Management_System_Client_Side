@@ -6,9 +6,10 @@ import {
   MdSchool,
   MdCalendarToday,
   MdPeople,
+  MdAccessTime,
 } from "react-icons/md";
 import { TbCurrencyTaka } from "react-icons/tb";
-import { FaCheckCircle } from "react-icons/fa";
+import { FaCheckCircle, FaTimes } from "react-icons/fa";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
 import { useNotification } from "../../contexts/NotificationContext";
 
@@ -17,6 +18,8 @@ const CreateBatches = () => {
   const notification = useNotification();
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
+  const [daySchedules, setDaySchedules] = useState([]);
+  // Structure: [{ day: "Monday", startTime: "10:00", endTime: "11:30" }, ...]
 
   const {
     register,
@@ -24,11 +27,81 @@ const CreateBatches = () => {
     control,
     formState: { errors },
     reset,
+    setValue,
   } = useForm();
 
+  // Format schedule string from day schedules with smart grouping
+  const formatSchedule = (daySchedules) => {
+    if (!daySchedules || daySchedules.length === 0) return "";
+
+    // Helper: Convert 24h to 12h format
+    const convertTo12Hour = (time24) => {
+      const [hours, minutes] = time24.split(':');
+      const hour = parseInt(hours);
+      const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+      const period = hour < 12 ? 'AM' : 'PM';
+      return `${displayHour}:${minutes} ${period}`;
+    };
+
+    const dayOrder = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    const dayAbbr = {
+      Sunday: "Sun", Monday: "Mon", Tuesday: "Tue", Wednesday: "Wed",
+      Thursday: "Thu", Friday: "Fri", Saturday: "Sat"
+    };
+
+    // Sort by day order
+    const sorted = [...daySchedules].sort((a, b) =>
+      dayOrder.indexOf(a.day) - dayOrder.indexOf(b.day)
+    );
+
+    // Group by identical times
+    const groups = [];
+    sorted.forEach(schedule => {
+      const timeKey = `${schedule.startTime}|${schedule.endTime}`;
+      let group = groups.find(g => g.timeKey === timeKey);
+
+      if (!group) {
+        group = { timeKey, days: [], startTime: schedule.startTime, endTime: schedule.endTime };
+        groups.push(group);
+      }
+      group.days.push(schedule.day);
+    });
+
+    // Format each group
+    const formatted = groups.map(group => {
+      const timeStr = `${convertTo12Hour(group.startTime)}–${convertTo12Hour(group.endTime)}`;
+
+      if (group.days.length === 1) {
+        return `${dayAbbr[group.days[0]]} ${timeStr}`;
+      }
+
+      // Check if days are consecutive
+      const indices = group.days.map(d => dayOrder.indexOf(d));
+      const isConsecutive = indices.every((val, i, arr) =>
+        i === 0 || val === arr[i - 1] + 1
+      );
+
+      if (isConsecutive && group.days.length > 2) {
+        return `${dayAbbr[group.days[0]]}–${dayAbbr[group.days[group.days.length - 1]]} ${timeStr}`;
+      }
+
+      return `${group.days.map(d => dayAbbr[d]).join(", ")} ${timeStr}`;
+    });
+
+    return formatted.join("; ");
+  };
+
   const onSubmit = async (data) => {
+    const scheduleStr = formatSchedule(daySchedules);
+
+    if (!scheduleStr) {
+      notification.error("Please select schedule days and time");
+      return;
+    }
+
     const batch = {
       ...data,
+      schedule: scheduleStr,
       fees: Number(data.fees),
       capacity: Number(data.capacity),
       status: data.status || "active",
@@ -42,9 +115,9 @@ const CreateBatches = () => {
         reset();
         setStartDate(null);
         setEndDate(null);
+        setDaySchedules([]);
       }
     } catch (error) {
-      console.error(error);
       notification.error(
         error.response?.data?.message || "Failed to create batch. Please try again.",
         "Error"
@@ -114,38 +187,36 @@ const CreateBatches = () => {
                   </span>
                   Schedule & Timing
                 </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <Input
-                    label="Schedule"
-                    placeholder="e.g., Sun–Thu 7–9 PM"
-                    required
-                    error={errors.schedule}
-                    {...register("schedule", {
-                      required: "Schedule is required",
-                    })}
+                <div className="space-y-6">
+                  <ScheduleSelector
+                    daySchedules={daySchedules}
+                    setDaySchedules={setDaySchedules}
+                    formatSchedule={formatSchedule}
                   />
 
-                  <DateInput
-                    label="Start Date"
-                    required
-                    control={control}
-                    name="startDate"
-                    error={errors.startDate}
-                    selectedDate={startDate}
-                    onDateChange={setStartDate}
-                    minDate={new Date()}
-                    placeholder="Select batch start date"
-                  />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <DateInput
+                      label="Start Date"
+                      required
+                      control={control}
+                      name="startDate"
+                      error={errors.startDate}
+                      selectedDate={startDate}
+                      onDateChange={setStartDate}
+                      minDate={new Date()}
+                      placeholder="Select batch start date"
+                    />
 
-                  <DateInput
-                    label="End Date"
-                    control={control}
-                    name="endDate"
-                    selectedDate={endDate}
-                    onDateChange={setEndDate}
-                    minDate={startDate || new Date()}
-                    placeholder="Select batch end date (optional)"
-                  />
+                    <DateInput
+                      label="End Date"
+                      control={control}
+                      name="endDate"
+                      selectedDate={endDate}
+                      onDateChange={setEndDate}
+                      minDate={startDate || new Date()}
+                      placeholder="Select batch end date (optional)"
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -207,6 +278,7 @@ const CreateBatches = () => {
                     reset();
                     setStartDate(null);
                     setEndDate(null);
+                    setDaySchedules([]);
                   }}
                   className="btn btn-ghost text-base-content order-2 sm:order-1"
                 >
@@ -363,3 +435,159 @@ const DateInput = ({
     )}
   </div>
 );
+
+/* Schedule Selector Component */
+const ScheduleSelector = ({
+  daySchedules,
+  setDaySchedules,
+  formatSchedule,
+}) => {
+  const daysOfWeek = [
+    { name: "Sunday", abbr: "Sun" },
+    { name: "Monday", abbr: "Mon" },
+    { name: "Tuesday", abbr: "Tue" },
+    { name: "Wednesday", abbr: "Wed" },
+    { name: "Thursday", abbr: "Thu" },
+    { name: "Friday", abbr: "Fri" },
+    { name: "Saturday", abbr: "Sat" },
+  ];
+
+  const handleAddDay = (dayName) => {
+    const existing = daySchedules.find(s => s.day === dayName);
+    if (existing) return;
+
+    // Default to 10:00 AM - 11:30 AM (24-hour format for HTML5 time input)
+    setDaySchedules(prev => [
+      ...prev,
+      { day: dayName, startTime: "10:00", endTime: "11:30" }
+    ]);
+  };
+
+  const handleRemoveDay = (dayName) => {
+    setDaySchedules(prev => prev.filter(s => s.day !== dayName));
+  };
+
+  const handleUpdateTime = (dayName, field, value) => {
+    setDaySchedules(prev =>
+      prev.map(s => s.day === dayName ? { ...s, [field]: value } : s)
+    );
+  };
+
+  const schedulePreview = formatSchedule(daySchedules);
+  const selectedDays = daySchedules.map(s => s.day);
+
+  return (
+    <div className="space-y-4">
+      <label className="block text-sm font-semibold text-base-content">
+        Class Schedule
+        <span className="text-error ml-1">*</span>
+      </label>
+
+      {/* Days Selection */}
+      <div>
+        <p className="text-xs text-base-content/60 mb-3">Select class days</p>
+        <div className="flex flex-wrap gap-2">
+          {daysOfWeek.map((day) => (
+            <button
+              key={day.name}
+              type="button"
+              onClick={() =>
+                selectedDays.includes(day.name)
+                  ? handleRemoveDay(day.name)
+                  : handleAddDay(day.name)
+              }
+              className={`px-4 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 ${
+                selectedDays.includes(day.name)
+                  ? "bg-primary text-white shadow-lg shadow-primary/30 scale-105"
+                  : "bg-base-200 text-base-content/70 hover:bg-base-300 hover:scale-105"
+              }`}
+            >
+              <span className="hidden sm:inline">{day.name}</span>
+              <span className="sm:hidden">{day.abbr}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Day Schedules Table */}
+      {daySchedules.length > 0 && (
+        <div className="overflow-x-auto">
+          <table className="table w-full">
+            <thead>
+              <tr>
+                <th className="bg-base-200">Day</th>
+                <th className="bg-base-200">Start Time</th>
+                <th className="bg-base-200">End Time</th>
+                <th className="bg-base-200 text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {daySchedules
+                .sort((a, b) => {
+                  const order = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+                  return order.indexOf(a.day) - order.indexOf(b.day);
+                })
+                .map((schedule) => (
+                  <tr key={schedule.day} className="hover">
+                    <td className="font-medium">{schedule.day}</td>
+                    <td>
+                      <input
+                        type="time"
+                        value={schedule.startTime}
+                        onChange={(e) =>
+                          handleUpdateTime(schedule.day, "startTime", e.target.value)
+                        }
+                        className="input input-bordered input-sm w-full max-w-xs"
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="time"
+                        value={schedule.endTime}
+                        onChange={(e) =>
+                          handleUpdateTime(schedule.day, "endTime", e.target.value)
+                        }
+                        className="input input-bordered input-sm w-full max-w-xs"
+                      />
+                    </td>
+                    <td className="text-center">
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveDay(schedule.day)}
+                        className="btn btn-ghost btn-sm btn-circle text-error"
+                      >
+                        <FaTimes />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* Schedule Preview */}
+      {schedulePreview && (
+        <div className="mt-4 p-4 bg-primary/5 border border-primary/20 rounded-xl">
+          <div className="flex items-center gap-2">
+            <MdCalendarToday className="text-primary" />
+            <span className="text-sm text-base-content/70">Schedule preview:</span>
+            <span className="font-semibold text-primary">{schedulePreview}</span>
+          </div>
+        </div>
+      )}
+
+      {/* Validation message */}
+      {daySchedules.length === 0 && (
+        <p className="text-xs text-base-content/50 flex items-center gap-1.5">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+          Please select days and set times to create schedule
+        </p>
+      )}
+    </div>
+  );
+};

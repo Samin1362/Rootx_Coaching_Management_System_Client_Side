@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   FaCrown,
   FaCalendar,
@@ -9,22 +10,83 @@ import {
   FaExclamationTriangle,
   FaHistory,
   FaDownload,
+  FaSync,
+  FaClock,
+  FaTimes,
 } from "react-icons/fa";
 import { useOrganization } from "../../contexts/organization";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
+import { useNotification } from "../../contexts/NotificationContext";
 
 const SubscriptionManagement = () => {
-  const { organization, subscription, loading: orgLoading, error: orgError, refreshOrganization } = useOrganization();
+  const { organization, subscription, loading: orgLoading, error: orgError, refreshOrganization, lastUpdate, isRefreshing } = useOrganization();
   const axiosSecure = useAxiosSecure();
   const navigate = useNavigate();
+  const notification = useNotification();
+  const queryClient = useQueryClient();
 
   const [loading, setLoading] = useState(false);
   const [payments, setPayments] = useState([]);
   const [paymentsLoading, setPaymentsLoading] = useState(true);
 
+  // Fetch pending subscription request
+  const { data: pendingRequest, isLoading: pendingLoading, refetch: refetchPending } = useQuery({
+    queryKey: ["pending-subscription-request", organization?._id],
+    queryFn: async () => {
+      const response = await axiosSecure.get("/subscriptions/requests/pending");
+      return response.data.data;
+    },
+    enabled: !!organization?._id,
+    refetchInterval: 30000, // Refetch every 30 seconds to check status
+  });
+
+  // Cancel request mutation
+  const cancelRequestMutation = useMutation({
+    mutationFn: async (requestId) => {
+      return axiosSecure.delete(`/subscriptions/requests/${requestId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(["pending-subscription-request"]);
+      notification.success("Subscription request cancelled successfully");
+    },
+    onError: (error) => {
+      notification.error(error.response?.data?.message || "Failed to cancel request");
+    },
+  });
+
+  const handleCancelRequest = () => {
+    if (pendingRequest && window.confirm("Are you sure you want to cancel this subscription request?")) {
+      cancelRequestMutation.mutate(pendingRequest._id);
+    }
+  };
+
   useEffect(() => {
     fetchPayments();
-  }, [organization?._id]);
+  }, [organization?._id, subscription?.tier, subscription?.status]);
+
+  // Listen for subscription update events
+  useEffect(() => {
+    const handleSubscriptionUpdate = (event) => {
+      const { message, severity } = event.detail;
+
+      if (severity === "success") {
+        notification.success(message);
+      } else if (severity === "warning") {
+        notification.warning(message);
+      } else {
+        notification.info(message);
+      }
+
+      // Refresh payments when subscription changes
+      fetchPayments();
+    };
+
+    window.addEventListener("subscription-updated", handleSubscriptionUpdate);
+
+    return () => {
+      window.removeEventListener("subscription-updated", handleSubscriptionUpdate);
+    };
+  }, [notification]);
 
   const fetchPayments = async () => {
     if (!organization?._id) return;
@@ -33,7 +95,8 @@ const SubscriptionManagement = () => {
       const response = await axiosSecure.get("/subscriptions/payments");
       setPayments(response.data.data || []);
     } catch (error) {
-      console.error("Error fetching payments:", error);
+      // Set empty array on error instead of crashing
+      setPayments([]);
     } finally {
       setPaymentsLoading(false);
     }
@@ -61,7 +124,11 @@ const SubscriptionManagement = () => {
   // };
 
   const formatDate = (date) => {
-    return new Date(date).toLocaleDateString("en-US", {
+    if (!date) return "N/A";
+    const parsedDate = new Date(date);
+    // Check if date is valid
+    if (isNaN(parsedDate.getTime())) return "N/A";
+    return parsedDate.toLocaleDateString("en-US", {
       year: "numeric",
       month: "long",
       day: "numeric",
@@ -85,6 +152,15 @@ const SubscriptionManagement = () => {
     if (percentage >= 90) return "progress-error";
     if (percentage >= 75) return "progress-warning";
     return "progress-success";
+  };
+
+  const formatFeatureName = (feature) => {
+    if (!feature) return "";
+    // Replace underscores with spaces and capitalize each word
+    return feature
+      .split("_")
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
   };
 
   if (orgLoading || loading) {
@@ -139,21 +215,119 @@ const SubscriptionManagement = () => {
           <p className="text-base-content/60 mt-1">
             Manage your subscription and billing
           </p>
+          {lastUpdate && (
+            <p className="text-xs text-base-content/40 mt-1">
+              Last updated: {new Date(lastUpdate).toLocaleTimeString()}
+            </p>
+          )}
         </div>
+        <button
+          onClick={refreshOrganization}
+          disabled={isRefreshing}
+          className="btn btn-outline btn-sm gap-2"
+          title="Refresh subscription data"
+        >
+          <FaSync className={isRefreshing ? "animate-spin" : ""} />
+          {isRefreshing ? "Refreshing..." : "Refresh"}
+        </button>
       </div>
 
+      {/* Pending Subscription Request Card */}
+      {pendingRequest && (
+        <div className="card bg-warning/20 shadow-xl border-2 border-warning">
+          <div className="card-body">
+            <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+              <div className="flex items-start gap-4">
+                <div className="p-3 bg-warning/30 rounded-full">
+                  <FaClock className="text-2xl text-warning" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold flex items-center gap-2">
+                    Pending Plan Change
+                    <span className="badge badge-warning badge-sm">Awaiting Approval</span>
+                  </h2>
+                  <p className="text-base-content/60 mt-1">
+                    Your request is being reviewed by our admin team
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={handleCancelRequest}
+                disabled={cancelRequestMutation.isPending}
+                className="btn btn-outline btn-warning btn-sm gap-2"
+              >
+                {cancelRequestMutation.isPending ? (
+                  <span className="loading loading-spinner loading-xs"></span>
+                ) : (
+                  <FaTimes />
+                )}
+                Cancel Request
+              </button>
+            </div>
+
+            <div className="divider my-2"></div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="bg-base-100 p-4 rounded-lg">
+                <p className="text-sm text-base-content/60">Request Type</p>
+                <p className="font-bold capitalize flex items-center gap-2">
+                  {pendingRequest.requestType === "upgrade" ? (
+                    <>
+                      <FaArrowUp className="text-success" /> Upgrade
+                    </>
+                  ) : (
+                    <>
+                      <FaArrowUp className="text-info rotate-180" /> Downgrade
+                    </>
+                  )}
+                </p>
+              </div>
+              <div className="bg-base-100 p-4 rounded-lg">
+                <p className="text-sm text-base-content/60">Requested Plan</p>
+                <p className="font-bold capitalize">{pendingRequest.requestedPlanName || pendingRequest.requestedTier}</p>
+              </div>
+              <div className="bg-base-100 p-4 rounded-lg">
+                <p className="text-sm text-base-content/60">Billing Cycle</p>
+                <p className="font-bold capitalize">{pendingRequest.requestedBillingCycle}</p>
+              </div>
+              <div className="bg-base-100 p-4 rounded-lg">
+                <p className="text-sm text-base-content/60">Submitted On</p>
+                <p className="font-bold">{formatDate(pendingRequest.createdAt)}</p>
+              </div>
+            </div>
+
+            <div className="mt-4 p-4 bg-info/10 rounded-lg flex items-start gap-3">
+              <FaExclamationTriangle className="text-info mt-1 flex-shrink-0" />
+              <div className="text-sm">
+                <p className="font-semibold text-info">What happens next?</p>
+                <p className="text-base-content/70">
+                  Our admin team will review your request. Once approved, your subscription will be updated automatically.
+                  You'll be notified of the decision via this dashboard.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Current Plan Card */}
-      <div className="card bg-gradient-to-br from-primary to-secondary text-white shadow-2xl">
+      <div className={`card bg-gradient-to-br from-primary to-secondary text-white shadow-2xl ${isRefreshing ? "ring-2 ring-white ring-opacity-50 animate-pulse" : ""}`}>
         <div className="card-body">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
               <div className="flex items-center gap-3 mb-2">
                 <h2 className={`text-3xl font-bold capitalize`}>
-                  {subscription?.tier || "Free"} Plan
+                  {subscription?.tier || "Free"}
                 </h2>
                 <div className={`badge ${getStatusBadge(subscription?.status)} badge-lg`}>
                   {subscription?.status || "Active"}
                 </div>
+                {isRefreshing && (
+                  <div className="badge badge-ghost badge-sm gap-1">
+                    <FaSync className="animate-spin text-xs" />
+                    Updating...
+                  </div>
+                )}
               </div>
               <p className="text-white/80 mb-4">
                 {organization?.name || "Your Organization"}
@@ -177,9 +351,11 @@ const SubscriptionManagement = () => {
               <button
                 onClick={() => navigate("/plans")}
                 className="btn btn-white bg-white text-primary hover:bg-base-100"
+                disabled={!!pendingRequest}
+                title={pendingRequest ? "You have a pending subscription request" : "Upgrade your plan"}
               >
                 <FaArrowUp />
-                Upgrade Plan
+                {pendingRequest ? "Request Pending" : "Upgrade Plan"}
               </button>
               <button className="btn btn-outline btn-white border-white text-white hover:bg-white/10">
                 <FaHistory />
@@ -290,16 +466,26 @@ const SubscriptionManagement = () => {
       <div className="card bg-base-100 shadow-xl">
         <div className="card-body">
           <h3 className="card-title text-xl mb-4">Plan Features</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {organization?.limits?.features?.map((feature, index) => (
-              <div key={index} className="flex items-center gap-2">
-                <FaCheck className="text-success flex-shrink-0" />
-                <span className="capitalize">{feature.replace(/_/g, " ")}</span>
+          {organization?.limits?.features && organization.limits.features.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {organization.limits.features.map((feature, index) => (
+                <div key={index} className="flex items-center gap-3 p-2 rounded-lg hover:bg-base-200 transition-colors">
+                  <FaCheck className="text-success flex-shrink-0 text-lg" />
+                  <span className="text-base-content">{formatFeatureName(feature)}</span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-base-200 mb-4">
+                <FaExclamationTriangle className="text-2xl text-base-content/40" />
               </div>
-            )) || (
-              <p className="text-base-content/60">No features available</p>
-            )}
-          </div>
+              <p className="text-base-content/60 mb-2">No features configured for this plan</p>
+              <p className="text-sm text-base-content/40">
+                Contact support if you believe this is an error
+              </p>
+            </div>
+          )}
         </div>
       </div>
 
@@ -352,7 +538,13 @@ const SubscriptionManagement = () => {
                       <td>{formatDate(payment.date)}</td>
                       <td>{formatCurrency(payment.amount)}</td>
                       <td>
-                        <div className={`badge badge-${payment.status === "paid" ? "success" : "warning"} capitalize`}>
+                        <div className={`badge ${
+                          payment.status === "paid" || payment.status === "completed"
+                            ? "badge-success"
+                            : payment.status === "pending"
+                            ? "badge-warning"
+                            : "badge-error"
+                        } capitalize`}>
                           {payment.status}
                         </div>
                       </td>

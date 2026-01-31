@@ -27,6 +27,10 @@ const UserDetails = () => {
   const [showBanModal, setShowBanModal] = useState(false);
   const [showRoleModal, setShowRoleModal] = useState(false);
 
+  // Default profile image
+  const defaultProfileImage =
+    "https://static.vecteezy.com/system/resources/thumbnails/020/765/399/small/default-profile-account-unknown-icon-black-silhouette-free-vector.jpg";
+
   // Fetch user details
   const { data: user, isLoading, error } = useQuery({
     queryKey: ["super-admin-user", userId],
@@ -141,11 +145,15 @@ const UserDetails = () => {
             <FaArrowLeft />
           </button>
           <div className="flex items-center gap-4">
-            <div className="avatar placeholder">
-              <div className="bg-primary/10 text-primary rounded-full w-16">
-                <span className="text-2xl">
-                  {user?.name?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase()}
-                </span>
+            <div className="avatar">
+              <div className="rounded-full w-16">
+                <img
+                  src={user?.photoURL || defaultProfileImage}
+                  alt={user?.name}
+                  onError={(e) => {
+                    e.target.src = defaultProfileImage;
+                  }}
+                />
               </div>
             </div>
             <div>

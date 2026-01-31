@@ -9,8 +9,8 @@ import {
   FaArrowUp,
   FaArrowDown,
   FaCalendarAlt,
-  FaDollarSign,
 } from "react-icons/fa";
+import { TbCurrencyTaka } from "react-icons/tb";
 
 const PlatformAnalytics = () => {
   const axiosSecure = useAxiosSecure();
@@ -118,10 +118,10 @@ const PlatformAnalytics = () => {
             />
             <StatCard
               title="Revenue"
-              value={`$${(analytics?.revenue?.total || 0).toLocaleString()}`}
+              value={`৳${(analytics?.revenue?.total || 0).toLocaleString()}`}
               change={analytics?.revenue?.growthRate}
               changeType={analytics?.revenue?.growthRate >= 0 ? "increase" : "decrease"}
-              icon={FaDollarSign}
+              icon={TbCurrencyTaka}
               color="bg-success"
             />
           </div>
@@ -159,9 +159,9 @@ const PlatformAnalytics = () => {
                 <h2 className="card-title text-lg">Revenue Trend</h2>
                 <div className="h-64 flex items-center justify-center bg-base-200 rounded-lg">
                   <div className="text-center">
-                    <FaDollarSign className="text-4xl text-base-content/30 mx-auto mb-2" />
+                    <TbCurrencyTaka className="text-4xl text-base-content/30 mx-auto mb-2" />
                     <p className="text-base-content/60">
-                      ${(analytics?.revenue?.total || 0).toLocaleString()}
+                      ৳{(analytics?.revenue?.total || 0).toLocaleString()}
                     </p>
                     <p className="text-sm text-base-content/40">total revenue</p>
                   </div>
@@ -171,7 +171,7 @@ const PlatformAnalytics = () => {
                   {analytics?.revenue?.breakdown?.slice(0, 5).map((item, index) => (
                     <div key={index} className="flex justify-between text-sm">
                       <span>{item.date}</span>
-                      <span className="font-medium text-success">+${item.amount}</span>
+                      <span className="font-medium text-success">+৳{item.amount}</span>
                     </div>
                   ))}
                 </div>
@@ -308,7 +308,7 @@ const PlatformAnalytics = () => {
                             <span className="badge badge-outline badge-sm">{org.planName || "N/A"}</span>
                           </td>
                           <td className="text-success font-medium">
-                            ${(org.revenue || 0).toLocaleString()}
+                            ৳{(org.revenue || 0).toLocaleString()}
                           </td>
                         </tr>
                       ))

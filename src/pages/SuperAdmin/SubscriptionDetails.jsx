@@ -11,11 +11,11 @@ import {
   FaCheckCircle,
   FaExclamationTriangle,
   FaBan,
-  FaDollarSign,
   FaHistory,
   FaEdit,
   FaPlus,
 } from "react-icons/fa";
+import { TbCurrencyTaka } from "react-icons/tb";
 
 const SubscriptionDetails = () => {
   const { subscriptionId } = useParams();
@@ -321,7 +321,7 @@ const SubscriptionDetails = () => {
                       paymentsData.payments.map((payment) => (
                         <tr key={payment._id} className="hover">
                           <td>{new Date(payment.date).toLocaleDateString()}</td>
-                          <td className="font-medium">${payment.amount?.toFixed(2)}</td>
+                          <td className="font-medium">৳{payment.amount?.toFixed(2)}</td>
                           <td className="capitalize">{payment.method || "N/A"}</td>
                           <td>
                             <span
@@ -359,26 +359,26 @@ const SubscriptionDetails = () => {
           <div className="card bg-base-100 shadow border border-base-300">
             <div className="card-body">
               <h2 className="card-title text-lg">
-                <FaDollarSign className="text-primary" /> Billing Summary
+                <TbCurrencyTaka className="text-primary" /> Billing Summary
               </h2>
               <div className="stats stats-vertical w-full mt-4">
                 <div className="stat px-0">
                   <div className="stat-title">Current Plan Price</div>
                   <div className="stat-value text-2xl">
-                    ${subscription?.amount?.toFixed(2) || "0.00"}
+                    ৳{subscription?.amount?.toFixed(2) || "0.00"}
                   </div>
                   <div className="stat-desc">per {subscription?.billingCycle || "month"}</div>
                 </div>
                 <div className="stat px-0">
                   <div className="stat-title">Total Paid</div>
                   <div className="stat-value text-2xl text-success">
-                    ${paymentsData?.totalPaid?.toFixed(2) || "0.00"}
+                    ৳{paymentsData?.totalPaid?.toFixed(2) || "0.00"}
                   </div>
                 </div>
                 <div className="stat px-0">
                   <div className="stat-title">Outstanding</div>
                   <div className="stat-value text-2xl text-error">
-                    ${paymentsData?.outstanding?.toFixed(2) || "0.00"}
+                    ৳{paymentsData?.outstanding?.toFixed(2) || "0.00"}
                   </div>
                 </div>
               </div>
@@ -571,7 +571,7 @@ const SubscriptionDetails = () => {
                 >
                   {plans?.map((plan) => (
                     <option key={plan._id} value={plan._id}>
-                      {plan.name} - ${plan.price?.monthly}/month
+                      {plan.name} - ৳{plan.price?.monthly}/month
                     </option>
                   ))}
                 </select>
@@ -620,7 +620,7 @@ const SubscriptionDetails = () => {
               <div className="space-y-4 mt-4">
                 <div className="form-control">
                   <label className="label">
-                    <span className="label-text">Amount ($)</span>
+                    <span className="label-text">Amount (৳)</span>
                   </label>
                   <input
                     type="number"

@@ -44,7 +44,6 @@ const NewAdmissions = () => {
         reset();
       }
     } catch (error) {
-      console.error(error);
       notification.error(
         "Failed to create admission. Please try again.",
         "Error"

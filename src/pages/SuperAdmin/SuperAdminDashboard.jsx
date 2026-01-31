@@ -90,12 +90,15 @@ const SuperAdminDashboard = () => {
   const axiosSecure = useAxiosSecure();
 
   // Fetch dashboard stats
-  const { data: stats, isLoading: statsLoading } = useQuery({
+  const { data: stats, isLoading: statsLoading, isError: statsError } = useQuery({
     queryKey: ["super-admin-dashboard-stats"],
     queryFn: async () => {
       const response = await axiosSecure.get("/super-admin/dashboard/stats");
       return response.data.data;
     },
+    retry: 2,
+    retryDelay: 1000,
+    staleTime: 60000, // 1 minute
   });
 
   // Fetch recent activity
@@ -105,21 +108,45 @@ const SuperAdminDashboard = () => {
       const response = await axiosSecure.get("/super-admin/activity-logs?limit=10");
       return response.data.data?.logs || [];
     },
+    retry: 1,
+    retryDelay: 1000,
+    staleTime: 30000, // 30 seconds
   });
 
   // Fetch expiring subscriptions
-  const { data: expiringSubscriptions, isLoading: expiringLoading } = useQuery({
+  const { data: expiringSubscriptions, isLoading: expiringLoading, isError: expiringError } = useQuery({
     queryKey: ["super-admin-expiring-subscriptions"],
     queryFn: async () => {
       const response = await axiosSecure.get("/super-admin/subscriptions/expiring?days=30&limit=5");
       return response.data.data || [];
     },
+    retry: 1,
+    retryDelay: 1000,
+    staleTime: 60000, // 1 minute
   });
 
   if (statsLoading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <span className="loading loading-spinner loading-lg text-primary"></span>
+      </div>
+    );
+  }
+
+  if (statsError) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-center">
+          <div className="text-error text-4xl mb-4">⚠️</div>
+          <h2 className="text-xl font-bold mb-2">Failed to Load Dashboard</h2>
+          <p className="text-base-content/60 mb-4">Unable to fetch dashboard statistics</p>
+          <button
+            className="btn btn-primary"
+            onClick={() => window.location.reload()}
+          >
+            Retry
+          </button>
+        </div>
       </div>
     );
   }
@@ -222,6 +249,10 @@ const SuperAdminDashboard = () => {
               {expiringLoading ? (
                 <div className="flex justify-center py-4">
                   <span className="loading loading-spinner loading-sm"></span>
+                </div>
+              ) : expiringError ? (
+                <div className="text-center py-4">
+                  <p className="text-error text-sm">Failed to load expiring subscriptions</p>
                 </div>
               ) : expiringSubscriptions?.length > 0 ? (
                 expiringSubscriptions.map((sub, index) => (
