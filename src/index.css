@@ -272,3 +272,163 @@
 html {
   scroll-behavior: smooth;
 }
+
+/* ═══════════════════════════════════════════════
+   PUBLIC LANDING PAGE ANIMATIONS
+═══════════════════════════════════════════════ */
+
+/* Floating orbs in hero */
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  33% { transform: translateY(-24px) rotate(2deg); }
+  66% { transform: translateY(-12px) rotate(-1deg); }
+}
+
+@keyframes floatReverse {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  33% { transform: translateY(18px) rotate(-2deg); }
+  66% { transform: translateY(9px) rotate(1deg); }
+}
+
+/* Animated gradient text */
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Shimmer sweep on buttons */
+@keyframes shine {
+  0% { transform: translateX(-100%) skewX(-15deg); }
+  100% { transform: translateX(350%) skewX(-15deg); }
+}
+
+/* Scrolling trust banner marquee */
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* Pulsing ring on feature icons */
+@keyframes pulseRing {
+  0% { transform: scale(1); opacity: 0.6; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+
+/* Scroll reveal entrance */
+@keyframes revealUp {
+  from { opacity: 0; transform: translateY(40px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Typing cursor blink */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* Utility classes */
+.animate-float { animation: float 6s ease-in-out infinite; }
+.animate-float-reverse { animation: floatReverse 7s ease-in-out infinite; }
+.animate-float-slow { animation: float 9s ease-in-out infinite; }
+
+.animate-gradient {
+  background-size: 300% 300%;
+  animation: gradientShift 5s ease infinite;
+}
+
+.animate-marquee { animation: marquee 28s linear infinite; }
+.animate-marquee-slow { animation: marquee 40s linear infinite; }
+
+.animate-pulse-ring { animation: pulseRing 2s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite; }
+
+.animate-blink { animation: blink 1s step-end infinite; }
+
+/* Scroll Reveal — triggered by IntersectionObserver adding .visible */
+.reveal {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.reveal-left {
+  opacity: 0;
+  transform: translateX(-50px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+.reveal-left.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.reveal-right {
+  opacity: 0;
+  transform: translateX(50px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+.reveal-right.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.reveal-delay-100 { transition-delay: 0.1s; }
+.reveal-delay-200 { transition-delay: 0.2s; }
+.reveal-delay-300 { transition-delay: 0.3s; }
+.reveal-delay-400 { transition-delay: 0.4s; }
+.reveal-delay-500 { transition-delay: 0.5s; }
+.reveal-delay-600 { transition-delay: 0.6s; }
+.reveal-delay-700 { transition-delay: 0.7s; }
+
+/* Shine button overlay */
+.btn-shine {
+  position: relative;
+  overflow: hidden;
+}
+.btn-shine::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 35%;
+  height: 100%;
+  background: linear-gradient(to right, transparent, rgba(255,255,255,0.25), transparent);
+  animation: shine 2.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* Grid dot pattern for hero */
+.hero-grid-pattern {
+  background-image: radial-gradient(circle, rgba(245,146,61,0.12) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+/* Glassmorphism card */
+.glass-card {
+  background: rgba(30, 41, 59, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+/* Gradient border card (for pricing highlight) */
+.gradient-border {
+  position: relative;
+  border-radius: 1rem;
+}
+.gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 1.1rem;
+  background: linear-gradient(135deg, #f5923d, #ff6b6b, #f5923d);
+  z-index: -1;
+}
+
+/* Dark auth form inputs */
+.dark-input::placeholder { color: rgba(255,255,255,0.28); }
+.dark-input:focus { border-color: #f5923d !important; box-shadow: 0 0 0 2px rgba(245,146,61,0.15) !important; outline: none; }
+
