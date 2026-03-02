@@ -11,29 +11,51 @@ import {
   FaExclamationCircle,
   FaCamera,
   FaImage,
+  FaArrowRight,
 } from "react-icons/fa";
 import { MdAdminPanelSettings } from "react-icons/md";
 import useAuth from "../../hooks/useAuth";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
 
+/* ── Shared inline style tokens ──────────────────────────── */
+const inputBase = {
+  background: "rgba(255,255,255,0.05)",
+  border: "1px solid rgba(255,255,255,0.1)",
+  borderRadius: "0.5rem",
+  color: "#fff",
+  width: "100%",
+  fontSize: "0.875rem",
+  padding: "0.625rem 0.75rem",
+  transition: "border-color 0.2s, box-shadow 0.2s",
+  outline: "none",
+};
+
+const onFocus = (e) => {
+  e.currentTarget.style.borderColor = "#f5923d";
+  e.currentTarget.style.boxShadow = "0 0 0 2px rgba(245,146,61,0.15)";
+};
+const onBlur = (e) => {
+  e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)";
+  e.currentTarget.style.boxShadow = "none";
+};
+
+/* ─────────────────────────────────────────────────────────── */
 const Register = () => {
   const navigate = useNavigate();
   const { registerUser, updateUser } = useAuth();
   const axiosSecure = useAxiosSecure();
 
-  const [showPassword, setShowPassword] = useState(false);
+  const [showPassword, setShowPassword]           = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState(false);
-  const [uploadingImage, setUploadingImage] = useState(false);
-  const [profileImage, setProfileImage] = useState("");
+  const [loading, setLoading]                     = useState(false);
+  const [error, setError]                         = useState("");
+  const [success, setSuccess]                     = useState(false);
+  const [uploadingImage, setUploadingImage]       = useState(false);
+  const [profileImage, setProfileImage]           = useState("");
 
-  // Cloudinary configuration
-  const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
-  const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+  const cloudName     = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+  const uploadPreset  = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
 
-  // Form state
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -42,26 +64,18 @@ const Register = () => {
     agreeTerms: false,
   });
 
-  // Handle input changes
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
-    // Clear error when user starts typing
+    setFormData((prev) => ({ ...prev, [name]: type === "checkbox" ? checked : value }));
     if (error) setError("");
   };
 
-  // Handle image upload with Cloudinary
   const handleImageUpload = () => {
     setUploadingImage(true);
-
-    // Create Cloudinary widget
     const widget = window.cloudinary.createUploadWidget(
       {
-        cloudName: cloudName,
-        uploadPreset: uploadPreset,
+        cloudName,
+        uploadPreset,
         sources: ["local", "camera"],
         multiple: false,
         cropping: true,
@@ -69,194 +83,167 @@ const Register = () => {
         croppingShowDimensions: true,
         folder: "rootx_profiles",
         clientAllowedFormats: ["jpg", "jpeg", "png", "webp"],
-        maxImageFileSize: 2000000, // 2MB
+        maxImageFileSize: 2000000,
         maxImageWidth: 500,
         maxImageHeight: 500,
       },
       (error, result) => {
         setUploadingImage(false);
-        if (error) {
-          setError("Failed to upload image. Please try again.");
-          return;
-        }
-
-        if (result.event === "success") {
-          setProfileImage(result.info.secure_url);
-          setError(""); // Clear any previous errors
-        }
+        if (error) { setError("Failed to upload image. Please try again."); return; }
+        if (result.event === "success") { setProfileImage(result.info.secure_url); setError(""); }
       }
     );
-
     widget.open();
   };
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
-    // Validation
-    if (!formData.name.trim()) {
-      setError("Please enter your full name");
-      return;
-    }
-
-    if (!formData.email.trim()) {
-      setError("Please enter your email address");
-      return;
-    }
-
-    if (formData.password.length < 8) {
-      setError("Password must be at least 8 characters long");
-      return;
-    }
-
-    if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match");
-      return;
-    }
-
-    if (!formData.agreeTerms) {
-      setError("Please agree to the Terms & Conditions");
-      return;
-    }
+    if (!formData.name.trim())                             { setError("Please enter your full name"); return; }
+    if (!formData.email.trim())                            { setError("Please enter your email address"); return; }
+    if (formData.password.length < 8)                      { setError("Password must be at least 8 characters long"); return; }
+    if (formData.password !== formData.confirmPassword)    { setError("Passwords do not match"); return; }
+    if (!formData.agreeTerms)                              { setError("Please agree to the Terms & Conditions"); return; }
 
     setLoading(true);
 
     try {
-      // 1. Register user with Firebase
       const userCredential = await registerUser(formData.email, formData.password);
-
-      // 2. Update user profile with name and photo
       await updateUser(formData.name, profileImage || null);
 
-      // 3. Create user in backend database
       try {
         await axiosSecure.post("/users/register", {
           name: formData.name,
           email: formData.email,
           firebaseUid: userCredential.user.uid,
           photoURL: profileImage || null,
-          role: "staff", // Default role for self-registered users
+          role: "staff",
         });
-      } catch (backendError) {
-        // Continue even if backend registration fails - user can be added later
-      }
+      } catch (_) { /* Continue even if backend registration fails */ }
 
-      // 4. Show success message
       setSuccess(true);
-
-      // 5. Redirect to waiting page after 2 seconds
-      setTimeout(() => {
-        navigate("/waiting-for-organization");
-      }, 2000);
+      setTimeout(() => { navigate("/waiting-for-organization"); }, 2000);
     } catch (err) {
-      // Handle specific Firebase errors
-      if (err.code === "auth/email-already-in-use") {
-        setError("This email is already registered. Please sign in instead.");
-      } else if (err.code === "auth/invalid-email") {
-        setError("Invalid email address format");
-      } else if (err.code === "auth/weak-password") {
-        setError("Password is too weak. Please use a stronger password.");
-      } else if (err.code === "auth/network-request-failed") {
-        setError("Network error. Please check your internet connection.");
-      } else {
-        setError("Failed to create account. Please try again.");
-      } setLoading(false);
+      if      (err.code === "auth/email-already-in-use")  setError("This email is already registered. Please sign in instead.");
+      else if (err.code === "auth/invalid-email")         setError("Invalid email address format");
+      else if (err.code === "auth/weak-password")         setError("Password is too weak. Please use a stronger password.");
+      else if (err.code === "auth/network-request-failed") setError("Network error. Please check your internet connection.");
+      else                                                setError("Failed to create account. Please try again.");
+      setLoading(false);
     }
   };
 
+  /* ─────────────────────────────────────────────────────── */
   return (
-    <div className="w-full max-w-full overflow-hidden">
-      {/* Header */}
-      <div className="text-center mb-6 sm:mb-8">
-        <div className="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-primary/10 mb-3 sm:mb-4">
-          <FaUserCircle className="text-2xl sm:text-3xl text-primary" />
+    <div className="w-full">
+
+      {/* ── Header ──────────────────────────────────────────── */}
+      <div className="text-center mb-6">
+        <div
+          className="inline-flex items-center justify-center w-14 h-14 rounded-full mb-3"
+          style={{
+            background: "linear-gradient(135deg, rgba(245,146,61,0.18) 0%, rgba(255,107,107,0.12) 100%)",
+            border: "1px solid rgba(245,146,61,0.25)",
+          }}
+        >
+          <FaUserCircle className="text-2xl" style={{ color: "#f5923d" }} />
         </div>
-        <h2 className="text-2xl sm:text-3xl font-bold text-base-content mb-2 wrap-break-word">
+        <h2 className="text-2xl sm:text-3xl font-bold mb-1" style={{ color: "#fff" }}>
           Create Account
         </h2>
-        <p className="text-sm sm:text-base text-base-content/60 px-2 wrap-break-word">
+        <p className="text-sm" style={{ color: "rgba(255,255,255,0.48)" }}>
           Join RootX to manage your coaching institute
         </p>
       </div>
 
-      {/* Success Alert */}
+      {/* ── Success alert ────────────────────────────────────── */}
       {success && (
-        <div className="alert alert-success mb-4">
-          <FaCheckCircle className="text-lg" />
-          <span className="text-sm sm:text-base">
-            Account created successfully! Redirecting to login...
-          </span>
+        <div
+          className="flex items-center gap-3 px-4 py-3 rounded-xl mb-4 text-sm"
+          style={{ background: "rgba(34,197,94,0.12)", border: "1px solid rgba(34,197,94,0.3)", color: "#4ade80" }}
+        >
+          <FaCheckCircle className="shrink-0" />
+          <span>Account created successfully! Redirecting...</span>
         </div>
       )}
 
-      {/* Error Alert */}
+      {/* ── Error alert ──────────────────────────────────────── */}
       {error && (
-        <div className="alert alert-error mb-4">
-          <FaExclamationCircle className="text-lg" />
-          <span className="text-sm sm:text-base">{error}</span>
+        <div
+          className="flex items-center gap-3 px-4 py-3 rounded-xl mb-4 text-sm"
+          style={{ background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.3)", color: "#f87171" }}
+        >
+          <FaExclamationCircle className="shrink-0" />
+          <span>{error}</span>
         </div>
       )}
 
-      {/* Register Form */}
-      <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
-        {/* Profile Image Upload */}
-        <div className="form-control">
-          <label className="label px-0">
-            <span className="label-text font-medium flex items-center gap-2 text-sm sm:text-base">
-              <FaImage className="text-primary shrink-0" />
-              <span>Profile Picture (Optional)</span>
-            </span>
+      {/* ── Form ─────────────────────────────────────────────── */}
+      <form onSubmit={handleSubmit} className="space-y-4">
+
+        {/* Profile image upload */}
+        <div>
+          <label className="flex items-center gap-2 text-xs font-medium mb-2" style={{ color: "rgba(255,255,255,0.6)" }}>
+            <FaImage style={{ color: "#f5923d" }} />
+            Profile Picture <span style={{ color: "rgba(255,255,255,0.35)" }}>(Optional)</span>
           </label>
-          <div className="flex flex-col sm:flex-row items-center gap-4">
-            {/* Profile Preview */}
-            <div className="avatar">
-              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full ring-2 ring-primary/30 hover:ring-primary/50 transition-all duration-300">
-                {profileImage ? (
-                  <img src={profileImage} alt="Profile preview" />
-                ) : (
-                  <div className="w-full h-full bg-base-200 flex items-center justify-center">
-                    <FaUserCircle className="text-4xl sm:text-5xl text-base-content/30" />
-                  </div>
-                )}
-              </div>
+          <div className="flex items-center gap-4">
+            {/* Avatar preview */}
+            <div
+              className="w-16 h-16 rounded-full flex items-center justify-center shrink-0 overflow-hidden"
+              style={{
+                background: profileImage ? "transparent" : "rgba(255,255,255,0.05)",
+                border: "2px solid rgba(245,146,61,0.3)",
+              }}
+            >
+              {profileImage ? (
+                <img src={profileImage} alt="Profile preview" className="w-full h-full object-cover" />
+              ) : (
+                <FaUserCircle className="text-3xl" style={{ color: "rgba(255,255,255,0.25)" }} />
+              )}
             </div>
 
-            {/* Upload Button */}
+            {/* Upload button */}
             <button
               type="button"
               onClick={handleImageUpload}
               disabled={loading || success || uploadingImage}
-              className="btn btn-outline btn-primary btn-sm sm:btn-md gap-2 hover:scale-105 transition-all duration-300"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
+              style={{
+                background: "rgba(255,255,255,0.05)",
+                border: "1px solid rgba(255,255,255,0.12)",
+                color: "rgba(255,255,255,0.7)",
+                cursor: loading || success || uploadingImage ? "not-allowed" : "pointer",
+              }}
+              onMouseEnter={(e) => {
+                if (!loading && !success && !uploadingImage) {
+                  e.currentTarget.style.borderColor = "rgba(245,146,61,0.4)";
+                  e.currentTarget.style.color = "#f5923d";
+                }
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)";
+                e.currentTarget.style.color = "rgba(255,255,255,0.7)";
+              }}
             >
               {uploadingImage ? (
-                <>
-                  <span className="loading loading-spinner loading-sm"></span>
-                  Uploading...
-                </>
+                <><span className="loading loading-spinner loading-xs" />Uploading...</>
               ) : (
-                <>
-                  <FaCamera />
-                  {profileImage ? "Change Photo" : "Upload Photo"}
-                </>
+                <><FaCamera className="text-xs" />{profileImage ? "Change Photo" : "Upload Photo"}</>
               )}
             </button>
-          </div>
-          <label className="label px-0">
-            <span className="label-text-alt text-base-content/60 text-xs">
-              Recommended: Square image, max 2MB
+
+            <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.3)" }}>
+              Max 2MB
             </span>
-          </label>
+          </div>
         </div>
 
-        {/* Full Name Input */}
-        <div className="form-control">
-          <label className="label px-0">
-            <span className="label-text font-medium flex items-center gap-2 text-sm sm:text-base">
-              <FaUser className="text-primary shrink-0" />
-              <span>Full Name</span>
-            </span>
+        {/* Full name */}
+        <div>
+          <label className="flex items-center gap-2 text-xs font-medium mb-1.5" style={{ color: "rgba(255,255,255,0.6)" }}>
+            <FaUser style={{ color: "#f5923d" }} />Full Name
           </label>
           <div className="relative">
             <input
@@ -265,21 +252,21 @@ const Register = () => {
               value={formData.name}
               onChange={handleChange}
               placeholder="Enter your name"
-              className="input input-bordered w-full pl-10 sm:pl-11 pr-3 text-sm sm:text-base focus:input-primary transition-all duration-300"
+              className="dark-input"
+              style={{ ...inputBase, paddingLeft: "2.5rem" }}
+              onFocus={onFocus}
+              onBlur={onBlur}
               required
               disabled={loading || success}
             />
-            <FaUser className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-base-content/40 text-sm" />
+            <FaUser className="absolute left-3 top-1/2 -translate-y-1/2 text-xs" style={{ color: "rgba(255,255,255,0.3)" }} />
           </div>
         </div>
 
-        {/* Email Input */}
-        <div className="form-control">
-          <label className="label px-0">
-            <span className="label-text font-medium flex items-center gap-2 text-sm sm:text-base">
-              <FaEnvelope className="text-primary shrink-0" />
-              <span>Email Address</span>
-            </span>
+        {/* Email */}
+        <div>
+          <label className="flex items-center gap-2 text-xs font-medium mb-1.5" style={{ color: "rgba(255,255,255,0.6)" }}>
+            <FaEnvelope style={{ color: "#f5923d" }} />Email Address
           </label>
           <div className="relative">
             <input
@@ -288,21 +275,21 @@ const Register = () => {
               value={formData.email}
               onChange={handleChange}
               placeholder="Enter your email"
-              className="input input-bordered w-full pl-10 sm:pl-11 pr-3 text-sm sm:text-base focus:input-primary transition-all duration-300"
+              className="dark-input"
+              style={{ ...inputBase, paddingLeft: "2.5rem" }}
+              onFocus={onFocus}
+              onBlur={onBlur}
               required
               disabled={loading || success}
             />
-            <FaEnvelope className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-base-content/40 text-sm" />
+            <FaEnvelope className="absolute left-3 top-1/2 -translate-y-1/2 text-xs" style={{ color: "rgba(255,255,255,0.3)" }} />
           </div>
         </div>
 
-        {/* Password Input */}
-        <div className="form-control">
-          <label className="label px-0">
-            <span className="label-text font-medium flex items-center gap-2 text-sm sm:text-base">
-              <FaLock className="text-primary shrink-0" />
-              <span>Password</span>
-            </span>
+        {/* Password */}
+        <div>
+          <label className="flex items-center gap-2 text-xs font-medium mb-1.5" style={{ color: "rgba(255,255,255,0.6)" }}>
+            <FaLock style={{ color: "#f5923d" }} />Password
           </label>
           <div className="relative">
             <input
@@ -310,40 +297,32 @@ const Register = () => {
               name="password"
               value={formData.password}
               onChange={handleChange}
-              placeholder="Create password"
-              className="input input-bordered w-full pl-10 sm:pl-11 pr-10 sm:pr-11 text-sm sm:text-base focus:input-primary transition-all duration-300"
+              placeholder="Create password (min 8 chars)"
+              className="dark-input"
+              style={{ ...inputBase, paddingLeft: "2.5rem", paddingRight: "2.75rem" }}
+              onFocus={onFocus}
+              onBlur={onBlur}
               required
               disabled={loading || success}
               minLength={8}
             />
-            <FaLock className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-base-content/40 text-sm" />
+            <FaLock className="absolute left-3 top-1/2 -translate-y-1/2 text-xs" style={{ color: "rgba(255,255,255,0.3)" }} />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 text-base-content/40 hover:text-primary transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors duration-200"
+              style={{ color: "rgba(255,255,255,0.35)", background: "none", border: "none", cursor: "pointer" }}
               disabled={loading || success}
             >
-              {showPassword ? (
-                <FaEyeSlash className="text-sm" />
-              ) : (
-                <FaEye className="text-sm" />
-              )}
+              {showPassword ? <FaEyeSlash className="text-sm" /> : <FaEye className="text-sm" />}
             </button>
           </div>
-          <label className="label px-0">
-            <span className="label-text-alt text-base-content/60 text-xs">
-              Must be at least 8 characters
-            </span>
-          </label>
         </div>
 
-        {/* Confirm Password Input */}
-        <div className="form-control">
-          <label className="label px-0">
-            <span className="label-text font-medium flex items-center gap-2 text-sm sm:text-base">
-              <FaLock className="text-primary shrink-0" />
-              <span>Confirm Password</span>
-            </span>
+        {/* Confirm password */}
+        <div>
+          <label className="flex items-center gap-2 text-xs font-medium mb-1.5" style={{ color: "rgba(255,255,255,0.6)" }}>
+            <FaLock style={{ color: "#f5923d" }} />Confirm Password
           </label>
           <div className="relative">
             <input
@@ -352,102 +331,114 @@ const Register = () => {
               value={formData.confirmPassword}
               onChange={handleChange}
               placeholder="Re-enter password"
-              className="input input-bordered w-full pl-10 sm:pl-11 pr-10 sm:pr-11 text-sm sm:text-base focus:input-primary transition-all duration-300"
+              className="dark-input"
+              style={{ ...inputBase, paddingLeft: "2.5rem", paddingRight: "2.75rem" }}
+              onFocus={onFocus}
+              onBlur={onBlur}
               required
               disabled={loading || success}
             />
-            <FaLock className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-base-content/40 text-sm" />
+            <FaLock className="absolute left-3 top-1/2 -translate-y-1/2 text-xs" style={{ color: "rgba(255,255,255,0.3)" }} />
             <button
               type="button"
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 text-base-content/40 hover:text-primary transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors duration-200"
+              style={{ color: "rgba(255,255,255,0.35)", background: "none", border: "none", cursor: "pointer" }}
               disabled={loading || success}
             >
-              {showConfirmPassword ? (
-                <FaEyeSlash className="text-sm" />
-              ) : (
-                <FaEye className="text-sm" />
-              )}
+              {showConfirmPassword ? <FaEyeSlash className="text-sm" /> : <FaEye className="text-sm" />}
             </button>
           </div>
         </div>
 
-        {/* Terms & Conditions */}
-        <div className="form-control">
-          <label className="label cursor-pointer justify-start gap-2 sm:gap-3 px-0">
-            <input
-              type="checkbox"
-              name="agreeTerms"
-              checked={formData.agreeTerms}
-              onChange={handleChange}
-              className="checkbox checkbox-primary checkbox-sm shrink-0"
-              required
-              disabled={loading || success}
-            />
-            <span className="label-text text-base-content/70 text-xs sm:text-sm leading-relaxed wrap-break-word">
-              I agree to the{" "}
-              <a href="#" className="text-primary hover:underline font-medium">
-                Terms & Conditions
-              </a>{" "}
-              and{" "}
-              <a href="#" className="text-primary hover:underline font-medium">
-                Privacy Policy
-              </a>
-            </span>
-          </label>
-        </div>
+        {/* Terms */}
+        <label className="flex items-start gap-2.5 cursor-pointer select-none">
+          <input
+            type="checkbox"
+            name="agreeTerms"
+            checked={formData.agreeTerms}
+            onChange={handleChange}
+            className="mt-0.5 w-4 h-4 rounded shrink-0"
+            style={{ accentColor: "#f5923d" }}
+            required
+            disabled={loading || success}
+          />
+          <span className="text-xs leading-relaxed" style={{ color: "rgba(255,255,255,0.5)" }}>
+            I agree to the{" "}
+            <a href="#" className="font-medium" style={{ color: "#f5923d" }}>Terms & Conditions</a>
+            {" "}and{" "}
+            <a href="#" className="font-medium" style={{ color: "#f5923d" }}>Privacy Policy</a>
+          </span>
+        </label>
 
-        {/* Register Button */}
+        {/* Submit */}
         <button
           type="submit"
-          className="btn btn-primary w-full text-white font-semibold text-sm sm:text-base shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-300"
+          className="btn-shine w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200"
+          style={{
+            background: loading || success
+              ? "rgba(245,146,61,0.45)"
+              : "linear-gradient(135deg, #f5923d 0%, #ff6b6b 100%)",
+            color: "#fff",
+            border: "none",
+            cursor: loading || success ? "not-allowed" : "pointer",
+            boxShadow: "0 4px 14px rgba(245,146,61,0.35)",
+          }}
           disabled={loading || success}
+          onMouseEnter={(e) => {
+            if (!loading && !success)
+              e.currentTarget.style.boxShadow = "0 6px 22px rgba(245,146,61,0.55)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.boxShadow = "0 4px 14px rgba(245,146,61,0.35)";
+          }}
         >
           {loading ? (
-            <>
-              <span className="loading loading-spinner loading-sm"></span>
-              Creating Account...
-            </>
+            <><span className="loading loading-spinner loading-sm" />Creating Account...</>
           ) : success ? (
-            <>
-              <FaCheckCircle />
-              Account Created!
-            </>
+            <><FaCheckCircle />Account Created!</>
           ) : (
-            "Create Account"
+            <>Create Account <FaArrowRight className="text-[10px]" /></>
           )}
         </button>
 
-        {/* Login Link */}
-        <div className="text-center pt-3 sm:pt-4">
-          <p className="text-base-content/70 text-sm sm:text-base">
+        {/* Login link */}
+        <div className="text-center pt-1">
+          <p className="text-xs" style={{ color: "rgba(255,255,255,0.45)" }}>
             Already have an account?{" "}
             <Link
               to="/login"
-              className="text-primary font-semibold hover:underline transition-all duration-300"
+              className="font-semibold transition-colors duration-200"
+              style={{ color: "#f5923d" }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = "#ff6b6b")}
+              onMouseLeave={(e) => (e.currentTarget.style.color = "#f5923d")}
             >
               Sign In
             </Link>
           </p>
         </div>
+
       </form>
 
-      {/* Additional Info */}
-      <div className="mt-6 sm:mt-8 p-3 sm:p-4 rounded-lg bg-primary/5 border border-primary/20">
-        <div className="flex gap-2 sm:gap-3">
-          <div className="text-primary text-lg sm:text-xl mt-0.5 shrink-0">
-            <MdAdminPanelSettings />
-          </div>
-          <div className="min-w-0">
-            <h4 className="font-semibold text-base-content mb-1 text-sm sm:text-base">
-              Organization Invitation Required
-            </h4>
-            <p className="text-xs sm:text-sm text-base-content/60 leading-relaxed">
-              After creating your account, you'll need to be invited to an organization by an admin to access the dashboard features.
-            </p>
-          </div>
+      {/* ── Info box ─────────────────────────────────────────── */}
+      <div
+        className="flex gap-3 mt-5 p-3.5 rounded-xl"
+        style={{
+          background: "rgba(245,146,61,0.07)",
+          border: "1px solid rgba(245,146,61,0.18)",
+        }}
+      >
+        <MdAdminPanelSettings className="text-xl mt-0.5 shrink-0" style={{ color: "#f5923d" }} />
+        <div>
+          <h4 className="font-semibold text-xs mb-1" style={{ color: "#fff" }}>
+            Organization Invitation Required
+          </h4>
+          <p className="text-xs leading-relaxed" style={{ color: "rgba(255,255,255,0.45)" }}>
+            After creating your account, you'll need to be invited to an organization by an admin to access dashboard features.
+          </p>
         </div>
       </div>
+
     </div>
   );
 };

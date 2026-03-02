@@ -1,6 +1,8 @@
 import { createBrowserRouter, Navigate } from "react-router";
 import DashboardLayout from "./layouts/DashboardLayout";
 import SuperAdminLayout from "./layouts/SuperAdminLayout";
+import PublicLayout from "./layouts/PublicLayout";
+import Home from "./pages/Landing/Home";
 import Overview from "./pages/Overview";
 import Students from "./pages/StudentManagement/Students";
 import StudentDetails from "./pages/StudentManagement/StudentDetails";
@@ -55,21 +57,26 @@ import {
 } from "./pages/SuperAdmin";
 
 const router = createBrowserRouter([
-  // Root path redirects to login
+  // Public pages (with shared Navbar + Footer)
   {
     path: "/",
-    element: <Navigate to="/login" replace />,
+    Component: PublicLayout,
+    errorElement: <ErrorPage />,
+    children: [
+      {
+        index: true,
+        Component: Home,
+      },
+      {
+        path: "plans",
+        Component: SubscriptionPlans,
+      },
+    ],
   },
   // Organization Signup (Public)
   {
     path: "/signup",
     Component: OrganizationSignup,
-    errorElement: <ErrorPage></ErrorPage>,
-  },
-  // Subscription Plans (Public)
-  {
-    path: "/plans",
-    Component: SubscriptionPlans,
     errorElement: <ErrorPage></ErrorPage>,
   },
   // Waiting for Organization (Public)
